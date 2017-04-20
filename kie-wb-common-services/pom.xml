@@ -22,6 +22,7 @@
     <module>kie-wb-common-services-backend</module>
     <module>kie-wb-common-data-modeller-core</module>
     <module>kie-wb-common-refactoring</module>
+    <module>kie-wb-common-services-backend-testing</module>
   </modules>
 
 </project>
