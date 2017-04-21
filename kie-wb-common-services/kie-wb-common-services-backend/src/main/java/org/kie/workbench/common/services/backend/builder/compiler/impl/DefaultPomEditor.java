@@ -76,16 +76,7 @@ public class DefaultPomEditor implements PomEditor {
         return holder;
     }
 
-    /**
-     * @Override public org.apache.maven.plugin.MojoExecution newMojoExecution() {
-     * MojoExecution execution = super.newMojoExecution();
-     * Xpp3Dom compilerId = new Xpp3Dom("compilerId");
-     * compilerId.setValue("jdt");
-     * execution.getConfiguration().addChild(compilerId);
-     * return execution;
-     * }
-     */
-
+    
     public void write(File pom) {
 
         try {
