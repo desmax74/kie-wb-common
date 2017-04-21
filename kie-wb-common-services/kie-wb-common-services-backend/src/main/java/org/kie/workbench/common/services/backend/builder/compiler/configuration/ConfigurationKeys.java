@@ -13,35 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.kie.workbench.common.services.backend.builder.compiler;
 
+package org.kie.workbench.common.services.backend.builder.compiler.configuration;
 
-/**
- * Created by Massimiliano Dessi @desmax74 on 18/04/17.
- */
-public interface MavenCompiler {
+public enum ConfigurationKeys {
 
-    /**
-     * Compile a project starting from the main POM in a sync way
-     */
-    CompilationResponse compileSync(CompilationRequest req);
+    MAVEN_PLUGIN_CONFIGURATION,
+    MAVEN_COMPILER_ID,
+    MAVEN_SKIP,
+    MAVEN_SKIP_MAIN,
 
-    /**
-     * Perform a "mvn -v" call to check if the maven home is correct
-     *
-     * @return
-     */
-    Boolean isValid();
+    MAVEN_PLUGINS,
+    MAVEN_COMPILER_PLUGIN,
+    MAVEN_COMPILER_PLUGIN_VERSION,
 
-    /**
-     * Maven home used by this compiler
-     */
-    String getMavenHome();
-
-    /**
-     * The local repo used by this compiler
-     */
-    String getLocalRepo();
-
-
+    ALTERNATIVE_COMPILER_PLUGINS,
+    ALTERNATIVE_COMPILER_PLUGIN,
+    ALTERNATIVE_COMPILER_PLUGIN_VERSION;
 }

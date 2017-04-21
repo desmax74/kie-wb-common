@@ -13,27 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.kie.workbench.common.services.backend.builder.compiler.impl;
+
+package org.kie.workbench.common.services.backend.builder.compiler;
+
+import org.kie.workbench.common.services.backend.builder.compiler.impl.PomPlaceHolder;
+
+import java.util.Set;
 
 /**
- * Maven goals
+ * The PomEditor manage the pom changed in a prj
  */
-public class MavenGoals {
+public interface PomEditor {
 
-    public static final String CLEAN = "clean";
+    /**
+     * A collection with the Information about changed poms
+     */
+    Set<PomPlaceHolder> getHistory();
 
-    public static final String COMPILE = "compile";
-
-    public static final String VALIDATE = "validate";
-
-    public static final String TEST = "test";
-
-    public static final String PACKAGE = "package";
-
-    public static final String VERIFY = "verify";
-
-    public static final String INSTALL = "install";
-
-    public static final String DEPLOY = "deploy";
-
+    /**
+     * @return result of the clean history
+     */
+    void cleanHistory();
 }

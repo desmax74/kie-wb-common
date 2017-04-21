@@ -17,10 +17,9 @@ package org.kie.workbench.common.services.backend.builder.compiler;
 
 import org.apache.maven.shared.invoker.*;
 import org.drools.workbench.models.datamodel.util.PortablePreconditions;
+import org.kie.workbench.common.services.backend.builder.compiler.configuration.Compilers;
 import org.kie.workbench.common.services.backend.builder.compiler.impl.DefaultCompilationResponse;
-import org.kie.workbench.common.services.backend.builder.compiler.impl.ErrorMessage;
-import org.kie.workbench.common.services.backend.builder.compiler.impl.IncrementalCompilerEnabler;
-import org.kie.workbench.common.services.backend.builder.compiler.impl.PomChangedHistory;
+import org.kie.workbench.common.services.backend.builder.compiler.impl.DefaultIncrementalCompilerEnabler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,6 +44,8 @@ public class DefaultMavenCompiler implements MavenCompiler {
 
     private Invoker invoker;
 
+    private Boolean enablePomEditing = Boolean.TRUE;
+
     private IncrementalCompilerEnabler enabler;
 
     /**
@@ -58,6 +59,7 @@ public class DefaultMavenCompiler implements MavenCompiler {
         invoker.setLocalRepositoryDirectory(new File(System.getProperty("user.home") + "/.m2/repository"));
         invoker.setLogger(new SystemOutLogger());
         invoker.setOutputHandler(new SystemOutHandler());
+        enabler = new DefaultIncrementalCompilerEnabler(Compilers.JAVAC);
     }
 
     /**
@@ -71,10 +73,27 @@ public class DefaultMavenCompiler implements MavenCompiler {
         invoker.setLocalRepositoryDirectory(new File(System.getProperty("user.home") + "/.m2/repository"));
         invoker.setLogger(new SystemOutLogger());
         invoker.setOutputHandler(new SystemOutHandler());
-        if(enablePomEditing){
-            enabler = new IncrementalCompilerEnabler();
+        this.enablePomEditing = enablePomEditing;
+        if (enablePomEditing) {
+            enabler = new DefaultIncrementalCompilerEnabler(Compilers.JAVAC);
         }
+    }
 
+    /**
+     * The local repo used will be /<user_home>/.m2
+     *
+     * @param mavenHome The maven installation folder
+     */
+    public DefaultMavenCompiler(File mavenHome, Boolean enablePomEditing, Compilers compiler) {
+        invoker = new DefaultInvoker();
+        invoker.setMavenHome(mavenHome);
+        invoker.setLocalRepositoryDirectory(new File(System.getProperty("user.home") + "/.m2/repository"));
+        invoker.setLogger(new SystemOutLogger());
+        invoker.setOutputHandler(new SystemOutHandler());
+        this.enablePomEditing = enablePomEditing;
+        if (enablePomEditing) {
+            enabler = new DefaultIncrementalCompilerEnabler(compiler);
+        }
     }
 
 
@@ -87,6 +106,7 @@ public class DefaultMavenCompiler implements MavenCompiler {
         invoker.setMavenHome(mavenHome);
         invoker.setLocalRepositoryDirectory(localRepository);
         invoker.setOutputHandler(new SystemOutHandler());
+        enabler = new DefaultIncrementalCompilerEnabler(Compilers.JAVAC);
     }
 
 
@@ -103,14 +123,16 @@ public class DefaultMavenCompiler implements MavenCompiler {
         invoker.setLocalRepositoryDirectory(localRepository);
         invoker.setWorkingDirectory(workingDirectory);
         invoker.setOutputHandler(new SystemOutHandler());
+        enabler = new DefaultIncrementalCompilerEnabler(Compilers.JAVAC);
     }
 
 
-    public DefaultMavenCompiler(File mavenHome, File localRepository, String workingDirectory, Boolean enableIncrementalCompilationOnPOM) {
+    public DefaultMavenCompiler(File mavenHome, File localRepository, String workingDirectory, Boolean enableIncrementalCompilationOnPOM, Compilers compiler) {
         this(mavenHome, localRepository);
         PortablePreconditions.checkNotEmpty("workingDirectory", workingDirectory);
+        this.enablePomEditing = enableIncrementalCompilationOnPOM;
         if (enableIncrementalCompilationOnPOM) {
-            IncrementalCompilerEnabler disabler = new IncrementalCompilerEnabler();//TODO impl
+            enabler = new DefaultIncrementalCompilerEnabler(compiler);//TODO impl
         }
     }
 
@@ -121,6 +143,7 @@ public class DefaultMavenCompiler implements MavenCompiler {
         invoker.setLocalRepositoryDirectory(localRepository);
         invoker.setWorkingDirectory(workingDirectory);
         invoker.setOutputHandler(ioHandler);
+        enabler = new DefaultIncrementalCompilerEnabler(Compilers.JAVAC);
     }
 
     public DefaultMavenCompiler(File mavenHome, File localRepository, File workingDirectory, InvocationOutputHandler ioHandler, InputStream inputStream) {
@@ -130,6 +153,7 @@ public class DefaultMavenCompiler implements MavenCompiler {
         invoker.setWorkingDirectory(workingDirectory);
         invoker.setOutputHandler(ioHandler);
         invoker.setInputStream(inputStream);
+        enabler = new DefaultIncrementalCompilerEnabler(Compilers.JAVAC);
     }
 
 
@@ -182,10 +206,13 @@ public class DefaultMavenCompiler implements MavenCompiler {
 
     @Override
     public CompilationResponse compileSync(CompilationRequest request) {
+        if (enablePomEditing) {
+            enabler.process(request);
+        }
         try {
             invoker.execute(request);
         } catch (MavenInvocationException e) {
-            return new DefaultCompilationResponse(Boolean.FALSE, Optional.of(new ErrorMessage(e.getMessage())));
+            return new DefaultCompilationResponse(Boolean.FALSE, Optional.of(e.getMessage()));
         }
         return new DefaultCompilationResponse(Boolean.TRUE);
     }

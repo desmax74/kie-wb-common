@@ -13,35 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.kie.workbench.common.services.backend.builder.compiler;
 
+public interface IncrementalCompilerEnabler {
 
-/**
- * Created by Massimiliano Dessi @desmax74 on 18/04/17.
- */
-public interface MavenCompiler {
-
-    /**
-     * Compile a project starting from the main POM in a sync way
-     */
-    CompilationResponse compileSync(CompilationRequest req);
-
-    /**
-     * Perform a "mvn -v" call to check if the maven home is correct
-     *
-     * @return
-     */
-    Boolean isValid();
-
-    /**
-     * Maven home used by this compiler
-     */
-    String getMavenHome();
-
-    /**
-     * The local repo used by this compiler
-     */
-    String getLocalRepo();
-
-
+    Boolean process(CompilationRequest req);
 }

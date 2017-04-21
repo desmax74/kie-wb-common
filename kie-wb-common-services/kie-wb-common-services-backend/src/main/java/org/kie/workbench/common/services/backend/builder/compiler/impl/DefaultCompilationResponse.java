@@ -23,14 +23,14 @@ import java.util.Optional;
 public class DefaultCompilationResponse implements CompilationResponse {
 
     private Boolean successful;
-    private Optional<ErrorMessage> errorMessage;
+    private Optional<String> errorMessage;
 
     public DefaultCompilationResponse(Boolean successful) {
         this.successful = successful;
         this.errorMessage = Optional.empty();
     }
 
-    public DefaultCompilationResponse(Boolean successful, Optional<ErrorMessage> errorMessage) {
+    public DefaultCompilationResponse(Boolean successful, Optional<String> errorMessage) {
         this.successful = successful;
         this.errorMessage = errorMessage;
     }
@@ -41,7 +41,7 @@ public class DefaultCompilationResponse implements CompilationResponse {
 
 
     @Override
-    public Optional<ErrorMessage> getErrorMessage() {
+    public Optional<String> getErrorMessage() {
         return errorMessage;
     }
 }

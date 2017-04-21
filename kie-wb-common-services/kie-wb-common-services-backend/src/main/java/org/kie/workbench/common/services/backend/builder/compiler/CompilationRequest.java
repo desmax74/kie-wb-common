@@ -19,7 +19,7 @@ package org.kie.workbench.common.services.backend.builder.compiler;
 import org.apache.maven.shared.invoker.InvocationRequest;
 
 /**
- *
+ * Wrap a compilation request
  */
 public interface CompilationRequest extends InvocationRequest {
 

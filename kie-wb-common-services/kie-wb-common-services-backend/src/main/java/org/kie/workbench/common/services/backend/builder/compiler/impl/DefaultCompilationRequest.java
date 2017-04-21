@@ -18,6 +18,7 @@ package org.kie.workbench.common.services.backend.builder.compiler.impl;
 import org.apache.maven.shared.invoker.DefaultInvocationRequest;
 import org.apache.maven.shared.invoker.InvocationRequest;
 import org.kie.workbench.common.services.backend.builder.compiler.CompilationRequest;
+import org.kie.workbench.common.services.backend.builder.compiler.configuration.MavenGoals;
 
 import java.io.File;
 import java.util.List;
@@ -66,9 +67,4 @@ public class DefaultCompilationRequest extends DefaultInvocationRequest implemen
         setGoals(goals);
     }
 
-
-    @Override
-    public String toString() {
-        return new StringBuilder().append("Compilation Request:").append(this).toString();
-    }
 }

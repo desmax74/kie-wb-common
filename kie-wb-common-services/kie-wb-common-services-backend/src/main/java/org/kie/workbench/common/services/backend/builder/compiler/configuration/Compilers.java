@@ -14,21 +14,15 @@
  * limitations under the License.
  */
 
-package org.kie.workbench.common.services.backend.builder.compiler.impl;
+package org.kie.workbench.common.services.backend.builder.compiler.configuration;
 
-public class ErrorMessage {
+public enum Compilers {
 
+    JAVAC("javac"), JDT("jdt");
 
-    private String msg;
+    private final String compiler;
 
-    public ErrorMessage(String msg) {
-        this.msg = msg;
-    }
-
-    @Override
-    public String toString() {
-        return new StringBuilder()
-                .append("msg;").append(msg)
-                .toString();
+    Compilers(String compiler) {
+        this.compiler = compiler;
     }
 }

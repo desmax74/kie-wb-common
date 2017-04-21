@@ -13,35 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.kie.workbench.common.services.backend.builder.compiler;
-
+package org.kie.workbench.common.services.backend.builder.compiler.configuration;
 
 /**
- * Created by Massimiliano Dessi @desmax74 on 18/04/17.
+ * Maven goals
  */
-public interface MavenCompiler {
+public class MavenGoals {
 
-    /**
-     * Compile a project starting from the main POM in a sync way
-     */
-    CompilationResponse compileSync(CompilationRequest req);
+    public static final String CLEAN = "clean";
 
-    /**
-     * Perform a "mvn -v" call to check if the maven home is correct
-     *
-     * @return
-     */
-    Boolean isValid();
+    public static final String COMPILE = "compile";
 
-    /**
-     * Maven home used by this compiler
-     */
-    String getMavenHome();
+    public static final String VALIDATE = "validate";
 
-    /**
-     * The local repo used by this compiler
-     */
-    String getLocalRepo();
+    public static final String TEST = "test";
 
+    public static final String PACKAGE = "package";
+
+    public static final String VERIFY = "verify";
+
+    public static final String INSTALL = "install";
+
+    public static final String DEPLOY = "deploy";
 
 }

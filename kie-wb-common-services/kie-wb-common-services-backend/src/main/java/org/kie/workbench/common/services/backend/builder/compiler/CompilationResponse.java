@@ -16,8 +16,6 @@
 
 package org.kie.workbench.common.services.backend.builder.compiler;
 
-import org.kie.workbench.common.services.backend.builder.compiler.impl.ErrorMessage;
-
 import java.util.Optional;
 
 /**
@@ -27,5 +25,5 @@ public interface CompilationResponse {
 
     Boolean isSuccessful();
 
-    Optional<ErrorMessage> getErrorMessage();
+    Optional<String> getErrorMessage();
 }
