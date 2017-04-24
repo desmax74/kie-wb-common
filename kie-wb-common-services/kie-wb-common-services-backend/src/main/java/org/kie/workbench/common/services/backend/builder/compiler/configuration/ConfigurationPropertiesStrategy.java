@@ -34,31 +34,42 @@ public class ConfigurationPropertiesStrategy implements ConfigurationStrategy {
 
     private String propertiesFile = "IncrementalCompiler.properties";
 
-    private Boolean valid = Boolean.TRUE;
+    private Boolean valid = Boolean.FALSE;
 
 
     public ConfigurationPropertiesStrategy() {
-        //@TODO missing binding
         Properties props = loadProperties();
-        conf = new HashMap<>();
+        if (isValid()) {
+            conf = new HashMap<>();
+            conf.put(ConfigurationKeys.MAVEN_PLUGIN_CONFIGURATION, props.getProperty(ConfigurationKeys.MAVEN_PLUGIN_CONFIGURATION.name()));
+            conf.put(ConfigurationKeys.MAVEN_COMPILER_ID, props.getProperty(ConfigurationKeys.MAVEN_COMPILER_ID.name()));
+            conf.put(ConfigurationKeys.MAVEN_SKIP, props.getProperty(ConfigurationKeys.MAVEN_SKIP.name()));
+            conf.put(ConfigurationKeys.MAVEN_SKIP_MAIN, props.getProperty(ConfigurationKeys.MAVEN_SKIP_MAIN.name()));
 
+            conf.put(ConfigurationKeys.MAVEN_PLUGINS, props.getProperty(ConfigurationKeys.MAVEN_PLUGINS.name()));
+            conf.put(ConfigurationKeys.MAVEN_COMPILER_PLUGIN, props.getProperty(ConfigurationKeys.MAVEN_COMPILER_PLUGIN.name()));
+            conf.put(ConfigurationKeys.MAVEN_COMPILER_PLUGIN_VERSION, props.getProperty(ConfigurationKeys.MAVEN_COMPILER_PLUGIN_VERSION.name()));
 
-    }
-
-    @Override
-    public Boolean isValid() {
-        return null;
+            conf.put(ConfigurationKeys.ALTERNATIVE_COMPILER_PLUGINS, props.getProperty(ConfigurationKeys.ALTERNATIVE_COMPILER_PLUGINS.name()));
+            conf.put(ConfigurationKeys.ALTERNATIVE_COMPILER_PLUGIN, props.getProperty(ConfigurationKeys.ALTERNATIVE_COMPILER_PLUGIN.name()));
+            conf.put(ConfigurationKeys.ALTERNATIVE_COMPILER_PLUGIN_VERSION, props.getProperty(ConfigurationKeys.ALTERNATIVE_COMPILER_PLUGIN_VERSION.name()));
+        }
     }
 
     private Properties loadProperties() {
         Properties prop = new Properties();
-        InputStream in = getClass().getResourceAsStream("propertiesFile");
-        try {
-            prop.load(in);
-            in.close();
-        } catch (IOException e) {
-            logger.error(e.getMessage());
+        InputStream in = getClass().getClassLoader().getResourceAsStream(propertiesFile);
+        if (in == null) {
             valid = Boolean.FALSE;
+        } else {
+            try {
+                prop.load(in);
+                in.close();
+                valid = Boolean.TRUE;
+            } catch (IOException e) {
+                logger.error(e.getMessage());
+                valid = Boolean.FALSE;
+            }
         }
         return prop;
     }
@@ -66,5 +77,10 @@ public class ConfigurationPropertiesStrategy implements ConfigurationStrategy {
     @Override
     public Map<ConfigurationKeys, String> loadConfiguration() {
         return conf;
+    }
+
+    @Override
+    public Boolean isValid() {
+        return valid;
     }
 }

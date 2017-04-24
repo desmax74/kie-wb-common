@@ -28,6 +28,8 @@ public class ConfigurationStaticStrategy implements ConfigurationStrategy {
 
     protected Map<ConfigurationKeys, String> conf;
 
+    private Boolean valid = Boolean.FALSE;
+
     public ConfigurationStaticStrategy() {
         conf = new HashMap<>();
 
@@ -43,6 +45,7 @@ public class ConfigurationStaticStrategy implements ConfigurationStrategy {
         conf.put(ConfigurationKeys.ALTERNATIVE_COMPILER_PLUGINS, "io.takari.maven.plugins");
         conf.put(ConfigurationKeys.ALTERNATIVE_COMPILER_PLUGIN, "takari-lifecycle-plugin");
         conf.put(ConfigurationKeys.ALTERNATIVE_COMPILER_PLUGIN_VERSION, "1.12.4");
+        valid = Boolean.TRUE;
     }
 
     @Override
@@ -52,6 +55,6 @@ public class ConfigurationStaticStrategy implements ConfigurationStrategy {
 
     @Override
     public Boolean isValid() {
-        return Boolean.TRUE;
+        return valid;
     }
 }

@@ -24,17 +24,20 @@ import org.kie.workbench.common.services.backend.builder.compiler.configuration.
 import org.kie.workbench.common.services.backend.builder.compiler.impl.DefaultCompilationRequest;
 import org.kie.workbench.common.services.backend.builder.compiler.impl.DefaultIncrementalCompilerEnabler;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.MavenGoals;
+import org.uberfire.java.nio.fs.jgit.JGitFileSystem;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 
 public class DefaultIncrementalCompilerEnablerTest {
 
     private final File prj  =new File("src/test/projects/dummy_multimodule");
+
     private final File cleanPom  =new File("src/test/projects/dummy_multimodule_untouched/pom.xml");
 
     @Test
@@ -44,12 +47,14 @@ public class DefaultIncrementalCompilerEnablerTest {
         Assert.assertFalse(pomAsAstring.contains("<artifactId>takari-lifecycle-plugin</artifactId>"));
 
         CompilationRequest req = new DefaultCompilationRequest(prj, Boolean.TRUE, Arrays.asList(MavenGoals.COMPILE));
-        DefaultIncrementalCompilerEnabler enabler = new DefaultIncrementalCompilerEnabler(Compilers.JAVAC);
+        DefaultIncrementalCompilerEnabler enabler = new DefaultIncrementalCompilerEnabler(Compilers.JAVAC, Boolean.TRUE);
         Assert.assertTrue(enabler.process(req));
         encoded = Files.readAllBytes(Paths.get("src/test/projects/dummy_multimodule/pom.xml"));
         pomAsAstring = new String(encoded, StandardCharsets.UTF_8);
         Assert.assertTrue(pomAsAstring.contains("<artifactId>takari-lifecycle-plugin</artifactId>"));
     }
+
+
 
     @After
     public void restoreOriginalPom() throws IOException {

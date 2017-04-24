@@ -34,6 +34,9 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 public class DefaultPomEditor implements PomEditor {
@@ -46,13 +49,15 @@ public class DefaultPomEditor implements PomEditor {
     private MavenXpp3Reader reader;
     private MavenXpp3Writer writer;
     private Set<PomPlaceHolder> history;
+    private Boolean writeOnFS;
 
-    public DefaultPomEditor(Set<PomPlaceHolder> history, ConfigurationStrategy config, Compilers compiler) {
+    public DefaultPomEditor(Set<PomPlaceHolder> history, ConfigurationStrategy config, Compilers compiler, Boolean writeOnFS) {
         conf = config.loadConfiguration();
         reader = new MavenXpp3Reader();
         writer = new MavenXpp3Writer();
         this.history = history;
         this.compiler = compiler;
+        this.writeOnFS = writeOnFS;
     }
 
     public Set<PomPlaceHolder> getHistory() {
@@ -65,18 +70,18 @@ public class DefaultPomEditor implements PomEditor {
     }
 
 
-    public PomPlaceHolder readSingle(File pom) {
+    public PomPlaceHolder readSingle(Path pom) {
         PomPlaceHolder holder = new PomPlaceHolder();
         try {
-            Model model = reader.read(new FileInputStream(pom));
-            holder = new PomPlaceHolder(pom.getPath(), model.getArtifactId(), model.getGroupId(), model.getVersion(), model.getPackaging());
+            Model model = reader.read(new FileInputStream(pom.toFile()));
+            holder = new PomPlaceHolder(pom.toAbsolutePath().toString(), model.getArtifactId(), model.getGroupId(), model.getVersion(), model.getPackaging());
         } catch (Exception e) {
             logger.error(e.getMessage());
         }
         return holder;
     }
 
-    
+
     public void write(File pom) {
 
         try {
@@ -86,16 +91,20 @@ public class DefaultPomEditor implements PomEditor {
                 return;
             }
 
-            PomPlaceHolder pomPH = new PomPlaceHolder(pom.getPath(), model.getArtifactId(), model.getGroupId(), model.getVersion(), model.getPackaging());
+            PomPlaceHolder pomPH = new PomPlaceHolder(pom.getPath(), model.getArtifactId(), model.getGroupId(), model.getVersion(), model.getPackaging(), Files.readAllBytes(Paths.get(pom.getAbsolutePath())));
             if (model.getPackaging().equals(POM) && !history.contains(pomPH)) {
                 updatePom(model);
-                writer.write(new FileOutputStream(pom), model);
-                history.add(pomPH);
-
-            } else {
-                //we process the build plugin only in the parent poms (packaging pom)
+                if (writeOnFS) {
+                    writer.write(new FileOutputStream(pom), model);
+                }/*else{
+                    //the non pom files are not stored
+                    Path path = Paths.get(pom.getAbsolutePath());
+                    byte[] data = Files.readAllBytes(path);
+                    pomPH = new PomPlaceHolder(pom.getPath(), model.getArtifactId(), model.getGroupId(), model.getVersion(), model.getPackaging(), data);
+                }*/
                 history.add(pomPH);
             }
+
 
         } catch (Exception e) {
             logger.error(e.getMessage());
@@ -104,20 +113,31 @@ public class DefaultPomEditor implements PomEditor {
     }
 
     private void updatePom(Model model) {
+
         Build build = model.getBuild();
         if (build == null) {  //pom without build tag
             model.setBuild(new Build());
             build = model.getBuild();
         }
 
+        Boolean alternativeCompilerPluginPresent = Boolean.FALSE;
         List<Plugin> buildPlugins = build.getPlugins();
         for (Plugin plugin : buildPlugins) {
-            if (plugin.getGroupId().equals(conf.get(ConfigurationKeys.MAVEN_PLUGINS)) && plugin.getArtifactId().equals(conf.get(ConfigurationKeys.MAVEN_COMPILER_PLUGIN))) {
+            if (plugin.getGroupId().equals(conf.get(ConfigurationKeys.MAVEN_PLUGINS)) &&
+                    plugin.getArtifactId().equals(conf.get(ConfigurationKeys.MAVEN_COMPILER_PLUGIN))) {
+
                 disableMavenCompilerAlreadyPresent(plugin); // disable the maven compiler if present
             }
+            if (plugin.getGroupId().equals(conf.get(ConfigurationKeys.ALTERNATIVE_COMPILER_PLUGINS)) &&
+                    plugin.getArtifactId().equals(conf.get(ConfigurationKeys.ALTERNATIVE_COMPILER_PLUGIN))) {
+                alternativeCompilerPluginPresent = Boolean.TRUE;
+                break; // alternative compiler plugin is present skip the pom
+            }
         }
-        //@TODO search if takari plugin is already present before to add
-        build.addPlugin(getNewCompilerPlugin());
+
+        if (!alternativeCompilerPluginPresent) {
+            build.addPlugin(getNewCompilerPlugin());
+        }
     }
 
     private Plugin getNewCompilerPlugin() {

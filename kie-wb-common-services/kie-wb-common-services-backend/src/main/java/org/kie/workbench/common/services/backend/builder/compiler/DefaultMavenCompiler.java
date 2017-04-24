@@ -16,7 +16,6 @@
 package org.kie.workbench.common.services.backend.builder.compiler;
 
 import org.apache.maven.shared.invoker.*;
-import org.drools.workbench.models.datamodel.util.PortablePreconditions;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.Compilers;
 import org.kie.workbench.common.services.backend.builder.compiler.impl.DefaultCompilationResponse;
 import org.kie.workbench.common.services.backend.builder.compiler.impl.DefaultIncrementalCompilerEnabler;
@@ -44,8 +43,6 @@ public class DefaultMavenCompiler implements MavenCompiler {
 
     private Invoker invoker;
 
-    private Boolean enablePomEditing = Boolean.TRUE;
-
     private IncrementalCompilerEnabler enabler;
 
     /**
@@ -53,13 +50,13 @@ public class DefaultMavenCompiler implements MavenCompiler {
      *
      * @param mavenHome The maven installation folder
      */
-    public DefaultMavenCompiler(File mavenHome) {
+    public DefaultMavenCompiler(File mavenHome, Boolean writeOnFS) {
         invoker = new DefaultInvoker();
         invoker.setMavenHome(mavenHome);
         invoker.setLocalRepositoryDirectory(new File(System.getProperty("user.home") + "/.m2/repository"));
         invoker.setLogger(new SystemOutLogger());
         invoker.setOutputHandler(new SystemOutHandler());
-        enabler = new DefaultIncrementalCompilerEnabler(Compilers.JAVAC);
+        enabler = new DefaultIncrementalCompilerEnabler(Compilers.JAVAC, writeOnFS);
     }
 
     /**
@@ -67,33 +64,13 @@ public class DefaultMavenCompiler implements MavenCompiler {
      *
      * @param mavenHome The maven installation folder
      */
-    public DefaultMavenCompiler(File mavenHome, Boolean enablePomEditing) {
+    public DefaultMavenCompiler(File mavenHome, Compilers compiler, Boolean writeOnFS) {
         invoker = new DefaultInvoker();
         invoker.setMavenHome(mavenHome);
         invoker.setLocalRepositoryDirectory(new File(System.getProperty("user.home") + "/.m2/repository"));
         invoker.setLogger(new SystemOutLogger());
         invoker.setOutputHandler(new SystemOutHandler());
-        this.enablePomEditing = enablePomEditing;
-        if (enablePomEditing) {
-            enabler = new DefaultIncrementalCompilerEnabler(Compilers.JAVAC);
-        }
-    }
-
-    /**
-     * The local repo used will be /<user_home>/.m2
-     *
-     * @param mavenHome The maven installation folder
-     */
-    public DefaultMavenCompiler(File mavenHome, Boolean enablePomEditing, Compilers compiler) {
-        invoker = new DefaultInvoker();
-        invoker.setMavenHome(mavenHome);
-        invoker.setLocalRepositoryDirectory(new File(System.getProperty("user.home") + "/.m2/repository"));
-        invoker.setLogger(new SystemOutLogger());
-        invoker.setOutputHandler(new SystemOutHandler());
-        this.enablePomEditing = enablePomEditing;
-        if (enablePomEditing) {
-            enabler = new DefaultIncrementalCompilerEnabler(compiler);
-        }
+        enabler = new DefaultIncrementalCompilerEnabler(compiler, writeOnFS);
     }
 
 
@@ -101,12 +78,12 @@ public class DefaultMavenCompiler implements MavenCompiler {
      * @param mavenHome
      * @param localRepository
      */
-    public DefaultMavenCompiler(File mavenHome, File localRepository) {
+    public DefaultMavenCompiler(File mavenHome, File localRepository, Boolean writeOnFS) {
         invoker = new DefaultInvoker();
         invoker.setMavenHome(mavenHome);
         invoker.setLocalRepositoryDirectory(localRepository);
         invoker.setOutputHandler(new SystemOutHandler());
-        enabler = new DefaultIncrementalCompilerEnabler(Compilers.JAVAC);
+        enabler = new DefaultIncrementalCompilerEnabler(Compilers.JAVAC, writeOnFS);
     }
 
 
@@ -117,43 +94,33 @@ public class DefaultMavenCompiler implements MavenCompiler {
      * @param localRepository
      * @param workingDirectory
      */
-    public DefaultMavenCompiler(File mavenHome, File localRepository, File workingDirectory) {
+    public DefaultMavenCompiler(File mavenHome, File localRepository, File workingDirectory, Boolean writeOnFS) {
         invoker = new DefaultInvoker();
         invoker.setMavenHome(mavenHome);
         invoker.setLocalRepositoryDirectory(localRepository);
         invoker.setWorkingDirectory(workingDirectory);
         invoker.setOutputHandler(new SystemOutHandler());
-        enabler = new DefaultIncrementalCompilerEnabler(Compilers.JAVAC);
+        enabler = new DefaultIncrementalCompilerEnabler(Compilers.JAVAC, writeOnFS);
     }
 
 
-    public DefaultMavenCompiler(File mavenHome, File localRepository, String workingDirectory, Boolean enableIncrementalCompilationOnPOM, Compilers compiler) {
-        this(mavenHome, localRepository);
-        PortablePreconditions.checkNotEmpty("workingDirectory", workingDirectory);
-        this.enablePomEditing = enableIncrementalCompilationOnPOM;
-        if (enableIncrementalCompilationOnPOM) {
-            enabler = new DefaultIncrementalCompilerEnabler(compiler);//TODO impl
-        }
-    }
-
-
-    public DefaultMavenCompiler(File mavenHome, File localRepository, File workingDirectory, InvocationOutputHandler ioHandler) {
+    public DefaultMavenCompiler(File mavenHome, File localRepository, File workingDirectory, InvocationOutputHandler ioHandler, Boolean writeOnFS) {
         invoker = new DefaultInvoker();
         invoker.setMavenHome(mavenHome);
         invoker.setLocalRepositoryDirectory(localRepository);
         invoker.setWorkingDirectory(workingDirectory);
         invoker.setOutputHandler(ioHandler);
-        enabler = new DefaultIncrementalCompilerEnabler(Compilers.JAVAC);
+        enabler = new DefaultIncrementalCompilerEnabler(Compilers.JAVAC, writeOnFS);
     }
 
-    public DefaultMavenCompiler(File mavenHome, File localRepository, File workingDirectory, InvocationOutputHandler ioHandler, InputStream inputStream) {
+    public DefaultMavenCompiler(File mavenHome, File localRepository, File workingDirectory, InvocationOutputHandler ioHandler, InputStream inputStream, Boolean writeOnFS) {
         invoker = new DefaultInvoker();
         invoker.setMavenHome(mavenHome);
         invoker.setLocalRepositoryDirectory(localRepository);
         invoker.setWorkingDirectory(workingDirectory);
         invoker.setOutputHandler(ioHandler);
         invoker.setInputStream(inputStream);
-        enabler = new DefaultIncrementalCompilerEnabler(Compilers.JAVAC);
+        enabler = new DefaultIncrementalCompilerEnabler(Compilers.JAVAC, writeOnFS);
     }
 
 
@@ -189,6 +156,11 @@ public class DefaultMavenCompiler implements MavenCompiler {
         return result.getExitCode() == 0;
     }
 
+    /**
+     * Perform a "mvn -v" call to check if the maven home is correct
+     *
+     * @return
+     */
     @Override
     public Boolean isValid() {
         return isValidMavenHome(invoker.getMavenHome()) && isValidMavenRepo(invoker.getLocalRepositoryDirectory());
@@ -206,9 +178,7 @@ public class DefaultMavenCompiler implements MavenCompiler {
 
     @Override
     public CompilationResponse compileSync(CompilationRequest request) {
-        if (enablePomEditing) {
-            enabler.process(request);
-        }
+        enabler.process(request);
         try {
             invoker.execute(request);
         } catch (MavenInvocationException e) {

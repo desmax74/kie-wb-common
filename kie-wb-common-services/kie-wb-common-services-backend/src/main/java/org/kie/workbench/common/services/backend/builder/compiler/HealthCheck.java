@@ -16,12 +16,10 @@
 
 package org.kie.workbench.common.services.backend.builder.compiler;
 
-import org.kie.workbench.common.services.backend.builder.compiler.configuration.ConfigurationKeys;
+/**
+ * Used to valide current status
+ */
+public interface HealthCheck {
 
-import java.util.Map;
-
-public interface ConfigurationStrategy extends HealthCheck {
-
-    Map<ConfigurationKeys, String> loadConfiguration();
-
+    Boolean isValid();
 }

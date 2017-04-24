@@ -14,14 +14,16 @@
  * limitations under the License.
  */
 
-package org.kie.workbench.common.services.backend.builder.compiler;
+package dummy;
 
-import org.kie.workbench.common.services.backend.builder.compiler.configuration.ConfigurationKeys;
+import java.io.Serializable;
 
-import java.util.Map;
+public class DummyA implements Serializable {
 
-public interface ConfigurationStrategy extends HealthCheck {
+    private String name;
 
-    Map<ConfigurationKeys, String> loadConfiguration();
+    public DummyA(String name) {
+        this.name = name;
+    }
 
 }

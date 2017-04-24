@@ -16,6 +16,8 @@
 
 package org.kie.workbench.common.services.backend.builder.compiler.impl;
 
+import java.util.Arrays;
+
 public class PomPlaceHolder {
 
     private String filePath;
@@ -24,6 +26,7 @@ public class PomPlaceHolder {
     private String version;
     private String packaging;
     private Boolean isValid;
+    private byte[] rawContent;
 
     public PomPlaceHolder() {
         this.isValid = Boolean.FALSE;
@@ -36,6 +39,17 @@ public class PomPlaceHolder {
         this.version = version;
         this.packaging = packaging;
         this.isValid = Boolean.TRUE;
+    }
+
+    public PomPlaceHolder(String filePath, String artifactID, String groupID, String version, String packaging, byte[] content) {
+        this.filePath = filePath;
+        this.artifactID = artifactID;
+        this.groupID = groupID;
+        this.version = version;
+        this.packaging = packaging;
+        this.isValid = Boolean.TRUE;
+        this.rawContent = content.clone();
+
     }
 
     /**
@@ -67,6 +81,9 @@ public class PomPlaceHolder {
         return packaging;
     }
 
+    public byte[] getRawContent() {
+        return rawContent.clone();
+    }
 
     @Override
     public String toString() {
@@ -75,6 +92,9 @@ public class PomPlaceHolder {
         sb.append(", artifactID='").append(artifactID).append('\'');
         sb.append(", groupID='").append(groupID).append('\'');
         sb.append(", version='").append(version).append('\'');
+        sb.append(", packaging='").append(packaging).append('\'');
+        sb.append(", isValid=").append(isValid);
+        sb.append(", rawContent=").append(Arrays.toString(rawContent));
         sb.append('}');
         return sb.toString();
     }

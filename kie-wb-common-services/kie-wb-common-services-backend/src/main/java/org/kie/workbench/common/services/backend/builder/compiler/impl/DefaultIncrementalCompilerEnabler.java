@@ -15,15 +15,18 @@
  */
 package org.kie.workbench.common.services.backend.builder.compiler.impl;
 
-import org.apache.commons.io.FileUtils;
 import org.kie.workbench.common.services.backend.builder.compiler.CompilationRequest;
 import org.kie.workbench.common.services.backend.builder.compiler.IncrementalCompilerEnabler;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.Compilers;
-import org.kie.workbench.common.services.backend.builder.compiler.configuration.ConfigurationStaticStrategy;
+import org.kie.workbench.common.services.backend.builder.compiler.configuration.ConfigurationContextStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
+import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 public class DefaultIncrementalCompilerEnabler implements IncrementalCompilerEnabler {
@@ -34,15 +37,14 @@ public class DefaultIncrementalCompilerEnabler implements IncrementalCompilerEna
 
     private DefaultPomEditor editor;
 
-    public DefaultIncrementalCompilerEnabler(Compilers compiler) {
-        editor = new DefaultPomEditor(new HashSet<PomPlaceHolder>(), new ConfigurationStaticStrategy(), compiler);
+    public DefaultIncrementalCompilerEnabler(Compilers compiler, Boolean writeOnFS) {
+        editor = new DefaultPomEditor(new HashSet<PomPlaceHolder>(), new ConfigurationContextStrategy(), compiler, writeOnFS);
     }
 
     @Override
     public Boolean process(final CompilationRequest req) {
-
-        File mainPom = FileUtils.getFile(req.getBaseDirectory(), POM_NAME);
-        if (!mainPom.isFile()) {
+        Path mainPom = Paths.get(req.getBaseDirectory().toString(), POM_NAME);
+        if (!Files.isReadable(mainPom)) {
             return Boolean.FALSE;
         }
 
@@ -50,12 +52,11 @@ public class DefaultIncrementalCompilerEnabler implements IncrementalCompilerEna
         Boolean isPresent = isPresent(placeHolder);   // check if the main pom is already scanned and edited
         if (placeHolder.isValid() && !isPresent) {
             List<String> pomsList = new ArrayList();
-            searchPoms(req.getBaseDirectory(), pomsList);// recursive search in all subfolders
+            searchPoms(Paths.get(req.getBaseDirectory().toString()), pomsList);// recursive NIO search in all subfolders
             if (pomsList.size() > 0) {
-                for (String pom : pomsList) {
-                    processSinglePom(pom);
-                }
+                processSingleFoundedPoms(pomsList);
             }
+            //@TODO set the input stream with POM changed in the CompilationRequest
             return Boolean.TRUE;
         } else {
             return Boolean.FALSE;
@@ -63,35 +64,29 @@ public class DefaultIncrementalCompilerEnabler implements IncrementalCompilerEna
 
     }
 
-    private void processSinglePom(String pom) {
-        File tmpPom = FileUtils.getFile(pom);
-        PomPlaceHolder tmplaceHolder = editor.readSingle(tmpPom);
+    private void processSingleFoundedPoms(List<String> poms) {
 
-        if (!isPresent(tmplaceHolder)) {
-            editor.write(tmpPom);
+        for (String pom : poms) {
+            Path tmpPom = Paths.get(pom);
+            PomPlaceHolder tmpPlaceHolder = editor.readSingle(tmpPom);
+            if (!isPresent(tmpPlaceHolder)) {
+                editor.write(tmpPom.toFile());
+            }
         }
-
     }
 
 
-    private void searchPoms(File file, List<String> pomsList) {
-
-        if (file.isDirectory()) {
-            if (file.canRead()) {
-
-                for (File tmp : file.listFiles()) {
-                    if (tmp.isDirectory()) {
-                        searchPoms(tmp, pomsList);
-                    } else {
-                        if (POM_NAME.equals(tmp.getName().toLowerCase())) {
-                            pomsList.add(tmp.getAbsoluteFile().toString());
-                        }
-                    }
+    private void searchPoms(Path file, List<String> pomsList) {
+        try (DirectoryStream<Path> ds = Files.newDirectoryStream(file.toAbsolutePath())) {
+            for (Path p : ds) {
+                if (Files.isDirectory(p)) {
+                    searchPoms(p, pomsList);
+                } else if (p.endsWith(POM_NAME)) {
+                    pomsList.add(p.toAbsolutePath().toString());
                 }
-
-            } else {
-                logger.error("Permission Denied on:" + file.getAbsoluteFile());
             }
+        } catch (IOException e) {
+            logger.error(e.getMessage());
         }
     }
 
