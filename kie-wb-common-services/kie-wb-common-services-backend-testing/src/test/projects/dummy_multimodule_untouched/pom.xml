@@ -4,6 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.dummy.workbench</groupId>
   <artifactId>dummy-wb-common</artifactId>
+  <version>1.0</version>
   <packaging>pom</packaging>
   <name>Dummy Workbench - Common</name>
   <description>Dummy Workbench - Common</description>
@@ -11,24 +12,6 @@
     <module>dummyA</module>
     <module>dummyB</module>
   </modules>
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <groupId>org.jboss.errai.bom</groupId>
-        <artifactId>errai-internal-bom</artifactId>
-        <version>${version.org.jboss.errai}</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.uberfire</groupId>
-        <artifactId>uberfire-bom</artifactId>
-        <version>${version.org.uberfire}</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
   <repositories>
     <repository>
       <releases>
@@ -95,10 +78,6 @@
       </plugin>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
-        <configuration>
-          <skipMain>true</skipMain>
-          <skip>true</skip>
-        </configuration>
       </plugin>
     </plugins>
   </build>

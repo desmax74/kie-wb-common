@@ -23,6 +23,7 @@ import org.apache.maven.model.PluginExecution;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
+import org.kie.workbench.common.services.backend.builder.compiler.CompilationRequest;
 import org.kie.workbench.common.services.backend.builder.compiler.ConfigurationStrategy;
 import org.kie.workbench.common.services.backend.builder.compiler.PomEditor;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.Compilers;
@@ -31,9 +32,8 @@ import org.kie.workbench.common.services.backend.builder.compiler.configuration.
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -82,7 +82,7 @@ public class DefaultPomEditor implements PomEditor {
     }
 
 
-    public void write(File pom) {
+    public void write(File pom, CompilationRequest request) {
 
         try {
             Model model = reader.read(new FileInputStream(pom));
@@ -96,12 +96,18 @@ public class DefaultPomEditor implements PomEditor {
                 updatePom(model);
                 if (writeOnFS) {
                     writer.write(new FileOutputStream(pom), model);
-                }/*else{
-                    //the non pom files are not stored
-                    Path path = Paths.get(pom.getAbsolutePath());
-                    byte[] data = Files.readAllBytes(path);
-                    pomPH = new PomPlaceHolder(pom.getPath(), model.getArtifactId(), model.getGroupId(), model.getVersion(), model.getPackaging(), data);
-                }*/
+                } else {
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    writer.write(baos, model);
+                    File temp = File.createTempFile(".pom", ".xml", pom.getParentFile().getAbsoluteFile());
+                    BufferedWriter bw = new BufferedWriter(new FileWriter(temp));
+                    bw.write(new String(baos.toByteArray(), StandardCharsets.UTF_8));
+                    bw.close();
+                    request.setPomFile(temp);
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("Pom changed:{}", new String(baos.toByteArray(), StandardCharsets.UTF_8));
+                    }
+                }
                 history.add(pomPH);
             }
 
@@ -109,7 +115,6 @@ public class DefaultPomEditor implements PomEditor {
         } catch (Exception e) {
             logger.error(e.getMessage());
         }
-
     }
 
     private void updatePom(Model model) {

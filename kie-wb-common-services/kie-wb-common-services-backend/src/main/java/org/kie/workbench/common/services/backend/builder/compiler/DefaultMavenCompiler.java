@@ -178,13 +178,37 @@ public class DefaultMavenCompiler implements MavenCompiler {
 
     @Override
     public CompilationResponse compileSync(CompilationRequest request) {
-        enabler.process(request);
+        if (logger.isDebugEnabled()) {
+            logger.debug("CompilationRequest:{}", request);
+        }
+
+        Boolean result = enabler.process(request);
+        if (!result) {
+            return new DefaultCompilationResponse(Boolean.FALSE, Optional.of("Processing poms failed"));
+        }
+
+        InvocationResult res;
         try {
-            invoker.execute(request);
+            res = invoker.execute(request);
+            if (logger.isDebugEnabled()) {
+                logger.debug("Invocation Response:{}", res);
+            }
         } catch (MavenInvocationException e) {
             return new DefaultCompilationResponse(Boolean.FALSE, Optional.of(e.getMessage()));
+        } finally {
+            if (request.getPomFile() != null) {
+                Boolean deleted = request.getPomFile().delete();
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Deleted {} result:{}", request.getPomFile(), deleted);
+                }
+            }
         }
-        return new DefaultCompilationResponse(Boolean.TRUE);
+        if (res.getExitCode() == 0) {
+            return new DefaultCompilationResponse(Boolean.TRUE);
+        } else {
+            return new DefaultCompilationResponse(Boolean.FALSE);
+        }
+
     }
 
 }

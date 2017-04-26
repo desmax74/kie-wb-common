@@ -21,27 +21,25 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.Compilers;
+import org.kie.workbench.common.services.backend.builder.compiler.configuration.MavenGoals;
 import org.kie.workbench.common.services.backend.builder.compiler.impl.DefaultCompilationRequest;
 import org.kie.workbench.common.services.backend.builder.compiler.impl.DefaultIncrementalCompilerEnabler;
-import org.kie.workbench.common.services.backend.builder.compiler.configuration.MavenGoals;
-import org.uberfire.java.nio.fs.jgit.JGitFileSystem;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 
 public class DefaultIncrementalCompilerEnablerTest {
 
-    private final File prj  =new File("src/test/projects/dummy_multimodule");
+    private final File prj = new File("src/test/projects/dummy_multimodule");
 
-    private final File cleanPom  =new File("src/test/projects/dummy_multimodule_untouched/pom.xml");
+    private final File cleanPom = new File("src/test/projects/dummy_multimodule_untouched/pom.xml");
 
     @Test
-    public void testReadPomsInaPrjTest() throws Exception{
+    public void testReadPomsInaPrjTest() throws Exception {
         byte[] encoded = Files.readAllBytes(Paths.get("src/test/projects/dummy_multimodule/pom.xml"));
         String pomAsAstring = new String(encoded, StandardCharsets.UTF_8);
         Assert.assertFalse(pomAsAstring.contains("<artifactId>takari-lifecycle-plugin</artifactId>"));
@@ -53,7 +51,6 @@ public class DefaultIncrementalCompilerEnablerTest {
         pomAsAstring = new String(encoded, StandardCharsets.UTF_8);
         Assert.assertTrue(pomAsAstring.contains("<artifactId>takari-lifecycle-plugin</artifactId>"));
     }
-
 
 
     @After

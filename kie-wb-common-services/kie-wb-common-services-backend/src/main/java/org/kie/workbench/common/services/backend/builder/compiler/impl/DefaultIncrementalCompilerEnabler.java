@@ -54,7 +54,7 @@ public class DefaultIncrementalCompilerEnabler implements IncrementalCompilerEna
             List<String> pomsList = new ArrayList();
             searchPoms(Paths.get(req.getBaseDirectory().toString()), pomsList);// recursive NIO search in all subfolders
             if (pomsList.size() > 0) {
-                processSingleFoundedPoms(pomsList);
+                processFoundedPoms(pomsList, req);
             }
             //@TODO set the input stream with POM changed in the CompilationRequest
             return Boolean.TRUE;
@@ -64,13 +64,13 @@ public class DefaultIncrementalCompilerEnabler implements IncrementalCompilerEna
 
     }
 
-    private void processSingleFoundedPoms(List<String> poms) {
+    private void processFoundedPoms(List<String> poms, CompilationRequest request) {
 
         for (String pom : poms) {
             Path tmpPom = Paths.get(pom);
             PomPlaceHolder tmpPlaceHolder = editor.readSingle(tmpPom);
             if (!isPresent(tmpPlaceHolder)) {
-                editor.write(tmpPom.toFile());
+                editor.write(tmpPom.toFile(), request);
             }
         }
     }

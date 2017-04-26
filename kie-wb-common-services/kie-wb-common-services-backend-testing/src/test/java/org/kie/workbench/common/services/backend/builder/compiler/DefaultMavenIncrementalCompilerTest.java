@@ -18,10 +18,8 @@ package org.kie.workbench.common.services.backend.builder.compiler;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.kie.workbench.common.services.backend.builder.compiler.configuration.Compilers;
-import org.kie.workbench.common.services.backend.builder.compiler.impl.DefaultCompilationRequest;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.MavenGoals;
-import org.kie.workbench.common.services.backend.builder.compiler.impl.DefaultIncrementalCompilerEnabler;
+import org.kie.workbench.common.services.backend.builder.compiler.impl.DefaultCompilationRequest;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
@@ -37,13 +35,13 @@ public class DefaultMavenIncrementalCompilerTest {
     private final static File mavenHome = new File("src/test/resources/maven-3.5.0/");
     private final static File mavenRepo = new File("src/test/resources/.ignore/m2_repo/");
     private final Path prjFolder = Paths.get("src/test/projects/dummy");
-    private final File prj_untouched  =new File("src/test/projects/dummy_multimodule_untouched");
+    private final File prj_untouched = new File("src/test/projects/dummy_multimodule_untouched");
 
     @Before
-    public void setUp() throws Exception{
-        if(!mavenRepo.exists()){
+    public void setUp() throws Exception {
+        if (!mavenRepo.exists()) {
             System.out.println("Creating a m2_repo into src/test/resources/.ignore/m2_repo/");
-            if(!mavenRepo.mkdir()){
+            if (!mavenRepo.mkdir()) {
                 throw new Exception("Folder not writable in the project");
             }
         }
@@ -56,7 +54,7 @@ public class DefaultMavenIncrementalCompilerTest {
     }
 
     @Test
-    public void testDefaultCompilerWithMAvenHome(){
+    public void testDefaultCompilerWithMAvenHome() {
         DefaultMavenCompiler compiler = new DefaultMavenCompiler(mavenHome, mavenRepo, Boolean.TRUE);
         Assert.assertTrue(compiler.isValid());
     }
@@ -118,8 +116,10 @@ public class DefaultMavenIncrementalCompilerTest {
 
 
     @Test
-    public void testIncrementalCompilationRuntimeChangeTest() throws Exception{
-        MavenCompiler compiler = new DefaultMavenCompiler(mavenHome, mavenRepo, Boolean.FALSE);
+    public void testIncrementalCompilationWithHiddenPOMTest() throws Exception {
+
+        MavenCompiler compiler = new DefaultMavenCompiler(mavenHome, mavenRepo, new File("src/test/projects/dummy_multimodule_untouched/"), Boolean.FALSE);
+
         Path incrementalFolder = Paths.get("src/test/projects/dummy_multimodule_untouched/target/incremental");
         Assert.assertFalse(incrementalFolder.toFile().exists());
 
@@ -127,7 +127,8 @@ public class DefaultMavenIncrementalCompilerTest {
         String pomAsAstring = new String(encoded, StandardCharsets.UTF_8);
         Assert.assertFalse(pomAsAstring.contains("<artifactId>takari-lifecycle-plugin</artifactId>"));
 
-        CompilationRequest req = new DefaultCompilationRequest(prj_untouched, Boolean.TRUE, Arrays.asList(MavenGoals.COMPILE));
+        CompilationRequest req = new DefaultCompilationRequest(prj_untouched, Boolean.FALSE, Arrays.asList(MavenGoals.COMPILE));
+        req.setDebug(Boolean.TRUE);
         CompilationResponse res = compiler.compileSync(req);
         Assert.assertTrue(res.isSuccessful());
 
@@ -137,6 +138,11 @@ public class DefaultMavenIncrementalCompilerTest {
         encoded = Files.readAllBytes(Paths.get("src/test/projects/dummy_multimodule_untouched/pom.xml"));
         pomAsAstring = new String(encoded, StandardCharsets.UTF_8);
         Assert.assertFalse(pomAsAstring.contains("<artifactId>takari-lifecycle-plugin</artifactId>"));
+
+        req = new DefaultCompilationRequest(prj_untouched, Boolean.FALSE, Arrays.asList(MavenGoals.CLEAN));
+        req.setDebug(Boolean.TRUE);
+        res = compiler.compileSync(req);
+        Assert.assertTrue(res.isSuccessful());
     }
 
 }
