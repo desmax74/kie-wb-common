@@ -37,13 +37,13 @@ public class DefaultIncrementalCompilerEnabler implements IncrementalCompilerEna
 
     private DefaultPomEditor editor;
 
-    public DefaultIncrementalCompilerEnabler(Compilers compiler, Boolean writeOnFS) {
-        editor = new DefaultPomEditor(new HashSet<PomPlaceHolder>(), new ConfigurationContextStrategy(), compiler, writeOnFS);
+    public DefaultIncrementalCompilerEnabler(Compilers compiler) {
+        editor = new DefaultPomEditor(new HashSet<PomPlaceHolder>(), new ConfigurationContextStrategy(), compiler);
     }
 
     @Override
     public Boolean process(final CompilationRequest req) {
-        Path mainPom = Paths.get(req.getBaseDirectory().toString(), POM_NAME);
+        Path mainPom = Paths.get(req.getPath().toString(), POM_NAME);
         if (!Files.isReadable(mainPom)) {
             return Boolean.FALSE;
         }
@@ -52,16 +52,14 @@ public class DefaultIncrementalCompilerEnabler implements IncrementalCompilerEna
         Boolean isPresent = isPresent(placeHolder);   // check if the main pom is already scanned and edited
         if (placeHolder.isValid() && !isPresent) {
             List<String> pomsList = new ArrayList();
-            searchPoms(Paths.get(req.getBaseDirectory().toString()), pomsList);// recursive NIO search in all subfolders
+            searchPoms(Paths.get(req.getPath().toString()), pomsList);// recursive NIO search in all subfolders
             if (pomsList.size() > 0) {
                 processFoundedPoms(pomsList, req);
             }
-            //@TODO set the input stream with POM changed in the CompilationRequest
             return Boolean.TRUE;
         } else {
             return Boolean.FALSE;
         }
-
     }
 
     private void processFoundedPoms(List<String> poms, CompilationRequest request) {
@@ -70,7 +68,7 @@ public class DefaultIncrementalCompilerEnabler implements IncrementalCompilerEna
             Path tmpPom = Paths.get(pom);
             PomPlaceHolder tmpPlaceHolder = editor.readSingle(tmpPom);
             if (!isPresent(tmpPlaceHolder)) {
-                editor.write(tmpPom.toFile(), request);
+                editor.write(tmpPom, request);
             }
         }
     }

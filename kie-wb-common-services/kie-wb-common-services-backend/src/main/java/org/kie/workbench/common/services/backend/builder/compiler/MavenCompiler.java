@@ -26,11 +26,13 @@ public interface MavenCompiler extends HealthCheck {
      */
     CompilationResponse compileSync(CompilationRequest req);
 
+    //CompilationResponse compileSync(KieCliRequest req);
+
 
     /**
      * Maven home used by this compiler
      */
-    String getMavenHome();
+    //String getMavenHome();
 
     /**
      * The local repo used by this compiler

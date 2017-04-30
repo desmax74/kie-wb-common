@@ -32,7 +32,9 @@ import org.kie.workbench.common.services.backend.builder.compiler.configuration.
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -49,15 +51,13 @@ public class DefaultPomEditor implements PomEditor {
     private MavenXpp3Reader reader;
     private MavenXpp3Writer writer;
     private Set<PomPlaceHolder> history;
-    private Boolean writeOnFS;
 
-    public DefaultPomEditor(Set<PomPlaceHolder> history, ConfigurationStrategy config, Compilers compiler, Boolean writeOnFS) {
+    public DefaultPomEditor(Set<PomPlaceHolder> history, ConfigurationStrategy config, Compilers compiler) {
         conf = config.loadConfiguration();
         reader = new MavenXpp3Reader();
         writer = new MavenXpp3Writer();
         this.history = history;
         this.compiler = compiler;
-        this.writeOnFS = writeOnFS;
     }
 
     public Set<PomPlaceHolder> getHistory() {
@@ -73,7 +73,7 @@ public class DefaultPomEditor implements PomEditor {
     public PomPlaceHolder readSingle(Path pom) {
         PomPlaceHolder holder = new PomPlaceHolder();
         try {
-            Model model = reader.read(new FileInputStream(pom.toFile()));
+            Model model = reader.read(new ByteArrayInputStream(Files.readAllBytes(pom)));
             holder = new PomPlaceHolder(pom.toAbsolutePath().toString(), model.getArtifactId(), model.getGroupId(), model.getVersion(), model.getPackaging());
         } catch (Exception e) {
             logger.error(e.getMessage());
@@ -82,32 +82,37 @@ public class DefaultPomEditor implements PomEditor {
     }
 
 
-    public void write(File pom, CompilationRequest request) {
+    public void write(Path pom, CompilationRequest request) {
 
         try {
-            Model model = reader.read(new FileInputStream(pom));
+            Model model = reader.read(new ByteArrayInputStream(Files.readAllBytes(pom)));
             if (model == null) {
-                logger.error("Model null from pom file:", pom.getPath());
+                logger.error("Model null from pom file:", pom.toString());
                 return;
             }
 
-            PomPlaceHolder pomPH = new PomPlaceHolder(pom.getPath(), model.getArtifactId(), model.getGroupId(), model.getVersion(), model.getPackaging(), Files.readAllBytes(Paths.get(pom.getAbsolutePath())));
+            PomPlaceHolder pomPH = new PomPlaceHolder(pom.toAbsolutePath().toString(), model.getArtifactId(), model.getGroupId(), model.getVersion(), model.getPackaging(), Files.readAllBytes(Paths.get(pom.toAbsolutePath().toString())));
+
             if (model.getPackaging().equals(POM) && !history.contains(pomPH)) {
+
                 updatePom(model);
-                if (writeOnFS) {
-                    writer.write(new FileOutputStream(pom), model);
-                } else {
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    writer.write(baos, model);
-                    File temp = File.createTempFile(".pom", ".xml", pom.getParentFile().getAbsoluteFile());
-                    BufferedWriter bw = new BufferedWriter(new FileWriter(temp));
-                    bw.write(new String(baos.toByteArray(), StandardCharsets.UTF_8));
-                    bw.close();
-                    request.setPomFile(temp);
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("Pom changed:{}", new String(baos.toByteArray(), StandardCharsets.UTF_8));
-                    }
+
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                writer.write(baos, model);
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Pom changed:{}", new String(baos.toByteArray(), StandardCharsets.UTF_8));
                 }
+
+                Path temp = Files.createTempFile(pom.getParent().toAbsolutePath(), ".pom", ".xml");
+                BufferedWriter bw = Files.newBufferedWriter(temp, StandardCharsets.UTF_8);
+                bw.write(new String(baos.toByteArray(), StandardCharsets.UTF_8));
+                bw.close();
+
+                String[] args = request.getKieCliRequest().getArgs();
+                String[] newArgs = Arrays.copyOf(args, args.length + 1);
+                newArgs[args.length] = "-f " + temp.getFileName();//Passing the temp pom file to the cli
+                request.getKieCliRequest().setArgs(newArgs);
+                request.setPomFile(temp.toAbsolutePath());
                 history.add(pomPH);
             }
 

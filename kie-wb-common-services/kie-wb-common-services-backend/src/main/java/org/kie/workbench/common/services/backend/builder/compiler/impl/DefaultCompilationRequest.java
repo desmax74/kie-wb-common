@@ -15,56 +15,41 @@
  */
 package org.kie.workbench.common.services.backend.builder.compiler.impl;
 
-import org.apache.maven.shared.invoker.DefaultInvocationRequest;
-import org.apache.maven.shared.invoker.InvocationRequest;
 import org.kie.workbench.common.services.backend.builder.compiler.CompilationRequest;
-import org.kie.workbench.common.services.backend.builder.compiler.configuration.MavenGoals;
 
-import java.io.File;
-import java.util.List;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
-public class DefaultCompilationRequest extends DefaultInvocationRequest implements InvocationRequest, CompilationRequest {
+public class DefaultCompilationRequest implements CompilationRequest {
 
-    /**
-     * Run maven with the specified maven goals (compile, test, ...)
-     * in a specific prj folder
-     *
-     * @param baseDirPrj
-     * @param offline
-     * @param goals
-     */
-    public DefaultCompilationRequest(File baseDirPrj, boolean offline, List<String> goals) {
-        if (goals == null) {
-            throw new IllegalArgumentException("goals are null");
-        }
+    private KieCliRequest req;
+    private Path pom;
 
-        setOffline(offline);
-        setBaseDirectory(baseDirPrj);
-        if (goals.isEmpty()) {
-            goals.add(MavenGoals.COMPILE);
-        }
-        setGoals(goals);
+    public DefaultCompilationRequest(KieCliRequest req) {
+        this.req = req;
     }
 
-    /**
-     * Run maven with the specified maven goals (compile, test, ...) or with maven params
-     * in a specific prj folder
-     *
-     * @param baseDirPrj
-     * @param offline
-     * @param goals
-     */
-    public DefaultCompilationRequest(File baseDirPrj, boolean offline, List<String> goals, String mavenOpts) {
-        if (goals == null) {
-            throw new IllegalArgumentException("goals are null");
-        }
-        setBaseDirectory(baseDirPrj);
-        setOffline(offline);
-        setMavenOpts(mavenOpts);
-        if (goals.isEmpty()) {
-            goals.add(MavenGoals.COMPILE);
-        }
-        setGoals(goals);
+    @Override
+    public Path getPomFile() {
+        return pom;
     }
 
+    @Override
+    public void setPomFile(Path pom) {
+        this.pom = pom;
+    }
+
+    public KieCliRequest getReq() {
+        return req;
+    }
+
+    @Override
+    public KieCliRequest getKieCliRequest() {
+        return req;
+    }
+
+    @Override
+    public Path getPath() {
+        return Paths.get(req.getWorkingDirectory());
+    }
 }

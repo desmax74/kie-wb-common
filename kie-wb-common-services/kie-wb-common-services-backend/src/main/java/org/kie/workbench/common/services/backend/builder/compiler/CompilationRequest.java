@@ -16,11 +16,20 @@
 
 package org.kie.workbench.common.services.backend.builder.compiler;
 
-import org.apache.maven.shared.invoker.InvocationRequest;
+import org.kie.workbench.common.services.backend.builder.compiler.impl.KieCliRequest;
+
+import java.nio.file.Path;
 
 /**
  * Wrap a compilation request
  */
-public interface CompilationRequest extends InvocationRequest {
+public interface CompilationRequest {
 
+    Path getPath();
+
+    Path getPomFile();
+
+    void setPomFile(Path pom);
+
+    KieCliRequest getKieCliRequest();
 }

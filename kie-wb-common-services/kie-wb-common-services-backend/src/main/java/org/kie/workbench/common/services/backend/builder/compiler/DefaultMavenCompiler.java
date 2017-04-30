@@ -15,16 +15,16 @@
  */
 package org.kie.workbench.common.services.backend.builder.compiler;
 
-import org.apache.maven.shared.invoker.*;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.Compilers;
+import org.kie.workbench.common.services.backend.builder.compiler.external.KieMavenCli;
 import org.kie.workbench.common.services.backend.builder.compiler.impl.DefaultCompilationResponse;
 import org.kie.workbench.common.services.backend.builder.compiler.impl.DefaultIncrementalCompilerEnabler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.InputStream;
-import java.util.Arrays;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Optional;
 
 /**
@@ -32,95 +32,26 @@ import java.util.Optional;
  * to use Takari plugins like a black box
  * <p>
  * <p>
- * String mavenHome = "<path_to_maven_home>";
- * MavenCompiler compiler = new DefaultMavenCompiler(mavenHome);
- * CompilationRequest req = new DefaultCompilationRequest(new File("<path_to_prj>"), Boolean.FALSE, Arrays.asList("compile"));
+ * Path mavenRepo = Paths.get("<path_to_maven_repo>");
+ * MavenCompiler compiler = new DefaultMavenCompiler(mavenRepo);
+ * KieCliRequest kcr = new KieCliRequest(Paths.get("<path_to_prj>"), new String[]{MavenGoals.CLEAN,MavenGoals.COMPILE});
+ * CompilationRequest req = new DefaultCompilationRequest(kcr);
  * CompilationResponse res = compiler.compileSync(req);
  */
 public class DefaultMavenCompiler implements MavenCompiler {
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultMavenCompiler.class);
 
-    private Invoker invoker;
+    private KieMavenCli cli;
+
+    private Path mavenRepo;
 
     private IncrementalCompilerEnabler enabler;
 
-    /**
-     * The local repo used will be /<user_home>/.m2
-     *
-     * @param mavenHome The maven installation folder
-     */
-    public DefaultMavenCompiler(File mavenHome, Boolean writeOnFS) {
-        invoker = new DefaultInvoker();
-        invoker.setMavenHome(mavenHome);
-        invoker.setLocalRepositoryDirectory(new File(System.getProperty("user.home") + "/.m2/repository"));
-        invoker.setLogger(new SystemOutLogger());
-        invoker.setOutputHandler(new SystemOutHandler());
-        enabler = new DefaultIncrementalCompilerEnabler(Compilers.JAVAC, writeOnFS);
-    }
-
-    /**
-     * The local repo used will be /<user_home>/.m2
-     *
-     * @param mavenHome The maven installation folder
-     */
-    public DefaultMavenCompiler(File mavenHome, Compilers compiler, Boolean writeOnFS) {
-        invoker = new DefaultInvoker();
-        invoker.setMavenHome(mavenHome);
-        invoker.setLocalRepositoryDirectory(new File(System.getProperty("user.home") + "/.m2/repository"));
-        invoker.setLogger(new SystemOutLogger());
-        invoker.setOutputHandler(new SystemOutHandler());
-        enabler = new DefaultIncrementalCompilerEnabler(compiler, writeOnFS);
-    }
-
-
-    /**
-     * @param mavenHome
-     * @param localRepository
-     */
-    public DefaultMavenCompiler(File mavenHome, File localRepository, Boolean writeOnFS) {
-        invoker = new DefaultInvoker();
-        invoker.setMavenHome(mavenHome);
-        invoker.setLocalRepositoryDirectory(localRepository);
-        invoker.setOutputHandler(new SystemOutHandler());
-        enabler = new DefaultIncrementalCompilerEnabler(Compilers.JAVAC, writeOnFS);
-    }
-
-
-    /**
-     * Run the maven in a specific directory outside the base directory of the processed POM.
-     *
-     * @param mavenHome
-     * @param localRepository
-     * @param workingDirectory
-     */
-    public DefaultMavenCompiler(File mavenHome, File localRepository, File workingDirectory, Boolean writeOnFS) {
-        invoker = new DefaultInvoker();
-        invoker.setMavenHome(mavenHome);
-        invoker.setLocalRepositoryDirectory(localRepository);
-        invoker.setWorkingDirectory(workingDirectory);
-        invoker.setOutputHandler(new SystemOutHandler());
-        enabler = new DefaultIncrementalCompilerEnabler(Compilers.JAVAC, writeOnFS);
-    }
-
-
-    public DefaultMavenCompiler(File mavenHome, File localRepository, File workingDirectory, InvocationOutputHandler ioHandler, Boolean writeOnFS) {
-        invoker = new DefaultInvoker();
-        invoker.setMavenHome(mavenHome);
-        invoker.setLocalRepositoryDirectory(localRepository);
-        invoker.setWorkingDirectory(workingDirectory);
-        invoker.setOutputHandler(ioHandler);
-        enabler = new DefaultIncrementalCompilerEnabler(Compilers.JAVAC, writeOnFS);
-    }
-
-    public DefaultMavenCompiler(File mavenHome, File localRepository, File workingDirectory, InvocationOutputHandler ioHandler, InputStream inputStream, Boolean writeOnFS) {
-        invoker = new DefaultInvoker();
-        invoker.setMavenHome(mavenHome);
-        invoker.setLocalRepositoryDirectory(localRepository);
-        invoker.setWorkingDirectory(workingDirectory);
-        invoker.setOutputHandler(ioHandler);
-        invoker.setInputStream(inputStream);
-        enabler = new DefaultIncrementalCompilerEnabler(Compilers.JAVAC, writeOnFS);
+    public DefaultMavenCompiler(Path mavenRepo) {
+        this.mavenRepo = mavenRepo;
+        cli = new KieMavenCli();
+        enabler = new DefaultIncrementalCompilerEnabler(Compilers.JAVAC);
     }
 
 
@@ -130,31 +61,12 @@ public class DefaultMavenCompiler implements MavenCompiler {
      * @param mavenRepo
      * @return
      */
-    public static Boolean isValidMavenRepo(File mavenRepo) {
-        return mavenRepo.exists() && mavenRepo.canWrite() && mavenRepo.canRead();
+    public static Boolean isValidMavenRepo(Path mavenRepo) {
+        if (mavenRepo.getParent() == null)
+            return Boolean.FALSE;// used because Path("") is considered for Files.exists...
+        return Files.exists(mavenRepo) && Files.isDirectory(mavenRepo) && Files.isWritable(mavenRepo) && Files.isReadable(mavenRepo);
     }
 
-
-    /**
-     * Perform a "mvn -v" to check if mavne works correctly
-     *
-     * @param mavenHome
-     * @return
-     */
-    public static Boolean isValidMavenHome(File mavenHome) {
-        DefaultInvocationRequest req = new DefaultInvocationRequest();
-        req.setGoals(Arrays.asList("-v"));
-        InvocationResult result;
-        try {
-            Invoker invoker = new DefaultInvoker();
-            invoker.setMavenHome(mavenHome);
-            result = invoker.execute(req);
-        } catch (MavenInvocationException e) {
-            logger.error(e.getMessage());
-            return Boolean.FALSE;
-        }
-        return result.getExitCode() == 0;
-    }
 
     /**
      * Perform a "mvn -v" call to check if the maven home is correct
@@ -163,52 +75,39 @@ public class DefaultMavenCompiler implements MavenCompiler {
      */
     @Override
     public Boolean isValid() {
-        return isValidMavenHome(invoker.getMavenHome()) && isValidMavenRepo(invoker.getLocalRepositoryDirectory());
-    }
-
-    @Override
-    public String getMavenHome() {
-        return invoker.getMavenHome().toString();
+        return isValidMavenRepo(this.mavenRepo);
     }
 
     @Override
     public String getLocalRepo() {
-        return invoker.getLocalRepositoryDirectory().toString();
+        return mavenRepo.toString();
     }
 
+
     @Override
-    public CompilationResponse compileSync(CompilationRequest request) {
+    public CompilationResponse compileSync(CompilationRequest req) {
         if (logger.isDebugEnabled()) {
-            logger.debug("CompilationRequest:{}", request);
+            logger.debug("KieCompilationRequest:{}", req);
         }
 
-        Boolean result = enabler.process(request);
+        Boolean result = enabler.process(req);
         if (!result) {
             return new DefaultCompilationResponse(Boolean.FALSE, Optional.of("Processing poms failed"));
         }
-
-        InvocationResult res;
+        req.getKieCliRequest().getRequest().setLocalRepositoryPath(mavenRepo.toAbsolutePath().toString());
+        int exitCode = cli.doMain(req.getKieCliRequest());
         try {
-            res = invoker.execute(request);
-            if (logger.isDebugEnabled()) {
-                logger.debug("Invocation Response:{}", res);
+            if (req.getPomFile() != null) {
+                Files.deleteIfExists(req.getPomFile());
             }
-        } catch (MavenInvocationException e) {
-            return new DefaultCompilationResponse(Boolean.FALSE, Optional.of(e.getMessage()));
-        } finally {
-            if (request.getPomFile() != null) {
-                Boolean deleted = request.getPomFile().delete();
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Deleted {} result:{}", request.getPomFile(), deleted);
-                }
-            }
+        } catch (IOException e) {
+            logger.error(e.getMessage());
         }
-        if (res.getExitCode() == 0) {
+        if (exitCode == 0) {
             return new DefaultCompilationResponse(Boolean.TRUE);
         } else {
             return new DefaultCompilationResponse(Boolean.FALSE);
         }
-
     }
 
 }

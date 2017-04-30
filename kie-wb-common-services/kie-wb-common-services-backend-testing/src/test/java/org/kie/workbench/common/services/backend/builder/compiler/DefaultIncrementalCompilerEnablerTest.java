@@ -16,45 +16,45 @@
 
 package org.kie.workbench.common.services.backend.builder.compiler;
 
-import org.apache.commons.io.FileUtils;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.Compilers;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.MavenGoals;
 import org.kie.workbench.common.services.backend.builder.compiler.impl.DefaultCompilationRequest;
 import org.kie.workbench.common.services.backend.builder.compiler.impl.DefaultIncrementalCompilerEnabler;
+import org.kie.workbench.common.services.backend.builder.compiler.impl.Finder;
+import org.kie.workbench.common.services.backend.builder.compiler.impl.KieCliRequest;
 
-import java.io.File;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
+import java.util.List;
 
 public class DefaultIncrementalCompilerEnablerTest {
 
-    private final File prj = new File("src/test/projects/dummy_multimodule");
-
-    private final File cleanPom = new File("src/test/projects/dummy_multimodule_untouched/pom.xml");
+    private final Path prj = Paths.get("src/test/projects/dummy_multimodule");
 
     @Test
     public void testReadPomsInaPrjTest() throws Exception {
         byte[] encoded = Files.readAllBytes(Paths.get("src/test/projects/dummy_multimodule/pom.xml"));
         String pomAsAstring = new String(encoded, StandardCharsets.UTF_8);
         Assert.assertFalse(pomAsAstring.contains("<artifactId>takari-lifecycle-plugin</artifactId>"));
-
-        CompilationRequest req = new DefaultCompilationRequest(prj, Boolean.TRUE, Arrays.asList(MavenGoals.COMPILE));
-        DefaultIncrementalCompilerEnabler enabler = new DefaultIncrementalCompilerEnabler(Compilers.JAVAC, Boolean.TRUE);
+        String[] args = {MavenGoals.COMPILE};
+        KieCliRequest kcr = new KieCliRequest(Paths.get("src/test/projects/dummy_multimodule/"), args);
+        CompilationRequest req = new DefaultCompilationRequest(kcr);
+        DefaultIncrementalCompilerEnabler enabler = new DefaultIncrementalCompilerEnabler(Compilers.JAVAC);
         Assert.assertTrue(enabler.process(req));
-        encoded = Files.readAllBytes(Paths.get("src/test/projects/dummy_multimodule/pom.xml"));
+
+        Finder finder = new Finder(".pom*.xml");
+        Files.walkFileTree(prj, finder);
+        List<Path> filesFound = finder.getFiles();
+        Assert.assertTrue(filesFound.size() == 1);
+
+        encoded = Files.readAllBytes(Paths.get(prj.toString(), filesFound.get(0).toString()));
         pomAsAstring = new String(encoded, StandardCharsets.UTF_8);
         Assert.assertTrue(pomAsAstring.contains("<artifactId>takari-lifecycle-plugin</artifactId>"));
-    }
 
-
-    @After
-    public void restoreOriginalPom() throws IOException {
-        FileUtils.copyFile(cleanPom, new File("src/test/projects/dummy_multimodule/pom.xml"));
+        Assert.assertTrue(Files.deleteIfExists(Paths.get(prj.toString(), filesFound.get(0).toString())));
     }
 }

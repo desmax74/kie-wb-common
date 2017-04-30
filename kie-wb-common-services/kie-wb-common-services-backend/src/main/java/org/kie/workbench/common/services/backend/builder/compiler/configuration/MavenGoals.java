@@ -36,4 +36,6 @@ public class MavenGoals {
 
     public static final String DEPLOY = "deploy";
 
+    public static final String VERSION = "-v";
+
 }

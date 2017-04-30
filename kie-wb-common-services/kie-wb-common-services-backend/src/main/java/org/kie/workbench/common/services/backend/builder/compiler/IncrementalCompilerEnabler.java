@@ -19,4 +19,5 @@ package org.kie.workbench.common.services.backend.builder.compiler;
 public interface IncrementalCompilerEnabler {
 
     Boolean process(CompilationRequest req);
+
 }
