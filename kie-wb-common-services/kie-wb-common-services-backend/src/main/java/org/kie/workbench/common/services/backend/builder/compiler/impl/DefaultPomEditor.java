@@ -24,10 +24,10 @@ import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.kie.workbench.common.services.backend.builder.compiler.CompilationRequest;
-import org.kie.workbench.common.services.backend.builder.compiler.ConfigurationStrategy;
 import org.kie.workbench.common.services.backend.builder.compiler.PomEditor;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.Compilers;
-import org.kie.workbench.common.services.backend.builder.compiler.configuration.ConfigurationKeys;
+import org.kie.workbench.common.services.backend.builder.compiler.configuration.ConfigurationKey;
+import org.kie.workbench.common.services.backend.builder.compiler.configuration.ConfigurationProvider;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.MavenGoals;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,12 +47,12 @@ public class DefaultPomEditor implements PomEditor {
     public final String POM = "pom";
     public final String TRUE = "true";
     private Compilers compiler;
-    private Map<ConfigurationKeys, String> conf;
+    private Map<ConfigurationKey, String> conf;
     private MavenXpp3Reader reader;
     private MavenXpp3Writer writer;
     private Set<PomPlaceHolder> history;
 
-    public DefaultPomEditor(Set<PomPlaceHolder> history, ConfigurationStrategy config, Compilers compiler) {
+    public DefaultPomEditor(Set<PomPlaceHolder> history, ConfigurationProvider config, Compilers compiler) {
         conf = config.loadConfiguration();
         reader = new MavenXpp3Reader();
         writer = new MavenXpp3Writer();
@@ -133,13 +133,13 @@ public class DefaultPomEditor implements PomEditor {
         Boolean alternativeCompilerPluginPresent = Boolean.FALSE;
         List<Plugin> buildPlugins = build.getPlugins();
         for (Plugin plugin : buildPlugins) {
-            if (plugin.getGroupId().equals(conf.get(ConfigurationKeys.MAVEN_PLUGINS)) &&
-                    plugin.getArtifactId().equals(conf.get(ConfigurationKeys.MAVEN_COMPILER_PLUGIN))) {
+            if (plugin.getGroupId().equals(conf.get(ConfigurationKey.MAVEN_PLUGINS)) &&
+                    plugin.getArtifactId().equals(conf.get(ConfigurationKey.MAVEN_COMPILER_PLUGIN))) {
 
                 disableMavenCompilerAlreadyPresent(plugin); // disable the maven compiler if present
             }
-            if (plugin.getGroupId().equals(conf.get(ConfigurationKeys.ALTERNATIVE_COMPILER_PLUGINS)) &&
-                    plugin.getArtifactId().equals(conf.get(ConfigurationKeys.ALTERNATIVE_COMPILER_PLUGIN))) {
+            if (plugin.getGroupId().equals(conf.get(ConfigurationKey.ALTERNATIVE_COMPILER_PLUGINS)) &&
+                    plugin.getArtifactId().equals(conf.get(ConfigurationKey.ALTERNATIVE_COMPILER_PLUGIN))) {
                 alternativeCompilerPluginPresent = Boolean.TRUE;
                 break; // alternative compiler plugin is present skip the pom
             }
@@ -153,18 +153,18 @@ public class DefaultPomEditor implements PomEditor {
     private Plugin getNewCompilerPlugin() {
 
         Plugin newCompilerPlugin = new Plugin();
-        newCompilerPlugin.setGroupId(conf.get(ConfigurationKeys.ALTERNATIVE_COMPILER_PLUGINS));
-        newCompilerPlugin.setArtifactId(conf.get(ConfigurationKeys.ALTERNATIVE_COMPILER_PLUGIN));
-        newCompilerPlugin.setVersion(conf.get(ConfigurationKeys.ALTERNATIVE_COMPILER_PLUGIN_VERSION));
+        newCompilerPlugin.setGroupId(conf.get(ConfigurationKey.ALTERNATIVE_COMPILER_PLUGINS));
+        newCompilerPlugin.setArtifactId(conf.get(ConfigurationKey.ALTERNATIVE_COMPILER_PLUGIN));
+        newCompilerPlugin.setVersion(conf.get(ConfigurationKey.ALTERNATIVE_COMPILER_PLUGIN_VERSION));
 
         PluginExecution execution = new PluginExecution();
         execution.setId(MavenGoals.COMPILE);
         execution.setGoals(Arrays.asList(MavenGoals.COMPILE));
         execution.setPhase(MavenGoals.COMPILE);
 
-        Xpp3Dom compilerId = new Xpp3Dom(conf.get(ConfigurationKeys.MAVEN_COMPILER_ID));
+        Xpp3Dom compilerId = new Xpp3Dom(conf.get(ConfigurationKey.MAVEN_COMPILER_ID));
         compilerId.setValue(compiler.name().toLowerCase());
-        Xpp3Dom configuration = new Xpp3Dom(conf.get(ConfigurationKeys.MAVEN_PLUGIN_CONFIGURATION));
+        Xpp3Dom configuration = new Xpp3Dom(conf.get(ConfigurationKey.MAVEN_PLUGIN_CONFIGURATION));
         configuration.addChild(compilerId);
 
         execution.setConfiguration(configuration);
@@ -174,12 +174,12 @@ public class DefaultPomEditor implements PomEditor {
     }
 
     private void disableMavenCompilerAlreadyPresent(Plugin plugin) {
-        Xpp3Dom skipMain = new Xpp3Dom(conf.get(ConfigurationKeys.MAVEN_SKIP_MAIN));
+        Xpp3Dom skipMain = new Xpp3Dom(conf.get(ConfigurationKey.MAVEN_SKIP_MAIN));
         skipMain.setValue(TRUE);
-        Xpp3Dom skip = new Xpp3Dom(conf.get(ConfigurationKeys.MAVEN_SKIP));
+        Xpp3Dom skip = new Xpp3Dom(conf.get(ConfigurationKey.MAVEN_SKIP));
         skip.setValue(TRUE);
 
-        Xpp3Dom configuration = new Xpp3Dom(conf.get(ConfigurationKeys.MAVEN_PLUGIN_CONFIGURATION));
+        Xpp3Dom configuration = new Xpp3Dom(conf.get(ConfigurationKey.MAVEN_PLUGIN_CONFIGURATION));
         configuration.addChild(skipMain);
         configuration.addChild(skip);
 

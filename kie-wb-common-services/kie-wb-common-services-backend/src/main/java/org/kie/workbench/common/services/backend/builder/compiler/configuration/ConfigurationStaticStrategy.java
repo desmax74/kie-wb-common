@@ -16,7 +16,7 @@
 
 package org.kie.workbench.common.services.backend.builder.compiler.configuration;
 
-import org.kie.workbench.common.services.backend.builder.compiler.ConfigurationStrategy;
+import org.kie.workbench.common.services.backend.builder.compiler.Order;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,37 +24,42 @@ import java.util.Map;
 /**
  * Default implementation, this class can be extended to change the protected configuration Map
  */
-public class ConfigurationStaticStrategy implements ConfigurationStrategy {
+public class ConfigurationStaticStrategy implements ConfigurationStrategy, Order {
 
-    protected Map<ConfigurationKeys, String> conf;
+    protected Map<ConfigurationKey, String> conf;
 
     private Boolean valid = Boolean.FALSE;
 
     public ConfigurationStaticStrategy() {
         conf = new HashMap<>();
 
-        conf.put(ConfigurationKeys.MAVEN_PLUGIN_CONFIGURATION, "configuration");
-        conf.put(ConfigurationKeys.MAVEN_COMPILER_ID, "compilerId");
-        conf.put(ConfigurationKeys.MAVEN_SKIP, "skip");
-        conf.put(ConfigurationKeys.MAVEN_SKIP_MAIN, "skipMain");
+        conf.put(ConfigurationKey.MAVEN_PLUGIN_CONFIGURATION, "configuration");
+        conf.put(ConfigurationKey.MAVEN_COMPILER_ID, "compilerId");
+        conf.put(ConfigurationKey.MAVEN_SKIP, "skip");
+        conf.put(ConfigurationKey.MAVEN_SKIP_MAIN, "skipMain");
 
-        conf.put(ConfigurationKeys.MAVEN_PLUGINS, "org.apache.maven.plugins");
-        conf.put(ConfigurationKeys.MAVEN_COMPILER_PLUGIN, "maven-compiler-plugin");
-        conf.put(ConfigurationKeys.MAVEN_COMPILER_PLUGIN_VERSION, "3.6.1");
+        conf.put(ConfigurationKey.MAVEN_PLUGINS, "org.apache.maven.plugins");
+        conf.put(ConfigurationKey.MAVEN_COMPILER_PLUGIN, "maven-compiler-plugin");
+        conf.put(ConfigurationKey.MAVEN_COMPILER_PLUGIN_VERSION, "3.6.1");
 
-        conf.put(ConfigurationKeys.ALTERNATIVE_COMPILER_PLUGINS, "io.takari.maven.plugins");
-        conf.put(ConfigurationKeys.ALTERNATIVE_COMPILER_PLUGIN, "takari-lifecycle-plugin");
-        conf.put(ConfigurationKeys.ALTERNATIVE_COMPILER_PLUGIN_VERSION, "1.12.4");
+        conf.put(ConfigurationKey.ALTERNATIVE_COMPILER_PLUGINS, "io.takari.maven.plugins");
+        conf.put(ConfigurationKey.ALTERNATIVE_COMPILER_PLUGIN, "takari-lifecycle-plugin");
+        conf.put(ConfigurationKey.ALTERNATIVE_COMPILER_PLUGIN_VERSION, "1.12.4");
         valid = Boolean.TRUE;
     }
 
     @Override
-    public Map<ConfigurationKeys, String> loadConfiguration() {
+    public Map<ConfigurationKey, String> loadConfiguration() {
         return conf;
     }
 
     @Override
     public Boolean isValid() {
         return valid;
+    }
+
+    @Override
+    public Integer getOrder() {
+        return Integer.valueOf(1000);
     }
 }

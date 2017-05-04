@@ -27,6 +27,9 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.Properties;
 
+/**
+ * Used to open the API of the maven embedder
+ */
 public class KieCLIReportingUtils {
 
     // CHECKSTYLE_OFF: MagicNumber

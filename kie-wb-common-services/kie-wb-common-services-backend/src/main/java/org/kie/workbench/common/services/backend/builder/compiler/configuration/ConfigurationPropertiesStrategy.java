@@ -16,7 +16,7 @@
 
 package org.kie.workbench.common.services.backend.builder.compiler.configuration;
 
-import org.kie.workbench.common.services.backend.builder.compiler.ConfigurationStrategy;
+import org.kie.workbench.common.services.backend.builder.compiler.Order;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,11 +26,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-public class ConfigurationPropertiesStrategy implements ConfigurationStrategy {
+public class ConfigurationPropertiesStrategy implements ConfigurationStrategy, Order {
 
     private static final Logger logger = LoggerFactory.getLogger(ConfigurationPropertiesStrategy.class);
 
-    protected Map<ConfigurationKeys, String> conf;
+    protected Map<ConfigurationKey, String> conf;
 
     private String propertiesFile = "IncrementalCompiler.properties";
 
@@ -41,18 +41,18 @@ public class ConfigurationPropertiesStrategy implements ConfigurationStrategy {
         Properties props = loadProperties();
         if (isValid()) {
             conf = new HashMap<>();
-            conf.put(ConfigurationKeys.MAVEN_PLUGIN_CONFIGURATION, props.getProperty(ConfigurationKeys.MAVEN_PLUGIN_CONFIGURATION.name()));
-            conf.put(ConfigurationKeys.MAVEN_COMPILER_ID, props.getProperty(ConfigurationKeys.MAVEN_COMPILER_ID.name()));
-            conf.put(ConfigurationKeys.MAVEN_SKIP, props.getProperty(ConfigurationKeys.MAVEN_SKIP.name()));
-            conf.put(ConfigurationKeys.MAVEN_SKIP_MAIN, props.getProperty(ConfigurationKeys.MAVEN_SKIP_MAIN.name()));
+            conf.put(ConfigurationKey.MAVEN_PLUGIN_CONFIGURATION, props.getProperty(ConfigurationKey.MAVEN_PLUGIN_CONFIGURATION.name()));
+            conf.put(ConfigurationKey.MAVEN_COMPILER_ID, props.getProperty(ConfigurationKey.MAVEN_COMPILER_ID.name()));
+            conf.put(ConfigurationKey.MAVEN_SKIP, props.getProperty(ConfigurationKey.MAVEN_SKIP.name()));
+            conf.put(ConfigurationKey.MAVEN_SKIP_MAIN, props.getProperty(ConfigurationKey.MAVEN_SKIP_MAIN.name()));
 
-            conf.put(ConfigurationKeys.MAVEN_PLUGINS, props.getProperty(ConfigurationKeys.MAVEN_PLUGINS.name()));
-            conf.put(ConfigurationKeys.MAVEN_COMPILER_PLUGIN, props.getProperty(ConfigurationKeys.MAVEN_COMPILER_PLUGIN.name()));
-            conf.put(ConfigurationKeys.MAVEN_COMPILER_PLUGIN_VERSION, props.getProperty(ConfigurationKeys.MAVEN_COMPILER_PLUGIN_VERSION.name()));
+            conf.put(ConfigurationKey.MAVEN_PLUGINS, props.getProperty(ConfigurationKey.MAVEN_PLUGINS.name()));
+            conf.put(ConfigurationKey.MAVEN_COMPILER_PLUGIN, props.getProperty(ConfigurationKey.MAVEN_COMPILER_PLUGIN.name()));
+            conf.put(ConfigurationKey.MAVEN_COMPILER_PLUGIN_VERSION, props.getProperty(ConfigurationKey.MAVEN_COMPILER_PLUGIN_VERSION.name()));
 
-            conf.put(ConfigurationKeys.ALTERNATIVE_COMPILER_PLUGINS, props.getProperty(ConfigurationKeys.ALTERNATIVE_COMPILER_PLUGINS.name()));
-            conf.put(ConfigurationKeys.ALTERNATIVE_COMPILER_PLUGIN, props.getProperty(ConfigurationKeys.ALTERNATIVE_COMPILER_PLUGIN.name()));
-            conf.put(ConfigurationKeys.ALTERNATIVE_COMPILER_PLUGIN_VERSION, props.getProperty(ConfigurationKeys.ALTERNATIVE_COMPILER_PLUGIN_VERSION.name()));
+            conf.put(ConfigurationKey.ALTERNATIVE_COMPILER_PLUGINS, props.getProperty(ConfigurationKey.ALTERNATIVE_COMPILER_PLUGINS.name()));
+            conf.put(ConfigurationKey.ALTERNATIVE_COMPILER_PLUGIN, props.getProperty(ConfigurationKey.ALTERNATIVE_COMPILER_PLUGIN.name()));
+            conf.put(ConfigurationKey.ALTERNATIVE_COMPILER_PLUGIN_VERSION, props.getProperty(ConfigurationKey.ALTERNATIVE_COMPILER_PLUGIN_VERSION.name()));
         }
     }
 
@@ -75,12 +75,17 @@ public class ConfigurationPropertiesStrategy implements ConfigurationStrategy {
     }
 
     @Override
-    public Map<ConfigurationKeys, String> loadConfiguration() {
+    public Map<ConfigurationKey, String> loadConfiguration() {
         return conf;
     }
 
     @Override
     public Boolean isValid() {
         return valid;
+    }
+
+    @Override
+    public Integer getOrder() {
+        return Integer.valueOf(100);
     }
 }

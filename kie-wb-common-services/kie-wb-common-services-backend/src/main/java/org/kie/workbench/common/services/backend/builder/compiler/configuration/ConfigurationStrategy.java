@@ -14,13 +14,19 @@
  * limitations under the License.
  */
 
-package org.kie.workbench.common.services.backend.builder.compiler;
+package org.kie.workbench.common.services.backend.builder.compiler.configuration;
+
+import org.kie.workbench.common.services.backend.builder.compiler.Valid;
+import org.kie.workbench.common.services.backend.builder.compiler.Order;
+
+import java.util.Map;
 
 /**
- * Process the pom files before the compilation
+ * Define the behaviour of a ConfigurationStrategy,
+ * load the configuration and check if it's valid
  */
-public interface IncrementalCompilerEnabler {
+public interface ConfigurationStrategy extends Valid, Order {
 
-    Boolean process(CompilationRequest req);
+    Map<ConfigurationKey, String> loadConfiguration();
 
 }

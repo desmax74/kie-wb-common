@@ -39,6 +39,9 @@ import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.List;
 
+/**
+ * Used to open the API of the maven embedder
+ */
 @Component(role = ConfigurationProcessor.class, hint = KieConfigurationProcessor.HINT)
 public class KieConfigurationProcessor {
 

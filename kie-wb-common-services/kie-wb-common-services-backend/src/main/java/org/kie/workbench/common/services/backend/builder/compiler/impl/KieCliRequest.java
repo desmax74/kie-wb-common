@@ -24,6 +24,9 @@ import org.codehaus.plexus.classworlds.ClassWorld;
 import java.nio.file.Path;
 import java.util.Properties;
 
+/**
+ * Used to open the API of Maven embedder
+ */
 public class KieCliRequest {
 
     private String[] args;

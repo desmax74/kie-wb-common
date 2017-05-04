@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 
-package org.kie.workbench.common.services.backend.builder.compiler;
+package org.kie.workbench.common.services.backend.builder.compiler.configuration;
 
-import org.kie.workbench.common.services.backend.builder.compiler.configuration.ConfigurationKeys;
 
 import java.util.Map;
 
-public interface ConfigurationStrategy extends HealthCheck {
+public interface ConfigurationProvider {
 
-    Map<ConfigurationKeys, String> loadConfiguration();
-
+    Map<ConfigurationKey, String> loadConfiguration();
 }

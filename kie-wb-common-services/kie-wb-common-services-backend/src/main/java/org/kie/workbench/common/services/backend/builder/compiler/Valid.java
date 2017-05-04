@@ -16,10 +16,7 @@
 
 package org.kie.workbench.common.services.backend.builder.compiler;
 
-/**
- * Used to valide current status
- */
-public interface HealthCheck {
+public interface Valid {
 
     Boolean isValid();
 }

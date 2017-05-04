@@ -28,7 +28,7 @@ import java.nio.file.Path;
 import java.util.Optional;
 
 /**
- * Run maven with https://maven.apache.org/shared/maven-invoker/
+ * Run maven with https://maven.apache.org/ref/3.5.0/maven-embedder/xref/index.html
  * to use Takari plugins like a black box
  * <p>
  * <p>

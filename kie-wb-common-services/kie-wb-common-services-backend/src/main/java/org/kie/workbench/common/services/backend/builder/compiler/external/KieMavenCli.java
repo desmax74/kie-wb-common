@@ -83,6 +83,7 @@ import java.util.Map.Entry;
  * Modified from Maven to permit builds without installations and var envs.
  */
 public class KieMavenCli {
+
     public static final String MULTIMODULE_PROJECT_DIRECTORY = "maven.multiModuleProjectDirectory";
     public static final String userHome = System.getProperty("user.home");
     public static final Path userMavenConfigurationHome = Paths.get(userHome, ".m2");
@@ -172,7 +173,7 @@ public class KieMavenCli {
         systemProperties.setProperty("maven.build.version", mavenBuildVersion);
     }
 
-    private static void setCliProperty(String property, Properties properties) {
+    protected static void setCliProperty(String property, Properties properties) {
         String name;
 
         String value;
@@ -190,12 +191,6 @@ public class KieMavenCli {
         }
 
         properties.setProperty(name, value);
-
-        // ----------------------------------------------------------------------
-        // I'm leaving the setting of system properties here as not to break
-        // the SystemPropertyProfileActivator. This won't harm embedding. jvz.
-        // ----------------------------------------------------------------------
-
         System.setProperty(name, value);
     }
 
@@ -232,7 +227,7 @@ public class KieMavenCli {
         }
     }
 
-    void initialize(KieCliRequest cliRequest)
+    protected void initialize(KieCliRequest cliRequest)
             throws ExitException {
         if (cliRequest.getWorkingDirectory() == null) {
             cliRequest.setWorkingDirectory(System.getProperty("user.dir"));
@@ -251,7 +246,7 @@ public class KieMavenCli {
 
     }
 
-    void cli(KieCliRequest cliRequest)
+    protected void cli(KieCliRequest cliRequest)
             throws Exception {
         //
         // Parsing errors can happen during the processing of the arguments and we prefer not having to check if
@@ -303,7 +298,7 @@ public class KieMavenCli {
         }
     }
 
-    private void logging(KieCliRequest cliRequest) {
+    protected void logging(KieCliRequest cliRequest) {
         cliRequest.setDebug(cliRequest.getCommandLine().hasOption(CLIManager.DEBUG));
         cliRequest.setQuiet(!cliRequest.isDebug() && cliRequest.getCommandLine().hasOption(CLIManager.QUIET));
         cliRequest.setShowErrors(cliRequest.isDebug() || cliRequest.getCommandLine().hasOption(CLIManager.ERRORS));
@@ -338,13 +333,13 @@ public class KieMavenCli {
         slf4jLogger = slf4jLoggerFactory.getLogger(this.getClass().getName());
     }
 
-    private void version(KieCliRequest cliRequest) {
+    protected void version(KieCliRequest cliRequest) {
         if (cliRequest.isDebug() || cliRequest.getCommandLine().hasOption(CLIManager.SHOW_VERSION)) {
             System.out.println(KieCLIReportingUtils.showVersion());
         }
     }
 
-    private void commands(KieCliRequest cliRequest) {
+    protected void commands(KieCliRequest cliRequest) {
         if (cliRequest.isShowErrors()) {
             slf4jLogger.info("Error stacktraces are turned on.");
         }
@@ -356,11 +351,11 @@ public class KieMavenCli {
         }
     }
 
-    private void properties(KieCliRequest cliRequest) {
+    protected void properties(KieCliRequest cliRequest) {
         populateProperties(cliRequest.getCommandLine(), cliRequest.getSystemProperties(), cliRequest.getUserProperties());
     }
 
-    private PlexusContainer container(KieCliRequest cliRequest)
+    protected PlexusContainer container(KieCliRequest cliRequest)
             throws Exception {
         if (cliRequest.getClassWorld() == null) {
             cliRequest.setClassWorld(new ClassWorld("plexus.core", Thread.currentThread().getContextClassLoader()));
@@ -447,8 +442,8 @@ public class KieMavenCli {
         return container;
     }
 
-    private List<CoreExtensionEntry> loadCoreExtensions(KieCliRequest cliRequest, ClassRealm containerRealm,
-                                                        Set<String> providedArtifacts) {
+    protected List<CoreExtensionEntry> loadCoreExtensions(KieCliRequest cliRequest, ClassRealm containerRealm,
+                                                          Set<String> providedArtifacts) {
         if (cliRequest.getMultiModuleProjectDirectory() == null) {
             return Collections.emptyList();
         }
@@ -515,7 +510,7 @@ public class KieMavenCli {
         return Collections.emptyList();
     }
 
-    private List<CoreExtension> readCoreExtensionsDescriptor(Path extensionsFile)
+    protected List<CoreExtension> readCoreExtensionsDescriptor(Path extensionsFile)
             throws IOException, XmlPullParserException {
         CoreExtensionsXpp3Reader parser = new CoreExtensionsXpp3Reader();
         InputStream is = null;
@@ -527,8 +522,8 @@ public class KieMavenCli {
         }
     }
 
-    private ClassRealm setupContainerRealm(ClassWorld classWorld, ClassRealm coreRealm, List<File> extClassPath,
-                                           List<CoreExtensionEntry> extensions)
+    protected ClassRealm setupContainerRealm(ClassWorld classWorld, ClassRealm coreRealm, List<File> extClassPath,
+                                             List<CoreExtensionEntry> extensions)
             throws Exception {
         if (!extClassPath.isEmpty() || !extensions.isEmpty()) {
             ClassRealm extRealm = classWorld.newRealm("maven.ext", null);
@@ -561,7 +556,7 @@ public class KieMavenCli {
         return coreRealm;
     }
 
-    private List<File> parseExtClasspath(KieCliRequest cliRequest) {
+    protected List<File> parseExtClasspath(KieCliRequest cliRequest) {
         String extClassPath = cliRequest.getUserProperties().getProperty(EXT_CLASS_PATH);
         if (extClassPath == null) {
             extClassPath = cliRequest.getSystemProperties().getProperty(EXT_CLASS_PATH);
@@ -582,7 +577,7 @@ public class KieMavenCli {
         return jars;
     }
 
-    private void repository(KieCliRequest cliRequest)
+    protected void repository(KieCliRequest cliRequest)
             throws Exception {
         if (cliRequest.getCommandLine().hasOption(CLIManager.LEGACY_LOCAL_REPOSITORY)
                 || Boolean.getBoolean("maven.legacyLocalRepo")) {
@@ -590,7 +585,7 @@ public class KieMavenCli {
         }
     }
 
-    private int execute(KieCliRequest cliRequest) throws MavenExecutionRequestPopulationException {
+    protected int execute(KieCliRequest cliRequest) throws MavenExecutionRequestPopulationException {
         MavenExecutionRequest request = executionRequestPopulator.populateDefaults(cliRequest.getRequest());
 
         eventSpyDispatcher.onEvent(request);
@@ -655,8 +650,8 @@ public class KieMavenCli {
         }
     }
 
-    private void logSummary(ExceptionSummary summary, Map<String, String> references, String indent,
-                            boolean showErrors) {
+    protected void logSummary(ExceptionSummary summary, Map<String, String> references, String indent,
+                              boolean showErrors) {
         String referenceKey = "";
 
         if (StringUtils.isNotEmpty(summary.getReference())) {
@@ -697,7 +692,7 @@ public class KieMavenCli {
         }
     }
 
-    private void configure(KieCliRequest cliRequest)
+    protected void configure(KieCliRequest cliRequest)
             throws Exception {
 
         cliRequest.getRequest().setEventSpyDispatcher(eventSpyDispatcher);
@@ -733,7 +728,7 @@ public class KieMavenCli {
     }
 
     @SuppressWarnings("checkstyle:methodlength")
-    private void toolchains(KieCliRequest cliRequest)
+    protected void toolchains(KieCliRequest cliRequest)
             throws Exception {
         Path userToolchainsFile;
 
@@ -800,14 +795,14 @@ public class KieMavenCli {
         }
     }
 
-    private Object getLocation(Source source, Path defaultLocation) {
+    protected Object getLocation(Source source, Path defaultLocation) {
         if (source != null) {
             return source.getLocation();
         }
         return defaultLocation.toString();
     }
 
-    private MavenExecutionRequest populateRequest(KieCliRequest cliRequest) {
+    protected MavenExecutionRequest populateRequest(KieCliRequest cliRequest) {
         return populateRequest(cliRequest, cliRequest.getRequest());
     }
 
@@ -815,7 +810,7 @@ public class KieMavenCli {
     // System properties handling
     // ----------------------------------------------------------------------
 
-    private MavenExecutionRequest populateRequest(KieCliRequest cliRequest, MavenExecutionRequest request) {
+    protected MavenExecutionRequest populateRequest(KieCliRequest cliRequest, MavenExecutionRequest request) {
         CommandLine commandLine = cliRequest.getCommandLine();
         String workingDirectory = cliRequest.getWorkingDirectory();
         boolean quiet = cliRequest.isQuiet();
@@ -1066,7 +1061,7 @@ public class KieMavenCli {
         return request;
     }
 
-    int calculateDegreeOfConcurrencyWithCoreMultiplier(String threadConfiguration) {
+    protected int calculateDegreeOfConcurrencyWithCoreMultiplier(String threadConfiguration) {
         int procs = Runtime.getRuntime().availableProcessors();
         return (int) (Float.valueOf(threadConfiguration.replace("C", "")) * procs);
     }

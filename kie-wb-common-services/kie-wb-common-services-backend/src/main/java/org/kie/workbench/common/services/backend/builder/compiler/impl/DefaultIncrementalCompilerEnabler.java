@@ -18,7 +18,7 @@ package org.kie.workbench.common.services.backend.builder.compiler.impl;
 import org.kie.workbench.common.services.backend.builder.compiler.CompilationRequest;
 import org.kie.workbench.common.services.backend.builder.compiler.IncrementalCompilerEnabler;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.Compilers;
-import org.kie.workbench.common.services.backend.builder.compiler.configuration.ConfigurationContextStrategy;
+import org.kie.workbench.common.services.backend.builder.compiler.configuration.ConfigurationContextProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,7 +38,7 @@ public class DefaultIncrementalCompilerEnabler implements IncrementalCompilerEna
     private DefaultPomEditor editor;
 
     public DefaultIncrementalCompilerEnabler(Compilers compiler) {
-        editor = new DefaultPomEditor(new HashSet<PomPlaceHolder>(), new ConfigurationContextStrategy(), compiler);
+        editor = new DefaultPomEditor(new HashSet<PomPlaceHolder>(), new ConfigurationContextProvider(), compiler);
     }
 
     @Override

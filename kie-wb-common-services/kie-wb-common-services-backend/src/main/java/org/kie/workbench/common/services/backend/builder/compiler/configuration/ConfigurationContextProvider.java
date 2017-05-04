@@ -15,12 +15,10 @@
  */
 package org.kie.workbench.common.services.backend.builder.compiler.configuration;
 
-import org.kie.workbench.common.services.backend.builder.compiler.ConfigurationStrategy;
-
-import java.util.Map;
+import java.util.*;
 
 /**
- * THis implementation first try to load properties files called IncrementalCompiler.properties like the following example
+ * THis implementation first try to from environment variables then load properties with a files called IncrementalCompiler.properties then an hard coded configuration like the following example
  * <p>
  * MAVEN_PLUGIN_CONFIGURATION =configuration
  * MAVEN_COMPILER_ID =compilerId
@@ -35,46 +33,29 @@ import java.util.Map;
  * ALTERNATIVE_COMPILER_PLUGIN =takari-lifecycle-plugin
  * ALTERNATIVE_COMPILER_PLUGIN_VERSION =1.12.4
  * <p>
- * If the fiel is not present try to check the Env variables with the same keys
- * <p>
- * it the keys aren't present the  ConfigurationStaticStrategy is used
  */
-public class ConfigurationContextStrategy implements ConfigurationStrategy {
+public class ConfigurationContextProvider implements ConfigurationProvider {
 
-    private Map<ConfigurationKeys, String> conf;
-    private Boolean valid = Boolean.FALSE;
+    private Map<ConfigurationKey, String> conf;
 
-    public ConfigurationContextStrategy() {
+    public ConfigurationContextProvider() {
         getAWorkingConfig();
-
     }
 
     private void getAWorkingConfig() {
-        ConfigurationStrategy properties = new ConfigurationPropertiesStrategy();
-
-        if (properties.isValid()) {
-            loadAndValidate(properties);
-
-        } else {
-            properties = new ConfigurationStaticStrategy();
-            if (properties.isValid()) {
-                loadAndValidate(properties);
+        List<ConfigurationStrategy> confs = new ArrayList<ConfigurationStrategy>(Arrays.asList(new ConfigurationEnvironmentStrategy(), new ConfigurationPropertiesStrategy(), new ConfigurationStaticStrategy()));
+        Collections.sort(confs, (ConfigurationStrategy one, ConfigurationStrategy two) -> one.getOrder().compareTo(two.getOrder()));
+        for (ConfigurationStrategy item : confs) {
+            if (item.isValid()) {
+                conf = item.loadConfiguration();
+                break;
             }
         }
     }
 
-    private void loadAndValidate(ConfigurationStrategy properties) {
-        conf = properties.loadConfiguration();
-        valid = Boolean.TRUE;
-    }
-
     @Override
-    public Map<ConfigurationKeys, String> loadConfiguration() {
+    public Map<ConfigurationKey, String> loadConfiguration() {
         return conf;
     }
 
-    @Override
-    public Boolean isValid() {
-        return valid;
-    }
 }

@@ -19,20 +19,12 @@ package org.kie.workbench.common.services.backend.builder.compiler;
 /**
  * Created by Massimiliano Dessi @desmax74 on 18/04/17.
  */
-public interface MavenCompiler extends HealthCheck {
+public interface MavenCompiler extends Valid {
 
     /**
      * Compile a project starting from the main POM in a sync way
      */
     CompilationResponse compileSync(CompilationRequest req);
-
-    //CompilationResponse compileSync(KieCliRequest req);
-
-
-    /**
-     * Maven home used by this compiler
-     */
-    //String getMavenHome();
 
     /**
      * The local repo used by this compiler
