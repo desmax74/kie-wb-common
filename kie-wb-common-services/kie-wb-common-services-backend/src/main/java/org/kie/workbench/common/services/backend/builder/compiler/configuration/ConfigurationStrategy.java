@@ -16,8 +16,8 @@
 
 package org.kie.workbench.common.services.backend.builder.compiler.configuration;
 
-import org.kie.workbench.common.services.backend.builder.compiler.Valid;
 import org.kie.workbench.common.services.backend.builder.compiler.Order;
+import org.kie.workbench.common.services.backend.builder.compiler.Valid;
 
 import java.util.Map;
 

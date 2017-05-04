@@ -23,11 +23,11 @@ import java.util.Map;
 
 public class ConfigurationEnvironmentStrategy implements ConfigurationStrategy, Order {
 
-    public ConfigurationEnvironmentStrategy(){
+    private Boolean isvalid = Boolean.FALSE;
+
+    public ConfigurationEnvironmentStrategy() {
         //TODO impl
     }
-
-    private Boolean isvalid = Boolean.FALSE;
 
     @Override
     public Integer getOrder() {
