@@ -13,29 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.kie.workbench.common.services.backend.builder.compiler.configuration;
 
-/**
- * Maven goals
- */
-public class MavenGoals {
+package org.kie.workbench.common.services.backend.builder.compiler;
 
-    public static final String CLEAN = "clean";
+public abstract class CompilerDecorator implements MavenCompiler {
 
-    public static final String COMPILE = "compile";
+    @Override
+    public Boolean isValid() {
+        return isValid();
+    }
 
-    public static final String VALIDATE = "validate";
-
-    public static final String TEST = "test";
-
-    public static final String PACKAGE = "package";
-
-    public static final String VERIFY = "verify";
-
-    public static final String INSTALL = "install";
-
-    public static final String DEPLOY = "deploy";
-
-    public static final String VERSION = "-v";
+    @Override
+    public String getLocalRepo() {
+        return getLocalRepo();
+    }
 
 }

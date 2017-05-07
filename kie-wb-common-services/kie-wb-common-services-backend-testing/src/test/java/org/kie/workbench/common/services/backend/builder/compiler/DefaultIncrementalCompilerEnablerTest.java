@@ -19,7 +19,7 @@ package org.kie.workbench.common.services.backend.builder.compiler;
 import org.junit.Assert;
 import org.junit.Test;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.Compilers;
-import org.kie.workbench.common.services.backend.builder.compiler.configuration.MavenGoals;
+import org.kie.workbench.common.services.backend.builder.compiler.configuration.MavenArgs;
 import org.kie.workbench.common.services.backend.builder.compiler.impl.DefaultCompilationRequest;
 import org.kie.workbench.common.services.backend.builder.compiler.impl.DefaultIncrementalCompilerEnabler;
 import org.kie.workbench.common.services.backend.builder.compiler.impl.Finder;
@@ -40,7 +40,7 @@ public class DefaultIncrementalCompilerEnablerTest {
         byte[] encoded = Files.readAllBytes(Paths.get("src/test/projects/dummy_multimodule/pom.xml"));
         String pomAsAstring = new String(encoded, StandardCharsets.UTF_8);
         Assert.assertFalse(pomAsAstring.contains("<artifactId>takari-lifecycle-plugin</artifactId>"));
-        String[] args = {MavenGoals.COMPILE};
+        String[] args = {MavenArgs.COMPILE};
         KieCliRequest kcr = new KieCliRequest(Paths.get("src/test/projects/dummy_multimodule/"), args);
         CompilationRequest req = new DefaultCompilationRequest(kcr);
         DefaultIncrementalCompilerEnabler enabler = new DefaultIncrementalCompilerEnabler(Compilers.JAVAC);

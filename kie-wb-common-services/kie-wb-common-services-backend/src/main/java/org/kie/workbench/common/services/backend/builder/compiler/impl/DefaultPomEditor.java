@@ -28,7 +28,7 @@ import org.kie.workbench.common.services.backend.builder.compiler.PomEditor;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.Compilers;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.ConfigurationKey;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.ConfigurationProvider;
-import org.kie.workbench.common.services.backend.builder.compiler.configuration.MavenGoals;
+import org.kie.workbench.common.services.backend.builder.compiler.configuration.MavenArgs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -110,7 +110,7 @@ public class DefaultPomEditor implements PomEditor {
 
                 String[] args = request.getKieCliRequest().getArgs();
                 String[] newArgs = Arrays.copyOf(args, args.length + 1);
-                newArgs[args.length] = "-f " + temp.getFileName();//Passing the temp pom file to the cli
+                newArgs[args.length] = "-f " + temp.toAbsolutePath().getFileName();//Passing the temp pom file to the cli
                 request.getKieCliRequest().setArgs(newArgs);
                 request.setPomFile(temp.toAbsolutePath());
                 history.add(pomPH);
@@ -158,9 +158,9 @@ public class DefaultPomEditor implements PomEditor {
         newCompilerPlugin.setVersion(conf.get(ConfigurationKey.ALTERNATIVE_COMPILER_PLUGIN_VERSION));
 
         PluginExecution execution = new PluginExecution();
-        execution.setId(MavenGoals.COMPILE);
-        execution.setGoals(Arrays.asList(MavenGoals.COMPILE));
-        execution.setPhase(MavenGoals.COMPILE);
+        execution.setId(MavenArgs.COMPILE);
+        execution.setGoals(Arrays.asList(MavenArgs.COMPILE));
+        execution.setPhase(MavenArgs.COMPILE);
 
         Xpp3Dom compilerId = new Xpp3Dom(conf.get(ConfigurationKey.MAVEN_COMPILER_ID));
         compilerId.setValue(compiler.name().toLowerCase());

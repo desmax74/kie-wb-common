@@ -18,7 +18,7 @@ package org.kie.workbench.common.services.backend.builder.compiler;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.kie.workbench.common.services.backend.builder.compiler.configuration.MavenGoals;
+import org.kie.workbench.common.services.backend.builder.compiler.configuration.MavenArgs;
 import org.kie.workbench.common.services.backend.builder.compiler.impl.DefaultCompilationRequest;
 import org.kie.workbench.common.services.backend.builder.compiler.impl.KieCliRequest;
 
@@ -36,7 +36,7 @@ public class DefaultMavenIncrementalCompilerTest {
     public void setUp() throws Exception {
         if (!Files.exists(mavenRepo)) {
             System.out.println("Creating a m2_repo into src/test/resources/.ignore/m2_repo/");
-            if (!Files.exists(Files.createDirectory(mavenRepo))) {
+            if (!Files.exists(Files.createDirectories(mavenRepo))) {
                 throw new Exception("Folder not writable in the project");
             }
         }
@@ -46,7 +46,7 @@ public class DefaultMavenIncrementalCompilerTest {
     public void testIsValidMavenHome() {
         DefaultMavenCompiler compiler = new DefaultMavenCompiler(mavenRepo);
         Assert.assertTrue(compiler.isValid());
-        KieCliRequest kcr = new KieCliRequest(Paths.get("src/test/projects/dummy"), new String[]{MavenGoals.VERSION});
+        KieCliRequest kcr = new KieCliRequest(Paths.get("src/test/projects/dummy"), new String[]{MavenArgs.VERSION, MavenArgs.DEBUG});
         CompilationRequest req = new DefaultCompilationRequest(kcr);
         CompilationResponse res = compiler.compileSync(req);
         Assert.assertTrue(res.isSuccessful());
@@ -63,7 +63,7 @@ public class DefaultMavenIncrementalCompilerTest {
     public void testIncrementalWithPluginEnabled() {
         MavenCompiler compiler = new DefaultMavenCompiler(mavenRepo);
 
-        KieCliRequest kcr = new KieCliRequest(Paths.get("src/test/projects/dummy"), new String[]{MavenGoals.CLEAN, MavenGoals.COMPILE});
+        KieCliRequest kcr = new KieCliRequest(Paths.get("src/test/projects/dummy"), new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE, MavenArgs.DEBUG});
         CompilationRequest req = new DefaultCompilationRequest(kcr);
         CompilationResponse res = compiler.compileSync(req);
         Assert.assertTrue(res.isSuccessful());
@@ -82,7 +82,7 @@ public class DefaultMavenIncrementalCompilerTest {
         String pomAsAstring = new String(encoded, StandardCharsets.UTF_8);
         Assert.assertFalse(pomAsAstring.contains("<artifactId>takari-lifecycle-plugin</artifactId>"));
 
-        KieCliRequest kcr = new KieCliRequest(Paths.get("src/test/projects/dummy_multimodule_untouched"), new String[]{MavenGoals.CLEAN, MavenGoals.COMPILE});
+        KieCliRequest kcr = new KieCliRequest(Paths.get("src/test/projects/dummy_multimodule_untouched"), new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE, MavenArgs.DEBUG});
         CompilationRequest req = new DefaultCompilationRequest(kcr);
 
         CompilationResponse res = compiler.compileSync(req);
