@@ -17,19 +17,19 @@
 package org.kie.workbench.common.services.backend.builder.compiler;
 
 import org.kie.workbench.common.services.backend.builder.compiler.impl.KieCliRequest;
+import org.kie.workbench.common.services.backend.builder.compiler.impl.WorkspaceCompilationInfo;
 
 import java.nio.file.Path;
+import java.util.Optional;
 
 /**
  * Wrap a compilation request
  */
 public interface CompilationRequest {
 
-    Path getPath();
-
-    Path getPomFile();
-
-    void setPomFile(Path pom);
+    Optional<Path> getPomFile();
 
     KieCliRequest getKieCliRequest();
+
+    WorkspaceCompilationInfo getInfo();
 }

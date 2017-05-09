@@ -21,7 +21,9 @@ import org.junit.Test;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.MavenArgs;
 import org.kie.workbench.common.services.backend.builder.compiler.impl.DefaultCompilationRequest;
 import org.kie.workbench.common.services.backend.builder.compiler.impl.KieCliRequest;
+import org.kie.workbench.common.services.backend.builder.compiler.impl.WorkspaceCompilationInfo;
 
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -30,7 +32,7 @@ import java.nio.file.Paths;
 
 public class DefaultMavenIncrementalCompilerTest {
 
-    private final static Path mavenRepo = Paths.get("src/test/resources/.ignore/m2_repo/");
+    private final Path mavenRepo = Paths.get("src/test/resources/.ignore/m2_repo/");
 
     @Before
     public void setUp() throws Exception {
@@ -47,7 +49,8 @@ public class DefaultMavenIncrementalCompilerTest {
         DefaultMavenCompiler compiler = new DefaultMavenCompiler(mavenRepo);
         Assert.assertTrue(compiler.isValid());
         KieCliRequest kcr = new KieCliRequest(Paths.get("src/test/projects/dummy"), new String[]{MavenArgs.VERSION, MavenArgs.DEBUG});
-        CompilationRequest req = new DefaultCompilationRequest(kcr);
+        WorkspaceCompilationInfo info = new WorkspaceCompilationInfo(Paths.get("/tmp", "tempRepo"), URI.create("git://repo") ,compiler, Boolean.TRUE);
+        CompilationRequest req = new DefaultCompilationRequest(kcr, info);
         CompilationResponse res = compiler.compileSync(req);
         Assert.assertTrue(res.isSuccessful());
     }
@@ -64,7 +67,8 @@ public class DefaultMavenIncrementalCompilerTest {
         MavenCompiler compiler = new DefaultMavenCompiler(mavenRepo);
 
         KieCliRequest kcr = new KieCliRequest(Paths.get("src/test/projects/dummy"), new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE, MavenArgs.DEBUG});
-        CompilationRequest req = new DefaultCompilationRequest(kcr);
+        WorkspaceCompilationInfo info = new WorkspaceCompilationInfo(Paths.get("/tmp", "tempRepo"), URI.create("git://repo") ,compiler, Boolean.TRUE);
+        CompilationRequest req = new DefaultCompilationRequest(kcr, info);
         CompilationResponse res = compiler.compileSync(req);
         Assert.assertTrue(res.isSuccessful());
 
@@ -83,7 +87,8 @@ public class DefaultMavenIncrementalCompilerTest {
         Assert.assertFalse(pomAsAstring.contains("<artifactId>takari-lifecycle-plugin</artifactId>"));
 
         KieCliRequest kcr = new KieCliRequest(Paths.get("src/test/projects/dummy_multimodule_untouched"), new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE, MavenArgs.DEBUG});
-        CompilationRequest req = new DefaultCompilationRequest(kcr);
+        WorkspaceCompilationInfo info = new WorkspaceCompilationInfo(Paths.get("/tmp", "tempRepo"), URI.create("git://repo") ,compiler, Boolean.TRUE);
+        CompilationRequest req = new DefaultCompilationRequest(kcr, info);
 
         CompilationResponse res = compiler.compileSync(req);
         Assert.assertTrue(res.isSuccessful());

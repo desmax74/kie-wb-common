@@ -79,8 +79,8 @@ public class DefaultMavenCompiler implements MavenCompiler {
     }
 
     @Override
-    public String getLocalRepo() {
-        return mavenRepo.toString();
+    public Path getMavenRepo() {
+        return mavenRepo;
     }
 
 
@@ -90,15 +90,18 @@ public class DefaultMavenCompiler implements MavenCompiler {
             logger.debug("KieCompilationRequest:{}", req);
         }
 
-        Boolean result = enabler.process(req);
-        if (!result) {
-            return new DefaultCompilationResponse(Boolean.FALSE, Optional.of("Processing poms failed"));
+        if (!req.getInfo().getEnhancedMainPomFile().isPresent()) {
+            Boolean result = enabler.process(req);
+            if (!result) {
+                return new DefaultCompilationResponse(Boolean.FALSE, Optional.of("Processing poms failed"));
+            }
         }
         req.getKieCliRequest().getRequest().setLocalRepositoryPath(mavenRepo.toAbsolutePath().toString());
         int exitCode = cli.doMain(req.getKieCliRequest());
         try {
-            if (req.getPomFile() != null) {
-                Files.deleteIfExists(req.getPomFile());
+            //this will not be common
+            if (req.getPomFile().isPresent() && req.getInfo().deleteEnhancedPomBetweenCompilation()) {
+                Files.deleteIfExists(req.getPomFile().get());
             }
         } catch (IOException e) {
             logger.error(e.getMessage());

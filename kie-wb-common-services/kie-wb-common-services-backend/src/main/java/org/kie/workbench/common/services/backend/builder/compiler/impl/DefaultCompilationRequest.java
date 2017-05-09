@@ -17,26 +17,33 @@ package org.kie.workbench.common.services.backend.builder.compiler.impl;
 
 import org.kie.workbench.common.services.backend.builder.compiler.CompilationRequest;
 
+import java.net.URI;
 import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.util.Optional;
 
 public class DefaultCompilationRequest implements CompilationRequest {
 
     private KieCliRequest req;
-    private Path pom;
+    private WorkspaceCompilationInfo info;
 
-    public DefaultCompilationRequest(KieCliRequest req) {
+
+    public DefaultCompilationRequest(KieCliRequest req, WorkspaceCompilationInfo info) {
         this.req = req;
+        this.info = info;
     }
 
     @Override
-    public Path getPomFile() {
-        return pom;
+    public WorkspaceCompilationInfo getInfo() {
+        return info;
+    }
+
+    public URI getRepoURI() {
+        return info.getRemoteRepo();
     }
 
     @Override
-    public void setPomFile(Path pom) {
-        this.pom = pom;
+    public Optional<Path> getPomFile() {
+        return info.getEnhancedMainPomFile();
     }
 
     public KieCliRequest getReq() {
@@ -46,10 +53,5 @@ public class DefaultCompilationRequest implements CompilationRequest {
     @Override
     public KieCliRequest getKieCliRequest() {
         return req;
-    }
-
-    @Override
-    public Path getPath() {
-        return Paths.get(req.getWorkingDirectory());
     }
 }

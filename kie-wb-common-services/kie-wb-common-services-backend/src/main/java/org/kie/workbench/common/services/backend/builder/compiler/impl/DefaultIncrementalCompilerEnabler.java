@@ -43,7 +43,7 @@ public class DefaultIncrementalCompilerEnabler implements IncrementalCompilerEna
 
     @Override
     public Boolean process(final CompilationRequest req) {
-        Path mainPom = Paths.get(req.getPath().toString(), POM_NAME);
+        Path mainPom = Paths.get(req.getInfo().getPrjPath().toString(), POM_NAME);
         if (!Files.isReadable(mainPom)) {
             return Boolean.FALSE;
         }
@@ -52,7 +52,7 @@ public class DefaultIncrementalCompilerEnabler implements IncrementalCompilerEna
         Boolean isPresent = isPresent(placeHolder);   // check if the main pom is already scanned and edited
         if (placeHolder.isValid() && !isPresent) {
             List<String> pomsList = new ArrayList();
-            searchPoms(Paths.get(req.getPath().toString()), pomsList);// recursive NIO search in all subfolders
+            searchPoms(Paths.get(req.getInfo().getPrjPath().toString()), pomsList);// recursive NIO search in all subfolders
             if (pomsList.size() > 0) {
                 processFoundedPoms(pomsList, req);
             }

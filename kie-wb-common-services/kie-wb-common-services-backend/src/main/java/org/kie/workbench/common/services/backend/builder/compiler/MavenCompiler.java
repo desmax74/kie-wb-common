@@ -16,6 +16,8 @@
 package org.kie.workbench.common.services.backend.builder.compiler;
 
 
+import java.nio.file.Path;
+
 /**
  * Created by Massimiliano Dessi @desmax74 on 18/04/17.
  */
@@ -29,7 +31,7 @@ public interface MavenCompiler extends Valid {
     /**
      * The local repo used by this compiler
      */
-    String getLocalRepo();
+    Path getMavenRepo();
 
 
 }

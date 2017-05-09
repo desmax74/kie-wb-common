@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory;
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -103,16 +104,13 @@ public class DefaultPomEditor implements PomEditor {
                     logger.debug("Pom changed:{}", new String(baos.toByteArray(), StandardCharsets.UTF_8));
                 }
 
-                Path temp = Files.createTempFile(pom.getParent().toAbsolutePath(), ".pom", ".xml");
-                BufferedWriter bw = Files.newBufferedWriter(temp, StandardCharsets.UTF_8);
-                bw.write(new String(baos.toByteArray(), StandardCharsets.UTF_8));
-                bw.close();
-
+                Path enhancedPom = createEnhancedPom(pom, baos);
                 String[] args = request.getKieCliRequest().getArgs();
                 String[] newArgs = Arrays.copyOf(args, args.length + 1);
-                newArgs[args.length] = "-f " + temp.toAbsolutePath().getFileName();//Passing the temp pom file to the cli
+                newArgs[args.length] = "-f " + enhancedPom.toAbsolutePath().getFileName();//Passing the temp pom file to the cli
                 request.getKieCliRequest().setArgs(newArgs);
-                request.setPomFile(temp.toAbsolutePath());
+                //we add the enhanced not yet present in th workspaceCompilerInfo
+                request.getInfo().lateAdditionEnhancedMainPomFile(enhancedPom.toAbsolutePath());
                 history.add(pomPH);
             }
 
@@ -120,6 +118,16 @@ public class DefaultPomEditor implements PomEditor {
         } catch (Exception e) {
             logger.error(e.getMessage());
         }
+    }
+
+
+    private Path createEnhancedPom(Path pom, ByteArrayOutputStream baos) throws IOException {
+        //Path temp = Files.createTempFile(pom.getParent().toAbsolutePath(), ".pom", ".xml");
+        Path temp = Files.createFile(Paths.get(pom.getParent().toAbsolutePath().toString(), ".pom.xml"));
+        BufferedWriter bw = Files.newBufferedWriter(temp, StandardCharsets.UTF_8);
+        bw.write(new String(baos.toByteArray(), StandardCharsets.UTF_8));
+        bw.close();
+        return temp;
     }
 
     private void updatePom(Model model) {

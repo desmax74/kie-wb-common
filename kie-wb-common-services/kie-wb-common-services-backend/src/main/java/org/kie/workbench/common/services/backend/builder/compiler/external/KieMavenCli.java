@@ -920,7 +920,7 @@ public class KieMavenCli {
             // If we're logging to a file then we don't want the console transfer listener as it will spew
             // download progress all over the place
             //
-            transferListener = getConsoleTransferListener(Boolean.TRUE);
+            transferListener = getConsoleTransferListener();
         } else {
             transferListener = getBatchTransferListener();
         }
@@ -1066,8 +1066,9 @@ public class KieMavenCli {
         return (int) (Float.valueOf(threadConfiguration.replace("C", "")) * procs);
     }
 
-    protected TransferListener getConsoleTransferListener(boolean printResourceNames) {
-        return new ConsoleMavenTransferListener(System.out, printResourceNames);
+    protected TransferListener getConsoleTransferListener() {
+        return new ConsoleMavenTransferListener(System.out);
+        //return new ConsoleMavenTransferListener(System.out);
     }
 
     //

@@ -16,8 +16,7 @@
 
 package org.kie.workbench.common.services.backend.builder.compiler;
 
-import com.google.common.jimfs.Configuration;
-import com.google.common.jimfs.Jimfs;
+
 import org.eclipse.jgit.api.*;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
@@ -27,25 +26,35 @@ import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevTree;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.transport.CredentialsProvider;
+import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
+import org.eclipse.jgit.util.FileUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.MavenArgs;
+import org.kie.workbench.common.services.backend.builder.compiler.decorators.JGITCompilerDecorator;
 import org.kie.workbench.common.services.backend.builder.compiler.impl.DefaultCompilationRequest;
 import org.kie.workbench.common.services.backend.builder.compiler.impl.KieCliRequest;
+import org.kie.workbench.common.services.backend.builder.compiler.impl.WorkspaceCompilationInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.uberfire.java.nio.fs.jgit.JGitFileSystem;
+import org.uberfire.java.nio.fs.jgit.JGitFileSystemProvider;
 import org.uberfire.java.nio.fs.jgit.util.JGitUtil;
+import org.uberfire.java.nio.security.FileSystemAuthenticator;
+import org.uberfire.java.nio.security.FileSystemAuthorizer;
+import org.uberfire.java.nio.security.FileSystemUser;
 
 import java.io.*;
+import java.net.ServerSocket;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.FileSystem;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static org.eclipse.jgit.api.ListBranchCommand.ListMode.ALL;
@@ -55,13 +64,28 @@ import static org.uberfire.java.nio.fs.jgit.util.JGitUtil.branchList;
 
 public class DefaultMavenCompilerOnInMemoryFSTest {
 
+    private static final Logger logger = LoggerFactory.getLogger(DefaultMavenCompilerOnInMemoryFSTest.class);
+
     private final static Path mavenRepo = Paths.get("src/test/resources/.ignore/m2_repo/");
 
-    private FileSystem fs;
+    private int gitSSHPort;
 
-    static String convertStreamToString(java.io.InputStream is) {
-        java.util.Scanner s = new java.util.Scanner(is).useDelimiter("\\A");
-        return s.hasNext() ? s.next() : "";
+    //private FileSystem fs;
+
+    private JGitFileSystemProvider provider;
+
+    public static int findFreePort() {
+        int port = 0;
+        try {
+            ServerSocket server =
+                    new ServerSocket(0);
+            port = server.getLocalPort();
+            server.close();
+        } catch (IOException e) {
+            Assert.fail("Can't find free port!");
+        }
+        logger.debug("Found free port " + port);
+        return port;
     }
 
     @Before
@@ -72,12 +96,22 @@ public class DefaultMavenCompilerOnInMemoryFSTest {
                 throw new Exception("Folder not writable in the project");
             }
         }
-        fs = Jimfs.newFileSystem(Configuration.unix());
+        //fs = Jimfs.newFileSystem(Configuration.unix());
     }
 
     @After
     public void tearDown() throws IOException {
-        fs.close();
+        if (provider == null) {
+            // this would mean that setup failed. no need to clean up.
+            return;
+        }
+
+        provider.shutdown();
+
+        if (provider.getGitRepoContainerDir() != null && provider.getGitRepoContainerDir().exists()) {
+            FileUtils.delete(provider.getGitRepoContainerDir(),
+                    FileUtils.RECURSIVE);
+        }
     }
 
     @Test
@@ -121,7 +155,8 @@ public class DefaultMavenCompilerOnInMemoryFSTest {
         Assert.assertFalse(pomAsAstring.contains("<artifactId>takari-lifecycle-plugin</artifactId>"));
 
         KieCliRequest kcr = new KieCliRequest(Paths.get(gitClonedFolder + "/dummy/"), new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE, MavenArgs.DEBUG});
-        CompilationRequest req = new DefaultCompilationRequest(kcr);
+        WorkspaceCompilationInfo info = new WorkspaceCompilationInfo(Paths.get("/tmp", "tempRepo"), URI.create("git://repo") ,compiler, Boolean.TRUE);
+        CompilationRequest req = new DefaultCompilationRequest(kcr, info);
 
         CompilationResponse res = compiler.compileSync(req);
         Assert.assertTrue(res.isSuccessful());
@@ -149,7 +184,6 @@ public class DefaultMavenCompilerOnInMemoryFSTest {
         map.put("/dummy/dummyB/pom.xml", new File(temp.toString() + "/dummyB/pom.xml"));
         return map;
     }
-
 
     //Work in progress
     @Test
@@ -227,7 +261,8 @@ public class DefaultMavenCompilerOnInMemoryFSTest {
         Assert.assertFalse(pomAsAstring.contains("<artifactId>takari-lifecycle-plugin</artifactId>"));
 
         KieCliRequest kcr = new KieCliRequest(Paths.get(gitClonedFolder + "/dummy/"), new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE, MavenArgs.DEBUG});
-        CompilationRequest req = new DefaultCompilationRequest(kcr);
+        WorkspaceCompilationInfo info = new WorkspaceCompilationInfo(Paths.get("/tmp", "tempRepo"), URI.create("git://repo") ,compiler, Boolean.TRUE);
+        CompilationRequest req = new DefaultCompilationRequest(kcr, info);
 
         CompilationResponse res = compiler.compileSync(req);
         Assert.assertTrue(res.isSuccessful());
@@ -244,6 +279,163 @@ public class DefaultMavenCompilerOnInMemoryFSTest {
 
         rm(tmpRootCloned.toFile());
         rm(tmpRoot.toFile());
+    }
+
+    @Test
+    public void buildWithPullRebaseNIOTest() throws Exception {
+
+        provider = new JGitFileSystemProvider(getGitPreferences());
+        provider.setAuthenticator(getAuthenticator());
+        provider.setAuthorizer((fs, fileSystemUser) -> true);
+
+        CredentialsProvider.setDefault(new UsernamePasswordCredentialsProvider("admin", ""));
+
+        //Setup origin in memory
+        final URI originRepo = URI.create("git://repo");
+        final JGitFileSystem origin = (JGitFileSystem) provider.newFileSystem(originRepo,
+                new HashMap<String, Object>() {{
+                    put("listMode", "ALL");
+                }});
+        assertNotNull(origin);
+
+        Path tmpRoot = Files.createTempDirectory("repo");
+        Path tmp = Files.createDirectories(Paths.get(tmpRoot.toString(), "dummy"));
+        File temp = tmp.toFile();
+        copyTree(Paths.get("src/test/projects/dummy_multimodule_untouched"), Paths.get(temp.toString()));
+
+        JGitUtil.commit(origin.gitRepo(),
+                "master",
+                "name",
+                "name@example.com",
+                "master",
+                null,
+                null,
+                false,
+                getFilesToCommit(temp)
+        );
+
+
+        // clone into a regularfs
+        Path tmpRootCloned = Files.createTempDirectory("cloned");
+        Path tmpCloned = Files.createDirectories(Paths.get(tmpRootCloned.toString(), ".clone.git"));
+        Git cloned = JGitUtil.cloneRepository(tmpCloned.toFile(), "git://localhost:9418/repo"/*origin.gitRepo().toString()*/, false, CredentialsProvider.getDefault());
+        assertNotNull(cloned);
+
+        PullCommand pc = cloned.pull().setRemote("origin").setRebase(Boolean.TRUE);
+        PullResult pullRes = pc.call();
+        assertTrue(pullRes.getRebaseResult().getStatus().equals(RebaseResult.Status.UP_TO_DATE));// nothing changed yet
+
+        RebaseCommand rb = cloned.rebase().setUpstream("origin/master");
+        RebaseResult rbResult = rb.setPreserveMerges(true).call();
+        assertTrue(rbResult.getStatus().isSuccessful());
+
+        //Compile the repo
+        MavenCompiler compiler = new DefaultMavenCompiler(mavenRepo);
+
+        byte[] encoded = Files.readAllBytes(Paths.get(tmpCloned + "/dummy/pom.xml"));
+        String pomAsAstring = new String(encoded, StandardCharsets.UTF_8);
+        Assert.assertFalse(pomAsAstring.contains("<artifactId>takari-lifecycle-plugin</artifactId>"));
+
+        KieCliRequest kcr = new KieCliRequest(Paths.get(tmpCloned + "/dummy/"), new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE, MavenArgs.DEBUG});
+        WorkspaceCompilationInfo info = new WorkspaceCompilationInfo(Paths.get("/tmp", "tempRepo"), URI.create("git://repo") ,compiler, Boolean.TRUE);
+        CompilationRequest req = new DefaultCompilationRequest(kcr, info);
+
+        CompilationResponse res = compiler.compileSync(req);
+        Assert.assertTrue(res.isSuccessful());
+
+        Path incrementalConfiguration = Paths.get(tmpCloned + "/dummy/target/incremental/io.takari.maven.plugins_takari-lifecycle-plugin_compile_compile");
+        Assert.assertTrue(incrementalConfiguration.toFile().exists());
+
+        encoded = Files.readAllBytes(Paths.get(tmpCloned + "/dummy/pom.xml"));
+        pomAsAstring = new String(encoded, StandardCharsets.UTF_8);
+        Assert.assertFalse(pomAsAstring.contains("<artifactId>takari-lifecycle-plugin</artifactId>"));
+
+
+        //change onw file on the in memory repo
+        /*Setup clone
+        JGitFileSystem clone;
+        clone = (JGitFileSystem) provider.newFileSystem(URI.create("git://repo-clone"),
+                new HashMap<String, Object>() {{
+                    put("init", "true");
+                    put("origin", "ssh://admin@localhost:" + gitSSHPort + "/repo");
+                }});
+
+        assertNotNull(clone);*/
+
+        //Push clone back to origin
+        //provider.getFileSystem(URI.create("git://repo-clone?push=ssh://admin@localhost:" + gitSSHPort + "/repo"));
+
+    }
+
+    @Test
+    public void buildWithDecoratorsTest() throws Exception {
+        MavenCompiler compiler = new JGITCompilerDecorator(new DefaultMavenCompiler(mavenRepo));
+
+        provider = new JGitFileSystemProvider(getGitPreferences());
+        provider.setAuthenticator(getAuthenticator());
+        provider.setAuthorizer((fs, fileSystemUser) -> true);
+
+        CredentialsProvider.setDefault(new UsernamePasswordCredentialsProvider("admin", ""));
+
+        //Setup origin in memory
+        final URI originRepo = URI.create("git://repo");
+        final JGitFileSystem origin = (JGitFileSystem) provider.newFileSystem(originRepo,
+                new HashMap<String, Object>() {{
+                    put("listMode", "ALL");
+                }});
+        assertNotNull(origin);
+
+        Path tmpRoot = Files.createTempDirectory("repo");
+        Path tmp = Files.createDirectories(Paths.get(tmpRoot.toString(), "dummy"));
+        File temp = tmp.toFile();
+        copyTree(Paths.get("src/test/projects/dummy_multimodule_untouched"), Paths.get(temp.toString()));
+
+        JGitUtil.commit(origin.gitRepo(),
+                "master",
+                "name",
+                "name@example.com",
+                "master",
+                null,
+                null,
+                false,
+                getFilesToCommit(temp)
+        );
+
+
+        // clone into a regularfs
+        Path tmpRootCloned = Files.createTempDirectory("cloned");
+        Path tmpCloned = Files.createDirectories(Paths.get(tmpRootCloned.toString(), ".clone.git"));
+        //@TODO find a way to retrieve the address git://... of the repo
+        Git cloned = JGitUtil.cloneRepository(tmpCloned.toFile(), "git://localhost:9418/repo", false, CredentialsProvider.getDefault());
+        assertNotNull(cloned);
+        //@TODO refactor and use only one between the URI or Git
+        //@TODO find a way to resolve the problem of the prjname inside .git folder
+        WorkspaceCompilationInfo info = new WorkspaceCompilationInfo(Paths.get(tmpCloned+"/dummy"), URI.create("git://localhost:9418/repo"), compiler, cloned);
+        KieCliRequest kcr = new KieCliRequest(info.getPrjPath(), new String[]{MavenArgs.COMPILE, MavenArgs.DEBUG});
+        CompilationRequest req = new DefaultCompilationRequest(kcr, info);
+        CompilationResponse res = compiler.compileSync(req);
+        Assert.assertTrue(res.isSuccessful());
+
+
+    }
+
+    private FileSystemAuthorizer getFileSystemAuthorizer() {
+        return (fs, fileSystemUser) -> true;
+    }
+
+    private FileSystemAuthenticator getAuthenticator() {
+        return new FileSystemAuthenticator() {
+            @Override
+            public FileSystemUser authenticate(final String username,
+                                               final String password) {
+                return new FileSystemUser() {
+                    @Override
+                    public String getName() {
+                        return "admin";
+                    }
+                };
+            }
+        };
     }
 
     private void copyTree(Path source, Path target) throws IOException {
@@ -280,7 +472,21 @@ public class DefaultMavenCompilerOnInMemoryFSTest {
         }
     }
 
-    private Path createInMemoryRepo() throws IOException {
+    public Map<String, String> getGitPreferences() {
+        Map<String, String> gitPrefs = new HashMap<>();
+
+        gitPrefs.put("org.uberfire.nio.git.ssh.enabled",
+                "true");
+        gitSSHPort = findFreePort();
+        gitPrefs.put("org.uberfire.nio.git.ssh.port",
+                String.valueOf(gitSSHPort));
+        gitPrefs.put("org.uberfire.nio.git.ssh.idle.timeout",
+                "10001");
+
+        return gitPrefs;
+    }
+
+    /*private Path createInMemoryRepo() throws IOException {
         fs.getFileStores().forEach(file -> {
             StringBuilder sb = new StringBuilder();
             sb.append("name:").append(file.name()).append(" type:").append(file.type());
@@ -308,7 +514,7 @@ public class DefaultMavenCompilerOnInMemoryFSTest {
 
         explore(dummy);
         return dummy;
-    }
+    }*/
 
     private void createContentWithNIO(Path path, String contentName, String origin) throws IOException {
         Path dummy = path.resolve(contentName);
@@ -342,6 +548,7 @@ public class DefaultMavenCompilerOnInMemoryFSTest {
         if (!f.delete())
             System.err.println("Couldn't delete file " + f);
     }
+
 
     class CopyFileVisitor extends SimpleFileVisitor<Path> {
 

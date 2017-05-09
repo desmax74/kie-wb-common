@@ -20,11 +20,9 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.Compilers;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.MavenArgs;
-import org.kie.workbench.common.services.backend.builder.compiler.impl.DefaultCompilationRequest;
-import org.kie.workbench.common.services.backend.builder.compiler.impl.DefaultIncrementalCompilerEnabler;
-import org.kie.workbench.common.services.backend.builder.compiler.impl.Finder;
-import org.kie.workbench.common.services.backend.builder.compiler.impl.KieCliRequest;
+import org.kie.workbench.common.services.backend.builder.compiler.impl.*;
 
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -35,6 +33,8 @@ public class DefaultIncrementalCompilerEnablerTest {
 
     private final Path prj = Paths.get("src/test/projects/dummy_multimodule");
 
+    private final Path mavenRepo = Paths.get("src/test/resources/.ignore/m2_repo/");
+
     @Test
     public void testReadPomsInaPrjTest() throws Exception {
         byte[] encoded = Files.readAllBytes(Paths.get("src/test/projects/dummy_multimodule/pom.xml"));
@@ -42,7 +42,9 @@ public class DefaultIncrementalCompilerEnablerTest {
         Assert.assertFalse(pomAsAstring.contains("<artifactId>takari-lifecycle-plugin</artifactId>"));
         String[] args = {MavenArgs.COMPILE};
         KieCliRequest kcr = new KieCliRequest(Paths.get("src/test/projects/dummy_multimodule/"), args);
-        CompilationRequest req = new DefaultCompilationRequest(kcr);
+
+        WorkspaceCompilationInfo info = new WorkspaceCompilationInfo(Paths.get("/tmp", "tempRepo"), mavenRepo, new URI("git://repo"),new DefaultMavenCompiler(mavenRepo));
+        CompilationRequest req = new DefaultCompilationRequest(kcr, info);
         DefaultIncrementalCompilerEnabler enabler = new DefaultIncrementalCompilerEnabler(Compilers.JAVAC);
         Assert.assertTrue(enabler.process(req));
 
