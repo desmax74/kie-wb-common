@@ -38,6 +38,9 @@ public class ConfigurationStaticStrategy implements ConfigurationStrategy, Order
         conf.put(ConfigurationKey.MAVEN_SKIP, "skip");
         conf.put(ConfigurationKey.MAVEN_SKIP_MAIN, "skipMain");
 
+        conf.put(ConfigurationKey.MAVEN_DEFAULT_COMPILE, "default-compile");
+        conf.put(ConfigurationKey.MAVEN_PHASE_NONE, "none");
+
         conf.put(ConfigurationKey.MAVEN_PLUGINS, "org.apache.maven.plugins");
         conf.put(ConfigurationKey.MAVEN_COMPILER_PLUGIN, "maven-compiler-plugin");
         conf.put(ConfigurationKey.MAVEN_COMPILER_PLUGIN_VERSION, "3.6.1");
@@ -45,6 +48,7 @@ public class ConfigurationStaticStrategy implements ConfigurationStrategy, Order
         conf.put(ConfigurationKey.ALTERNATIVE_COMPILER_PLUGINS, "io.takari.maven.plugins");
         conf.put(ConfigurationKey.ALTERNATIVE_COMPILER_PLUGIN, "takari-lifecycle-plugin");
         conf.put(ConfigurationKey.ALTERNATIVE_COMPILER_PLUGIN_VERSION, "1.12.4");
+        
         valid = Boolean.TRUE;
     }
 
