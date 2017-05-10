@@ -16,19 +16,24 @@
 
 package org.kie.workbench.common.services.backend.builder.compiler.decorators;
 
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.PullCommand;
-import org.eclipse.jgit.api.PullResult;
-import org.eclipse.jgit.api.RebaseResult;
+import org.eclipse.jgit.api.*;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.dircache.DirCache;
+import org.eclipse.jgit.dircache.DirCacheBuilder;
+import org.eclipse.jgit.dircache.DirCacheEditor;
+import org.eclipse.jgit.transport.CredentialsProvider;
+import org.eclipse.jgit.transport.PushResult;
+import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.kie.workbench.common.services.backend.builder.compiler.CompilationRequest;
 import org.kie.workbench.common.services.backend.builder.compiler.CompilationResponse;
 import org.kie.workbench.common.services.backend.builder.compiler.MavenCompiler;
 import org.kie.workbench.common.services.backend.builder.compiler.impl.DefaultCompilationResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.uberfire.java.nio.fs.jgit.util.JGitUtil;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
@@ -39,6 +44,12 @@ public class JGITCompilerDecorator extends CompilerDecorator {
     private static final Logger logger = LoggerFactory.getLogger(JGITCompilerDecorator.class);
 
     private MavenCompiler compiler;
+
+    private final String COMPILED_EXTENSION = ".class";
+
+    private final String REMOTE = "origin";
+
+    private final String REMOTE_BRANCH = "master";
 
     public JGITCompilerDecorator(MavenCompiler compiler) {
         this.compiler = compiler;
@@ -70,11 +81,20 @@ public class JGITCompilerDecorator extends CompilerDecorator {
         if (req.getInfo().getGitRepo().isPresent()) {
             try {
                 Git git = req.getInfo().getGitRepo().get();
-                PullCommand pc = git.pull().setRemote("origin").setRebase(Boolean.TRUE);
+                PullCommand pc = git.pull().setRemote(REMOTE).setRebase(Boolean.TRUE);
                 PullResult pullRes = pc.call();
                 RebaseResult rr = pullRes.getRebaseResult();
+
                 if (rr.getStatus().equals(RebaseResult.Status.UP_TO_DATE) || rr.getStatus().equals(RebaseResult.Status.FAST_FORWARD)) {
                     result = Boolean.TRUE;
+                }
+                if (rr.getStatus().equals(RebaseResult.Status.UNCOMMITTED_CHANGES)) {
+                    PullResult pr = git.pull().call();
+                    if(pr.isSuccessful()){
+                        result = Boolean.TRUE;
+                    }else{
+                         result = Boolean.FALSE;
+                    }
                 }
             } catch (Exception e) {
                 logger.error(e.getMessage());
@@ -91,44 +111,46 @@ public class JGITCompilerDecorator extends CompilerDecorator {
         Git localRepo = req.getInfo().getGitRepo().get();
         try {
             Set<String> filesChanged = localRepo.status().call().getChanged();
+            Map<String, File> trackedChanged = getTrackedChanged(filesChanged, prj);
+
             Set<String> filesUntracked = localRepo.status().call().getUntracked();
-            Map<String, File> dotClassToAdd = getDotClassesToAdd(filesUntracked, prj.toString());
-            Map<String, File> commitCandidates = getFilesToCommit(filesChanged, prj.toString());
-            //@TODO complete this part
-           /* JGitUtil.commit(req.getInfo().getGitRepo().get(),
-                    "master",
-                    "name",
-                    "name@example.com",
-                    "update build",
-                    null,
-                    null,
-                    false,
-                    commitCandidates
-            );
+            Map<String, File> dotClassToAdd = getUntrackedChangedByExtension(filesUntracked, prj, COMPILED_EXTENSION);
 
-            //JGitUtil.pushRepository();
-            */
+            trackedChanged.putAll(dotClassToAdd);
+            if(trackedChanged.size()>0) {
+                addAndCommit(localRepo, trackedChanged);
+                //@TODO push the result
 
+            }
         } catch (GitAPIException gex) {
             logger.error(gex.getMessage());
         }
     }
 
+    private void addAndCommit(Git localRepo, Map<String, File> trackedChanged) throws GitAPIException {
+        AddCommand add = localRepo.add();
+        for (String item : trackedChanged.keySet()) {
+            add.addFilepattern(item);
+        }
+        add.call();
+        localRepo.commit().setMessage("Add untracked and changed files").call();
+    }
 
-    private Map<String, File> getFilesToCommit(Set<String> changed, String folderPath) {
+
+    private Map<String, File> getTrackedChanged(Set<String> changed, Path folderPath) {
         Map<String, File> map = new HashMap<>();
         for (String item : changed) {
-            map.put(item, new File(folderPath, item));
+            map.put(item, new File(folderPath.getParent().toString(), item));
         }
         return map;
     }
 
-    private Map<String, File> getDotClassesToAdd(Set<String> untracked, String folderPath) {
+    private Map<String, File> getUntrackedChangedByExtension(Set<String> untracked, Path folderPath, String extension) {
         Map<String, File> map = new HashMap<>();
         //@TODO refactor with lambda
         for (String item : untracked) {
-            if (item.endsWith(".class")) {
-                map.put(item, new File(folderPath, item));
+            if (item.endsWith(extension)) {
+                map.put(item, new File(folderPath.getParent().toString(), item));
             }
         }
         return map;

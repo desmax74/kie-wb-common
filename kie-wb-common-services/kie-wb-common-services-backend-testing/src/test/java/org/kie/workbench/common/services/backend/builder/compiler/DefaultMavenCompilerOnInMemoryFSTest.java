@@ -48,6 +48,7 @@ import org.uberfire.java.nio.security.FileSystemAuthenticator;
 import org.uberfire.java.nio.security.FileSystemAuthorizer;
 import org.uberfire.java.nio.security.FileSystemUser;
 
+import javax.validation.constraints.AssertFalse;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -378,6 +379,8 @@ public class DefaultMavenCompilerOnInMemoryFSTest {
     public void buildWithDecoratorsTest() throws Exception {
         MavenCompiler compiler = new JGITCompilerDecorator(new DefaultMavenCompiler(mavenRepo));
 
+        String MASTER_BRANCH = "master";
+
         provider = new JGitFileSystemProvider(getGitPreferences());
         provider.setAuthenticator(getAuthenticator());
         provider.setAuthorizer((fs, fileSystemUser) -> true);
@@ -388,8 +391,9 @@ public class DefaultMavenCompilerOnInMemoryFSTest {
         final URI originRepo = URI.create("git://repo");
         final JGitFileSystem origin = (JGitFileSystem) provider.newFileSystem(originRepo,
                 new HashMap<String, Object>() {{
-                    put("listMode", "ALL");
-                }});
+                        put("listMode", "ALL");
+                }}
+        );
         assertNotNull(origin);
 
         Path tmpRoot = Files.createTempDirectory("repo");
@@ -398,7 +402,7 @@ public class DefaultMavenCompilerOnInMemoryFSTest {
         copyTree(Paths.get("src/test/projects/dummy_multimodule_untouched"), Paths.get(temp.toString()));
 
         JGitUtil.commit(origin.gitRepo(),
-                "master",
+                MASTER_BRANCH,
                 "name",
                 "name@example.com",
                 "master",
@@ -408,6 +412,8 @@ public class DefaultMavenCompilerOnInMemoryFSTest {
                 getFilesToCommit(temp)
         );
 
+        RevCommit lastCommit = JGitUtil.getLastCommit(origin.gitRepo(), MASTER_BRANCH);
+        assertNotNull(lastCommit);
 
         // clone into a regularfs
         Path tmpRootCloned = Files.createTempDirectory("cloned");
@@ -415,22 +421,25 @@ public class DefaultMavenCompilerOnInMemoryFSTest {
         //@TODO find a way to retrieve the address git://... of the repo
         Git cloned = JGitUtil.cloneRepository(tmpCloned.toFile(), "git://localhost:9418/repo", false, CredentialsProvider.getDefault());
         assertNotNull(cloned);
+
+
         //@TODO refactor and use only one between the URI or Git
         //@TODO find a way to resolve the problem of the prjname inside .git folder
         WorkspaceCompilationInfo info = new WorkspaceCompilationInfo(Paths.get(tmpCloned + "/dummy"), URI.create("git://localhost:9418/repo"), compiler, cloned);
-
-
         KieCliRequest kcr = new KieCliRequest(info.getPrjPath(), new String[]{MavenArgs.COMPILE});
         CompilationRequest req = new DefaultCompilationRequest(kcr, info);
         CompilationResponse res = compiler.compileSync(req);
         Assert.assertTrue(res.isSuccessful());
+
+        lastCommit = JGitUtil.getLastCommit(origin.gitRepo(), MASTER_BRANCH);
+        assertNotNull(lastCommit);
 
         //change one file and commit on the origin repo
         Map<String, File> map = new HashMap<>();
         map.put("/dummy/dummyA/src/main/java/dummy/DummyA.java", new File("src/test/projects/DummyA.java"));
 
         JGitUtil.commit(origin.gitRepo(),
-                "master",
+                MASTER_BRANCH,
                 "name",
                 "name@example.com",
                 "master",
@@ -440,13 +449,20 @@ public class DefaultMavenCompilerOnInMemoryFSTest {
                 map
         );
 
+        RevCommit commitBefore = JGitUtil.getLastCommit(origin.gitRepo(), MASTER_BRANCH);
+        assertNotNull(commitBefore);
+        assertFalse(lastCommit.getId().toString().equals(commitBefore.getId().toString()));
+
         //recompile
         res = compiler.compileSync(req);
         Assert.assertTrue(res.isSuccessful());
 
+        //Check the different commit id before the recompile and after to see the commit performed by the JGit Decorator
+        RevCommit commitAfter = JGitUtil.getLastCommit(origin.gitRepo(), MASTER_BRANCH);
+        assertFalse(commitAfter.getId().toString().equals(commitBefore.getId().toString()));
+
         TestUtil.rm(tmpRoot.toFile());
         TestUtil.rm(tmpRootCloned.toFile());
-
     }
 
     private FileSystemAuthorizer getFileSystemAuthorizer() {
