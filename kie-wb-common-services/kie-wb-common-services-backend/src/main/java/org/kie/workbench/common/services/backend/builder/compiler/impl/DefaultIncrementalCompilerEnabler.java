@@ -71,6 +71,8 @@ public class DefaultIncrementalCompilerEnabler implements IncrementalCompilerEna
                 editor.write(tmpPom, request);
             }
         }
+        Path mainPom = Paths.get(request.getInfo().getPrjPath().toAbsolutePath().toString(), POM_NAME);
+        request.getInfo().lateAdditionEnhancedMainPomFile(mainPom);
     }
 
 

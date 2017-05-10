@@ -24,7 +24,6 @@ import org.kie.workbench.common.services.backend.builder.compiler.impl.KieCliReq
 import org.kie.workbench.common.services.backend.builder.compiler.impl.WorkspaceCompilationInfo;
 
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -45,14 +44,20 @@ public class DefaultMavenIncrementalCompilerTest {
     }
 
     @Test
-    public void testIsValidMavenHome() {
+    public void testIsValidMavenHome() throws Exception {
+        Path tmpRoot = Files.createTempDirectory("repo");
+        Path tmp = Files.createDirectories(Paths.get(tmpRoot.toString(), "dummy"));
+        TestUtil.copyTree(Paths.get("src/test/projects/dummy"), tmp);
+
         DefaultMavenCompiler compiler = new DefaultMavenCompiler(mavenRepo);
         Assert.assertTrue(compiler.isValid());
-        KieCliRequest kcr = new KieCliRequest(Paths.get("src/test/projects/dummy"), new String[]{MavenArgs.VERSION, MavenArgs.DEBUG});
-        WorkspaceCompilationInfo info = new WorkspaceCompilationInfo(Paths.get("/tmp", "tempRepo"), URI.create("git://repo") ,compiler, Boolean.TRUE);
+        KieCliRequest kcr = new KieCliRequest(tmp, new String[]{MavenArgs.VERSION, MavenArgs.DEBUG});
+        WorkspaceCompilationInfo info = new WorkspaceCompilationInfo(tmp, URI.create("git://repo"), compiler, Boolean.TRUE);
         CompilationRequest req = new DefaultCompilationRequest(kcr, info);
         CompilationResponse res = compiler.compileSync(req);
         Assert.assertTrue(res.isSuccessful());
+
+        TestUtil.rm(tmpRoot.toFile());
     }
 
     @Test()
@@ -63,42 +68,23 @@ public class DefaultMavenIncrementalCompilerTest {
 
 
     @Test
-    public void testIncrementalWithPluginEnabled() {
+    public void testIncrementalWithPluginEnabled() throws Exception {
+        Path tmpRoot = Files.createTempDirectory("repo");
+        Path tmp = Files.createDirectories(Paths.get(tmpRoot.toString(), "dummy"));
+        TestUtil.copyTree(Paths.get("src/test/projects/dummy"), tmp);
+
         MavenCompiler compiler = new DefaultMavenCompiler(mavenRepo);
 
-        KieCliRequest kcr = new KieCliRequest(Paths.get("src/test/projects/dummy"), new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE, MavenArgs.DEBUG});
-        WorkspaceCompilationInfo info = new WorkspaceCompilationInfo(Paths.get("/tmp", "tempRepo"), URI.create("git://repo") ,compiler, Boolean.TRUE);
+        KieCliRequest kcr = new KieCliRequest(tmp, new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE, MavenArgs.DEBUG});
+        WorkspaceCompilationInfo info = new WorkspaceCompilationInfo(tmp, URI.create("git://repo"), compiler, Boolean.TRUE);
         CompilationRequest req = new DefaultCompilationRequest(kcr, info);
         CompilationResponse res = compiler.compileSync(req);
         Assert.assertTrue(res.isSuccessful());
 
-        Path incrementalConfiguration = Paths.get("src/test/projects/dummy/target/incremental/io.takari.maven.plugins_takari-lifecycle-plugin_compile_compile");
-        Assert.assertTrue(incrementalConfiguration.toFile().exists());
-    }
-
-
-    @Test
-    public void testIncrementalCompilationWithHiddenPOMTest() throws Exception {
-
-        MavenCompiler compiler = new DefaultMavenCompiler(mavenRepo);
-
-        byte[] encoded = Files.readAllBytes(Paths.get("src/test/projects/dummy_multimodule_untouched/pom.xml"));
-        String pomAsAstring = new String(encoded, StandardCharsets.UTF_8);
-        Assert.assertFalse(pomAsAstring.contains("<artifactId>takari-lifecycle-plugin</artifactId>"));
-
-        KieCliRequest kcr = new KieCliRequest(Paths.get("src/test/projects/dummy_multimodule_untouched"), new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE, MavenArgs.DEBUG});
-        WorkspaceCompilationInfo info = new WorkspaceCompilationInfo(Paths.get("/tmp", "tempRepo"), URI.create("git://repo") ,compiler, Boolean.TRUE);
-        CompilationRequest req = new DefaultCompilationRequest(kcr, info);
-
-        CompilationResponse res = compiler.compileSync(req);
-        Assert.assertTrue(res.isSuccessful());
-
-        Path incrementalConfiguration = Paths.get("src/test/projects/dummy_multimodule_untouched/target/incremental/io.takari.maven.plugins_takari-lifecycle-plugin_compile_compile");
+        Path incrementalConfiguration = Paths.get(tmp.toAbsolutePath().toString(), "/target/incremental/io.takari.maven.plugins_takari-lifecycle-plugin_compile_compile");
         Assert.assertTrue(incrementalConfiguration.toFile().exists());
 
-        encoded = Files.readAllBytes(Paths.get("src/test/projects/dummy_multimodule_untouched/pom.xml"));
-        pomAsAstring = new String(encoded, StandardCharsets.UTF_8);
-        Assert.assertFalse(pomAsAstring.contains("<artifactId>takari-lifecycle-plugin</artifactId>"));
+        TestUtil.rm(tmpRoot.toFile());
     }
 
 }

@@ -32,14 +32,13 @@ import org.kie.workbench.common.services.backend.builder.compiler.configuration.
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.*;
 
 public class DefaultPomEditor implements PomEditor {
@@ -47,6 +46,7 @@ public class DefaultPomEditor implements PomEditor {
     private static final Logger logger = LoggerFactory.getLogger(DefaultPomEditor.class);
     public final String POM = "pom";
     public final String TRUE = "true";
+    private final String POM_NAME = "pom.xml";
     private Compilers compiler;
     private Map<ConfigurationKey, String> conf;
     private MavenXpp3Reader reader;
@@ -94,7 +94,7 @@ public class DefaultPomEditor implements PomEditor {
 
             PomPlaceHolder pomPH = new PomPlaceHolder(pom.toAbsolutePath().toString(), model.getArtifactId(), model.getGroupId(), model.getVersion(), model.getPackaging(), Files.readAllBytes(Paths.get(pom.toAbsolutePath().toString())));
 
-            if (model.getPackaging().equals(POM) && !history.contains(pomPH)) {
+            if (/*model.getPackaging().equals(POM) &&*/ !history.contains(pomPH)) {
 
                 updatePom(model);
 
@@ -103,31 +103,14 @@ public class DefaultPomEditor implements PomEditor {
                 if (logger.isDebugEnabled()) {
                     logger.debug("Pom changed:{}", new String(baos.toByteArray(), StandardCharsets.UTF_8));
                 }
-
-                Path enhancedPom = createEnhancedPom(pom, baos);
-                String[] args = request.getKieCliRequest().getArgs();
-                String[] newArgs = Arrays.copyOf(args, args.length + 1);
-                newArgs[args.length] = "-f " + enhancedPom.toAbsolutePath().getFileName();//Passing the temp pom file to the cli
-                request.getKieCliRequest().setArgs(newArgs);
-                //we add the enhanced not yet present in th workspaceCompilerInfo
-                request.getInfo().lateAdditionEnhancedMainPomFile(enhancedPom.toAbsolutePath());
+                Files.write(Paths.get(pom.getParent().toAbsolutePath().toString(), POM_NAME),
+                        baos.toByteArray(), StandardOpenOption.WRITE);//enhanced pom
                 history.add(pomPH);
             }
-
 
         } catch (Exception e) {
             logger.error(e.getMessage());
         }
-    }
-
-
-    private Path createEnhancedPom(Path pom, ByteArrayOutputStream baos) throws IOException {
-        //Path temp = Files.createTempFile(pom.getParent().toAbsolutePath(), ".pom", ".xml");
-        Path temp = Files.createFile(Paths.get(pom.getParent().toAbsolutePath().toString(), ".pom.xml"));
-        BufferedWriter bw = Files.newBufferedWriter(temp, StandardCharsets.UTF_8);
-        bw.write(new String(baos.toByteArray(), StandardCharsets.UTF_8));
-        bw.close();
-        return temp;
     }
 
     private void updatePom(Model model) {
@@ -137,13 +120,13 @@ public class DefaultPomEditor implements PomEditor {
             model.setBuild(new Build());
             build = model.getBuild();
         }
-
+        Boolean defaultCompilerPluginPresent = Boolean.FALSE;
         Boolean alternativeCompilerPluginPresent = Boolean.FALSE;
         List<Plugin> buildPlugins = build.getPlugins();
         for (Plugin plugin : buildPlugins) {
             if (plugin.getGroupId().equals(conf.get(ConfigurationKey.MAVEN_PLUGINS)) &&
                     plugin.getArtifactId().equals(conf.get(ConfigurationKey.MAVEN_COMPILER_PLUGIN))) {
-
+                defaultCompilerPluginPresent = Boolean.TRUE;
                 disableMavenCompilerAlreadyPresent(plugin); // disable the maven compiler if present
             }
             if (plugin.getGroupId().equals(conf.get(ConfigurationKey.ALTERNATIVE_COMPILER_PLUGINS)) &&
@@ -155,6 +138,14 @@ public class DefaultPomEditor implements PomEditor {
 
         if (!alternativeCompilerPluginPresent) {
             build.addPlugin(getNewCompilerPlugin());
+        }
+
+        if (!defaultCompilerPluginPresent) {
+            //if default maven compiler is not present we add the skip and phase none  to avoid its use
+            Plugin disabledDefaultCompiler = new Plugin();
+            disabledDefaultCompiler.setArtifactId(conf.get(ConfigurationKey.MAVEN_COMPILER_PLUGIN));
+            disableMavenCompilerAlreadyPresent(disabledDefaultCompiler);
+            build.addPlugin(disabledDefaultCompiler);
         }
     }
 
@@ -192,6 +183,13 @@ public class DefaultPomEditor implements PomEditor {
         configuration.addChild(skip);
 
         plugin.setConfiguration(configuration);
+
+        PluginExecution exec = new PluginExecution();
+        exec.setId(conf.get(ConfigurationKey.MAVEN_DEFAULT_COMPILE));
+        exec.setPhase(conf.get(ConfigurationKey.MAVEN_PHASE_NONE));
+        List<PluginExecution> executions = new ArrayList<>();
+        executions.add(exec);
+        plugin.setExecutions(executions);
     }
 
 }

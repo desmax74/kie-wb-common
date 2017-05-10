@@ -73,7 +73,7 @@ public class JGITCompilerDecorator extends CompilerDecorator {
                 PullCommand pc = git.pull().setRemote("origin").setRebase(Boolean.TRUE);
                 PullResult pullRes = pc.call();
                 RebaseResult rr = pullRes.getRebaseResult();
-                if(rr.getStatus().equals(RebaseResult.Status.UP_TO_DATE)) {
+                if (rr.getStatus().equals(RebaseResult.Status.UP_TO_DATE) || rr.getStatus().equals(RebaseResult.Status.FAST_FORWARD)) {
                     result = Boolean.TRUE;
                 }
             } catch (Exception e) {
@@ -104,11 +104,14 @@ public class JGITCompilerDecorator extends CompilerDecorator {
                     null,
                     false,
                     commitCandidates
-            );*/
+            );
+
+            //JGitUtil.pushRepository();
+            */
+
         } catch (GitAPIException gex) {
             logger.error(gex.getMessage());
         }
-
     }
 
 
@@ -124,7 +127,7 @@ public class JGITCompilerDecorator extends CompilerDecorator {
         Map<String, File> map = new HashMap<>();
         //@TODO refactor with lambda
         for (String item : untracked) {
-            if(item.endsWith(".class")){
+            if (item.endsWith(".class")) {
                 map.put(item, new File(folderPath, item));
             }
         }

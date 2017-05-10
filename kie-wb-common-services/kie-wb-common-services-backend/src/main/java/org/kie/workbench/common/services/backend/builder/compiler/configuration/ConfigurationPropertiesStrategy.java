@@ -53,6 +53,9 @@ public class ConfigurationPropertiesStrategy implements ConfigurationStrategy, O
             conf.put(ConfigurationKey.ALTERNATIVE_COMPILER_PLUGINS, props.getProperty(ConfigurationKey.ALTERNATIVE_COMPILER_PLUGINS.name()));
             conf.put(ConfigurationKey.ALTERNATIVE_COMPILER_PLUGIN, props.getProperty(ConfigurationKey.ALTERNATIVE_COMPILER_PLUGIN.name()));
             conf.put(ConfigurationKey.ALTERNATIVE_COMPILER_PLUGIN_VERSION, props.getProperty(ConfigurationKey.ALTERNATIVE_COMPILER_PLUGIN_VERSION.name()));
+
+            conf.put(ConfigurationKey.MAVEN_DEFAULT_COMPILE, props.getProperty(ConfigurationKey.MAVEN_DEFAULT_COMPILE.name()));
+            conf.put(ConfigurationKey.MAVEN_PHASE_NONE, props.getProperty(ConfigurationKey.MAVEN_PHASE_NONE.name()));
         }
     }
 

@@ -40,7 +40,7 @@ public class WorkspaceCompilationInfo {
         this.gitRepo = gitRepo;
     }
 
-    public WorkspaceCompilationInfo(Path prjPath, URI remoteRepo, MavenCompiler compiler,Git gitRepo) {
+    public WorkspaceCompilationInfo(Path prjPath, URI remoteRepo, MavenCompiler compiler, Git gitRepo) {
         this.prjPath = prjPath;
         this.remoteRepo = remoteRepo;
         this.compiler = compiler;

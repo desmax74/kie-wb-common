@@ -14,23 +14,25 @@
  * limitations under the License.
  */
 
-package org.kie.workbench.common.services.backend.builder.compiler.configuration;
+package org.kie.workbench.common.services.backend.builder.compiler;
 
-public enum ConfigurationKey {
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
-    MAVEN_PLUGIN_CONFIGURATION,
-    MAVEN_COMPILER_ID,
-    MAVEN_SKIP,
-    MAVEN_SKIP_MAIN,
+public class TestUtil {
 
-    MAVEN_PLUGINS,
-    MAVEN_COMPILER_PLUGIN,
-    MAVEN_COMPILER_PLUGIN_VERSION,
+    public static void copyTree(Path source, Path target) throws IOException {
+        Files.walkFileTree(source, new CopyFileVisitor(source, target));
+    }
 
-    ALTERNATIVE_COMPILER_PLUGINS,
-    ALTERNATIVE_COMPILER_PLUGIN,
-    ALTERNATIVE_COMPILER_PLUGIN_VERSION,
-
-    MAVEN_DEFAULT_COMPILE,
-    MAVEN_PHASE_NONE;
+    public static void rm(File f) {
+        if (f.isDirectory()) {
+            for (File c : f.listFiles())
+                rm(c);
+        }
+        if (!f.delete())
+            System.err.println("Couldn't delete file " + f);
+    }
 }

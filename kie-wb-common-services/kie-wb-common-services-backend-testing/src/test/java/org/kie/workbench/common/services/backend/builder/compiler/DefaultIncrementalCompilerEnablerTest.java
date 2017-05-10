@@ -20,14 +20,16 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.Compilers;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.MavenArgs;
-import org.kie.workbench.common.services.backend.builder.compiler.impl.*;
+import org.kie.workbench.common.services.backend.builder.compiler.impl.DefaultCompilationRequest;
+import org.kie.workbench.common.services.backend.builder.compiler.impl.DefaultIncrementalCompilerEnabler;
+import org.kie.workbench.common.services.backend.builder.compiler.impl.KieCliRequest;
+import org.kie.workbench.common.services.backend.builder.compiler.impl.WorkspaceCompilationInfo;
 
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
 
 public class DefaultIncrementalCompilerEnablerTest {
 
@@ -37,26 +39,27 @@ public class DefaultIncrementalCompilerEnablerTest {
 
     @Test
     public void testReadPomsInaPrjTest() throws Exception {
-        byte[] encoded = Files.readAllBytes(Paths.get("src/test/projects/dummy_multimodule/pom.xml"));
+        Path tmpRoot = Files.createTempDirectory("repo");
+        Path tmp = Files.createDirectories(Paths.get(tmpRoot.toString(), "dummy"));
+        TestUtil.copyTree(Paths.get("src/test/projects/dummy_multimodule_untouched"), tmp);
+        Path mainPom = Paths.get(tmp.toAbsolutePath().toString(), "pom.xml");
+
+        byte[] encoded = Files.readAllBytes(Paths.get(tmp.toAbsolutePath().toString(), "pom.xml"));
         String pomAsAstring = new String(encoded, StandardCharsets.UTF_8);
         Assert.assertFalse(pomAsAstring.contains("<artifactId>takari-lifecycle-plugin</artifactId>"));
         String[] args = {MavenArgs.COMPILE};
-        KieCliRequest kcr = new KieCliRequest(Paths.get("src/test/projects/dummy_multimodule/"), args);
+        KieCliRequest kcr = new KieCliRequest(tmp, args);
 
-        WorkspaceCompilationInfo info = new WorkspaceCompilationInfo(Paths.get("/tmp", "tempRepo"), mavenRepo, new URI("git://repo"),new DefaultMavenCompiler(mavenRepo));
+        WorkspaceCompilationInfo info = new WorkspaceCompilationInfo(tmp, mavenRepo, new URI("git://repo"), new DefaultMavenCompiler(mavenRepo));
         CompilationRequest req = new DefaultCompilationRequest(kcr, info);
         DefaultIncrementalCompilerEnabler enabler = new DefaultIncrementalCompilerEnabler(Compilers.JAVAC);
         Assert.assertTrue(enabler.process(req));
 
-        Finder finder = new Finder(".pom*.xml");
-        Files.walkFileTree(prj, finder);
-        List<Path> filesFound = finder.getFiles();
-        Assert.assertTrue(filesFound.size() == 1);
-
-        encoded = Files.readAllBytes(Paths.get(prj.toString(), filesFound.get(0).toString()));
+        encoded = Files.readAllBytes(Paths.get(mainPom.toString()));
         pomAsAstring = new String(encoded, StandardCharsets.UTF_8);
         Assert.assertTrue(pomAsAstring.contains("<artifactId>takari-lifecycle-plugin</artifactId>"));
 
-        Assert.assertTrue(Files.deleteIfExists(Paths.get(prj.toString(), filesFound.get(0).toString())));
+        TestUtil.rm(tmpRoot.toFile());
     }
+
 }
