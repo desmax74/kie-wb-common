@@ -19,14 +19,29 @@ package org.kie.workbench.common.services.backend.builder.compiler.configuration
 import org.kie.workbench.common.services.backend.builder.compiler.Order;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 public class ConfigurationEnvironmentStrategy implements ConfigurationStrategy, Order {
 
-    private Boolean isvalid = Boolean.FALSE;
+    protected Map<ConfigurationKey, String> conf;
+
+    private Boolean valid = Boolean.TRUE;
 
     public ConfigurationEnvironmentStrategy() {
-        //TODO impl
+        conf = new HashMap<>();
+        Map<String,String> env = System.getenv();
+        ConfigurationKey[] keys = ConfigurationKey.values();
+        for (ConfigurationKey key :keys){
+            String value = env.get(key.name());
+            if(value == null){
+                valid = Boolean.FALSE;
+                break;
+            } else{
+                conf.put(key,value);
+            }
+        }
     }
 
     @Override
@@ -36,11 +51,11 @@ public class ConfigurationEnvironmentStrategy implements ConfigurationStrategy, 
 
     @Override
     public Boolean isValid() {
-        return Boolean.FALSE;
+        return valid;
     }
 
     @Override
     public Map<ConfigurationKey, String> loadConfiguration() {
-        return Collections.emptyMap();
+        return Collections.unmodifiableMap(conf);
     }
 }

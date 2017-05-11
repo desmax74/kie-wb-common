@@ -18,6 +18,7 @@ package org.kie.workbench.common.services.backend.builder.compiler.configuration
 
 import org.kie.workbench.common.services.backend.builder.compiler.Order;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -48,13 +49,13 @@ public class ConfigurationStaticStrategy implements ConfigurationStrategy, Order
         conf.put(ConfigurationKey.ALTERNATIVE_COMPILER_PLUGINS, "io.takari.maven.plugins");
         conf.put(ConfigurationKey.ALTERNATIVE_COMPILER_PLUGIN, "takari-lifecycle-plugin");
         conf.put(ConfigurationKey.ALTERNATIVE_COMPILER_PLUGIN_VERSION, "1.12.4");
-        
+
         valid = Boolean.TRUE;
     }
 
     @Override
     public Map<ConfigurationKey, String> loadConfiguration() {
-        return conf;
+        return Collections.unmodifiableMap(conf);
     }
 
     @Override

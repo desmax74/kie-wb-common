@@ -18,7 +18,7 @@ package org.kie.workbench.common.services.backend.builder.compiler.configuration
 import java.util.*;
 
 /**
- * THis implementation first try to from environment variables then load properties with a files called IncrementalCompiler.properties then an hard coded configuration like the following example
+ * THis implementation first try to load configuration keys from environment variables then load properties with a files called IncrementalCompiler.properties then an hard coded configuration like the following example
  * <p>
  * MAVEN_PLUGIN_CONFIGURATION =configuration
  * MAVEN_COMPILER_ID =compilerId
@@ -32,6 +32,9 @@ import java.util.*;
  * ALTERNATIVE_COMPILER_PLUGINS =io.takari.maven.plugins
  * ALTERNATIVE_COMPILER_PLUGIN =takari-lifecycle-plugin
  * ALTERNATIVE_COMPILER_PLUGIN_VERSION =1.12.4
+ *
+ * MAVEN_DEFAULT_COMPILE=default-compile
+ * MAVEN_PHASE_NONE=none
  * <p>
  */
 public class ConfigurationContextProvider implements ConfigurationProvider {
