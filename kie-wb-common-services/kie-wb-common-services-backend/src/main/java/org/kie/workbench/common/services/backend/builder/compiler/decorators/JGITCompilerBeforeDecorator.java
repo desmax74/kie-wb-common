@@ -16,8 +16,10 @@
 
 package org.kie.workbench.common.services.backend.builder.compiler.decorators;
 
-import org.eclipse.jgit.api.*;
-import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.PullCommand;
+import org.eclipse.jgit.api.PullResult;
+import org.eclipse.jgit.api.RebaseResult;
 import org.kie.workbench.common.services.backend.builder.compiler.CompilationRequest;
 import org.kie.workbench.common.services.backend.builder.compiler.CompilationResponse;
 import org.kie.workbench.common.services.backend.builder.compiler.MavenCompiler;
@@ -25,21 +27,17 @@ import org.kie.workbench.common.services.backend.builder.compiler.impl.DefaultCo
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
 
-public class JGITCompilerDecorator extends CompilerDecorator {
+public class JGITCompilerBeforeDecorator extends CompilerDecorator {
 
-    private static final Logger logger = LoggerFactory.getLogger(JGITCompilerDecorator.class);
+    private static final Logger logger = LoggerFactory.getLogger(JGITCompilerBeforeDecorator.class);
     private final String COMPILED_EXTENSION = ".class";
     private final String REMOTE = "origin";
     private final String REMOTE_BRANCH = "master";
     private MavenCompiler compiler;
 
-    public JGITCompilerDecorator(MavenCompiler compiler) {
+    public JGITCompilerBeforeDecorator(MavenCompiler compiler) {
         this.compiler = compiler;
     }
 
@@ -57,7 +55,6 @@ public class JGITCompilerDecorator extends CompilerDecorator {
     public CompilationResponse compileSync(CompilationRequest req) {
         if (applyBefore(req)) {
             CompilationResponse res = compiler.compileSync(req);
-            applyAfter(req, res);
             return res;
         } else {
             return new DefaultCompilationResponse(Boolean.FALSE);
@@ -90,57 +87,5 @@ public class JGITCompilerDecorator extends CompilerDecorator {
             return result;
         }
         return result;
-    }
-
-    private void applyAfter(CompilationRequest req, CompilationResponse res) {
-        //@TODO ADD JGIT push to sync the .class files
-        Path prj = req.getInfo().getPrjPath().toAbsolutePath();
-
-        Git localRepo = req.getInfo().getGitRepo().get();
-        try {
-            Set<String> filesChanged = localRepo.status().call().getChanged();
-            Map<String, File> trackedChanged = getTrackedChanged(filesChanged, prj);
-
-            Set<String> filesUntracked = localRepo.status().call().getUntracked();
-            Map<String, File> dotClassToAdd = getUntrackedChangedByExtension(filesUntracked, prj, COMPILED_EXTENSION);
-
-            trackedChanged.putAll(dotClassToAdd);
-            if (trackedChanged.size() > 0) {
-                addAndCommit(localRepo, trackedChanged);
-                //@TODO push the result
-
-            }
-        } catch (GitAPIException gex) {
-            logger.error(gex.getMessage());
-        }
-    }
-
-    private void addAndCommit(Git localRepo, Map<String, File> trackedChanged) throws GitAPIException {
-        AddCommand add = localRepo.add();
-        for (String item : trackedChanged.keySet()) {
-            add.addFilepattern(item);
-        }
-        add.call();
-        localRepo.commit().setMessage("Add untracked and changed files").call();
-    }
-
-
-    private Map<String, File> getTrackedChanged(Set<String> changed, Path folderPath) {
-        Map<String, File> map = new HashMap<>();
-        for (String item : changed) {
-            map.put(item, new File(folderPath.getParent().toString(), item));
-        }
-        return map;
-    }
-
-    private Map<String, File> getUntrackedChangedByExtension(Set<String> untracked, Path folderPath, String extension) {
-        Map<String, File> map = new HashMap<>();
-        //@TODO refactor with lambda
-        for (String item : untracked) {
-            if (item.endsWith(extension)) {
-                map.put(item, new File(folderPath.getParent().toString(), item));
-            }
-        }
-        return map;
     }
 }

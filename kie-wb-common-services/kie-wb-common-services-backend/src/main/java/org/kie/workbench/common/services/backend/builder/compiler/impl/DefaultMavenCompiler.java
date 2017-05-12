@@ -13,12 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.kie.workbench.common.services.backend.builder.compiler;
+package org.kie.workbench.common.services.backend.builder.compiler.impl;
 
+import org.kie.workbench.common.services.backend.builder.compiler.CompilationRequest;
+import org.kie.workbench.common.services.backend.builder.compiler.CompilationResponse;
+import org.kie.workbench.common.services.backend.builder.compiler.IncrementalCompilerEnabler;
+import org.kie.workbench.common.services.backend.builder.compiler.MavenCompiler;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.Compilers;
 import org.kie.workbench.common.services.backend.builder.compiler.external.KieMavenCli;
-import org.kie.workbench.common.services.backend.builder.compiler.impl.DefaultCompilationResponse;
-import org.kie.workbench.common.services.backend.builder.compiler.impl.DefaultIncrementalCompilerEnabler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,10 +34,9 @@ import java.util.Optional;
  * to use Takari plugins like a black box
  * <p>
  * <p>
- * Path mavenRepo = Paths.get("<path_to_maven_repo>");
- * MavenCompiler compiler = new DefaultMavenCompiler(mavenRepo);
- * KieCliRequest kcr = new KieCliRequest(Paths.get("<path_to_prj>"), new String[]{MavenGoals.CLEAN,MavenGoals.COMPILE});
- * CompilationRequest req = new DefaultCompilationRequest(kcr);
+ * MavenCompiler compiler = new DefaultMavenCompiler(Paths.get("<path_to_maven_repo>"));
+ * WorkspaceCompilationInfo info = new WorkspaceCompilationInfo(Paths.get("path_to_prj"), URI.create("git://<address></>:<port></>/<repo>"), compiler, cloned);
+ * CompilationRequest req = new DefaultCompilationRequest(info, new String[]{MavenArgs.COMPILE});
  * CompilationResponse res = compiler.compileSync(req);
  */
 public class DefaultMavenCompiler implements MavenCompiler {

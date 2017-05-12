@@ -18,8 +18,10 @@ package org.kie.workbench.common.services.backend.builder.compiler;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.kie.workbench.common.services.backend.builder.compiler.configuration.Decorator;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.MavenArgs;
 import org.kie.workbench.common.services.backend.builder.compiler.impl.DefaultCompilationRequest;
+import org.kie.workbench.common.services.backend.builder.compiler.impl.MavenCompilerFactory;
 import org.kie.workbench.common.services.backend.builder.compiler.impl.WorkspaceCompilationInfo;
 
 import java.net.URI;
@@ -48,7 +50,7 @@ public class DefaultMavenIncrementalCompilerTest {
         Path tmp = Files.createDirectories(Paths.get(tmpRoot.toString(), "dummy"));
         TestUtil.copyTree(Paths.get("src/test/projects/dummy"), tmp);
 
-        DefaultMavenCompiler compiler = new DefaultMavenCompiler(mavenRepo);
+        MavenCompiler compiler = MavenCompilerFactory.getCompiler(mavenRepo, Decorator.NONE);
         Assert.assertTrue(compiler.isValid());
 
         WorkspaceCompilationInfo info = new WorkspaceCompilationInfo(tmp, URI.create("git://repo"), compiler, Boolean.TRUE);
@@ -61,7 +63,7 @@ public class DefaultMavenIncrementalCompilerTest {
 
     @Test()
     public void testIncompleteArguments() {
-        DefaultMavenCompiler compiler = new DefaultMavenCompiler(Paths.get(""));
+        MavenCompiler compiler = MavenCompilerFactory.getCompiler(Paths.get(""), Decorator.NONE);
         Assert.assertFalse(compiler.isValid());
     }
 
@@ -72,7 +74,7 @@ public class DefaultMavenIncrementalCompilerTest {
         Path tmp = Files.createDirectories(Paths.get(tmpRoot.toString(), "dummy"));
         TestUtil.copyTree(Paths.get("src/test/projects/dummy"), tmp);
 
-        MavenCompiler compiler = new DefaultMavenCompiler(mavenRepo);
+        MavenCompiler compiler = MavenCompilerFactory.getCompiler(mavenRepo, Decorator.NONE);
 
         WorkspaceCompilationInfo info = new WorkspaceCompilationInfo(tmp, URI.create("git://repo"), compiler, Boolean.TRUE);
         CompilationRequest req = new DefaultCompilationRequest(info, new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE, MavenArgs.DEBUG});

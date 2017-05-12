@@ -34,9 +34,10 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.kie.workbench.common.services.backend.builder.compiler.configuration.Decorator;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.MavenArgs;
-import org.kie.workbench.common.services.backend.builder.compiler.decorators.JGITCompilerDecorator;
 import org.kie.workbench.common.services.backend.builder.compiler.impl.DefaultCompilationRequest;
+import org.kie.workbench.common.services.backend.builder.compiler.impl.MavenCompilerFactory;
 import org.kie.workbench.common.services.backend.builder.compiler.impl.WorkspaceCompilationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -148,7 +149,7 @@ public class DefaultMavenCompilerOnInMemoryFSTest {
         assertNotNull(cloned);
 
         //Compile the repo
-        MavenCompiler compiler = new DefaultMavenCompiler(mavenRepo);
+        MavenCompiler compiler = MavenCompilerFactory.getCompiler(mavenRepo, Decorator.NONE);
         Path prjFolder = Paths.get(gitClonedFolder + "/dummy/");
         byte[] encoded = Files.readAllBytes(Paths.get(prjFolder + "/pom.xml"));
         String pomAsAstring = new String(encoded, StandardCharsets.UTF_8);
@@ -257,7 +258,7 @@ public class DefaultMavenCompilerOnInMemoryFSTest {
 
         //Compile the repo
 
-        MavenCompiler compiler = new DefaultMavenCompiler(mavenRepo);
+        MavenCompiler compiler = MavenCompilerFactory.getCompiler(mavenRepo, Decorator.NONE);
 
         byte[] encoded = Files.readAllBytes(Paths.get(prjFolder + "/pom.xml"));
         String pomAsAstring = new String(encoded, StandardCharsets.UTF_8);
@@ -333,7 +334,7 @@ public class DefaultMavenCompilerOnInMemoryFSTest {
         assertTrue(rbResult.getStatus().isSuccessful());
 
         //Compile the repo
-        MavenCompiler compiler = new DefaultMavenCompiler(mavenRepo);
+        MavenCompiler compiler = MavenCompilerFactory.getCompiler(mavenRepo, Decorator.NONE);
 
         byte[] encoded = Files.readAllBytes(Paths.get(tmpCloned + "/dummy/pom.xml"));
         String pomAsAstring = new String(encoded, StandardCharsets.UTF_8);
@@ -375,7 +376,7 @@ public class DefaultMavenCompilerOnInMemoryFSTest {
 
     @Test
     public void buildWithDecoratorsTest() throws Exception {
-        MavenCompiler compiler = new JGITCompilerDecorator(new DefaultMavenCompiler(mavenRepo));
+        MavenCompiler compiler =  MavenCompilerFactory.getCompiler(mavenRepo, Decorator.JGIT_BEFORE_AND_AFTER);
 
         String MASTER_BRANCH = "master";
 
