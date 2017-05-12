@@ -28,7 +28,6 @@ import org.apache.maven.settings.building.*;
 import org.apache.maven.settings.crypto.SettingsDecrypter;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
-import org.kie.workbench.common.services.backend.builder.compiler.impl.KieCliRequest;
 import org.slf4j.Logger;
 
 import java.io.File;

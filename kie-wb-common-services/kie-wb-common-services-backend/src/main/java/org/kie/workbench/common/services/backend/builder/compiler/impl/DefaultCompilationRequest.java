@@ -16,6 +16,7 @@
 package org.kie.workbench.common.services.backend.builder.compiler.impl;
 
 import org.kie.workbench.common.services.backend.builder.compiler.CompilationRequest;
+import org.kie.workbench.common.services.backend.builder.compiler.external.KieCliRequest;
 
 import java.net.URI;
 import java.nio.file.Path;
@@ -26,11 +27,11 @@ public class DefaultCompilationRequest implements CompilationRequest {
     private KieCliRequest req;
     private WorkspaceCompilationInfo info;
 
-
-    public DefaultCompilationRequest(KieCliRequest req, WorkspaceCompilationInfo info) {
-        this.req = req;
+    public DefaultCompilationRequest(WorkspaceCompilationInfo info, String[] args) {
         this.info = info;
+        this.req = new KieCliRequest(info.getPrjPath(), args);
     }
+
 
     @Override
     public WorkspaceCompilationInfo getInfo() {

@@ -32,7 +32,7 @@ import java.util.*;
  * ALTERNATIVE_COMPILER_PLUGINS =io.takari.maven.plugins
  * ALTERNATIVE_COMPILER_PLUGIN =takari-lifecycle-plugin
  * ALTERNATIVE_COMPILER_PLUGIN_VERSION =1.12.4
- *
+ * <p>
  * MAVEN_DEFAULT_COMPILE=default-compile
  * MAVEN_PHASE_NONE=none
  * <p>

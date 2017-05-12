@@ -18,22 +18,14 @@ package org.kie.workbench.common.services.backend.builder.compiler.decorators;
 
 import org.eclipse.jgit.api.*;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.dircache.DirCache;
-import org.eclipse.jgit.dircache.DirCacheBuilder;
-import org.eclipse.jgit.dircache.DirCacheEditor;
-import org.eclipse.jgit.transport.CredentialsProvider;
-import org.eclipse.jgit.transport.PushResult;
-import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.kie.workbench.common.services.backend.builder.compiler.CompilationRequest;
 import org.kie.workbench.common.services.backend.builder.compiler.CompilationResponse;
 import org.kie.workbench.common.services.backend.builder.compiler.MavenCompiler;
 import org.kie.workbench.common.services.backend.builder.compiler.impl.DefaultCompilationResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.uberfire.java.nio.fs.jgit.util.JGitUtil;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
@@ -42,14 +34,10 @@ import java.util.Set;
 public class JGITCompilerDecorator extends CompilerDecorator {
 
     private static final Logger logger = LoggerFactory.getLogger(JGITCompilerDecorator.class);
-
-    private MavenCompiler compiler;
-
     private final String COMPILED_EXTENSION = ".class";
-
     private final String REMOTE = "origin";
-
     private final String REMOTE_BRANCH = "master";
+    private MavenCompiler compiler;
 
     public JGITCompilerDecorator(MavenCompiler compiler) {
         this.compiler = compiler;
@@ -90,10 +78,10 @@ public class JGITCompilerDecorator extends CompilerDecorator {
                 }
                 if (rr.getStatus().equals(RebaseResult.Status.UNCOMMITTED_CHANGES)) {
                     PullResult pr = git.pull().call();
-                    if(pr.isSuccessful()){
+                    if (pr.isSuccessful()) {
                         result = Boolean.TRUE;
-                    }else{
-                         result = Boolean.FALSE;
+                    } else {
+                        result = Boolean.FALSE;
                     }
                 }
             } catch (Exception e) {
@@ -117,7 +105,7 @@ public class JGITCompilerDecorator extends CompilerDecorator {
             Map<String, File> dotClassToAdd = getUntrackedChangedByExtension(filesUntracked, prj, COMPILED_EXTENSION);
 
             trackedChanged.putAll(dotClassToAdd);
-            if(trackedChanged.size()>0) {
+            if (trackedChanged.size() > 0) {
                 addAndCommit(localRepo, trackedChanged);
                 //@TODO push the result
 

@@ -22,7 +22,6 @@ import org.kie.workbench.common.services.backend.builder.compiler.configuration.
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.MavenArgs;
 import org.kie.workbench.common.services.backend.builder.compiler.impl.DefaultCompilationRequest;
 import org.kie.workbench.common.services.backend.builder.compiler.impl.DefaultIncrementalCompilerEnabler;
-import org.kie.workbench.common.services.backend.builder.compiler.impl.KieCliRequest;
 import org.kie.workbench.common.services.backend.builder.compiler.impl.WorkspaceCompilationInfo;
 
 import java.net.URI;
@@ -47,11 +46,9 @@ public class DefaultIncrementalCompilerEnablerTest {
         byte[] encoded = Files.readAllBytes(Paths.get(tmp.toAbsolutePath().toString(), "pom.xml"));
         String pomAsAstring = new String(encoded, StandardCharsets.UTF_8);
         Assert.assertFalse(pomAsAstring.contains("<artifactId>takari-lifecycle-plugin</artifactId>"));
-        String[] args = {MavenArgs.COMPILE};
-        KieCliRequest kcr = new KieCliRequest(tmp, args);
 
         WorkspaceCompilationInfo info = new WorkspaceCompilationInfo(tmp, mavenRepo, new URI("git://repo"), new DefaultMavenCompiler(mavenRepo));
-        CompilationRequest req = new DefaultCompilationRequest(kcr, info);
+        CompilationRequest req = new DefaultCompilationRequest(info, new String[]{MavenArgs.COMPILE});
         DefaultIncrementalCompilerEnabler enabler = new DefaultIncrementalCompilerEnabler(Compilers.JAVAC);
         Assert.assertTrue(enabler.process(req));
 

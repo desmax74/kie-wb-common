@@ -37,7 +37,6 @@ import org.junit.Test;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.MavenArgs;
 import org.kie.workbench.common.services.backend.builder.compiler.decorators.JGITCompilerDecorator;
 import org.kie.workbench.common.services.backend.builder.compiler.impl.DefaultCompilationRequest;
-import org.kie.workbench.common.services.backend.builder.compiler.impl.KieCliRequest;
 import org.kie.workbench.common.services.backend.builder.compiler.impl.WorkspaceCompilationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,7 +47,6 @@ import org.uberfire.java.nio.security.FileSystemAuthenticator;
 import org.uberfire.java.nio.security.FileSystemAuthorizer;
 import org.uberfire.java.nio.security.FileSystemUser;
 
-import javax.validation.constraints.AssertFalse;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -157,9 +155,9 @@ public class DefaultMavenCompilerOnInMemoryFSTest {
         Assert.assertFalse(pomAsAstring.contains("<artifactId>takari-lifecycle-plugin</artifactId>"));
 
 
-        KieCliRequest kcr = new KieCliRequest(prjFolder, new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE});
+        //KieCliRequest kcr = new KieCliRequest(prjFolder, new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE});
         WorkspaceCompilationInfo info = new WorkspaceCompilationInfo(prjFolder, URI.create("git://repo"), compiler, Boolean.FALSE);
-        CompilationRequest req = new DefaultCompilationRequest(kcr, info);
+        CompilationRequest req = new DefaultCompilationRequest(info, new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE});
 
         CompilationResponse res = compiler.compileSync(req);
         Assert.assertTrue(res.isSuccessful());
@@ -265,9 +263,9 @@ public class DefaultMavenCompilerOnInMemoryFSTest {
         String pomAsAstring = new String(encoded, StandardCharsets.UTF_8);
         Assert.assertFalse(pomAsAstring.contains("<artifactId>takari-lifecycle-plugin</artifactId>"));
 
-        KieCliRequest kcr = new KieCliRequest(prjFolder, new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE});
+        //KieCliRequest kcr = new KieCliRequest(prjFolder, new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE});
         WorkspaceCompilationInfo info = new WorkspaceCompilationInfo(prjFolder, URI.create("git://repo"), compiler, Boolean.FALSE);
-        CompilationRequest req = new DefaultCompilationRequest(kcr, info);
+        CompilationRequest req = new DefaultCompilationRequest(info, new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE});
 
         CompilationResponse res = compiler.compileSync(req);
         Assert.assertTrue(res.isSuccessful());
@@ -342,9 +340,9 @@ public class DefaultMavenCompilerOnInMemoryFSTest {
         Assert.assertFalse(pomAsAstring.contains("<artifactId>takari-lifecycle-plugin</artifactId>"));
 
         Path prjFolder = Paths.get(tmpCloned + "/dummy/");
-        KieCliRequest kcr = new KieCliRequest(prjFolder, new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE, MavenArgs.DEBUG});
+
         WorkspaceCompilationInfo info = new WorkspaceCompilationInfo(prjFolder, URI.create("git://repo"), compiler, Boolean.FALSE);
-        CompilationRequest req = new DefaultCompilationRequest(kcr, info);
+        CompilationRequest req = new DefaultCompilationRequest(info, new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE, MavenArgs.DEBUG});
 
         CompilationResponse res = compiler.compileSync(req);
         Assert.assertTrue(res.isSuccessful());
@@ -391,7 +389,7 @@ public class DefaultMavenCompilerOnInMemoryFSTest {
         final URI originRepo = URI.create("git://repo");
         final JGitFileSystem origin = (JGitFileSystem) provider.newFileSystem(originRepo,
                 new HashMap<String, Object>() {{
-                        put("listMode", "ALL");
+                    put("listMode", "ALL");
                 }}
         );
         assertNotNull(origin);
@@ -426,8 +424,7 @@ public class DefaultMavenCompilerOnInMemoryFSTest {
         //@TODO refactor and use only one between the URI or Git
         //@TODO find a way to resolve the problem of the prjname inside .git folder
         WorkspaceCompilationInfo info = new WorkspaceCompilationInfo(Paths.get(tmpCloned + "/dummy"), URI.create("git://localhost:9418/repo"), compiler, cloned);
-        KieCliRequest kcr = new KieCliRequest(info.getPrjPath(), new String[]{MavenArgs.COMPILE});
-        CompilationRequest req = new DefaultCompilationRequest(kcr, info);
+        CompilationRequest req = new DefaultCompilationRequest(info, new String[]{MavenArgs.COMPILE});
         CompilationResponse res = compiler.compileSync(req);
         Assert.assertTrue(res.isSuccessful());
 

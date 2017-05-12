@@ -16,7 +16,7 @@
 
 package org.kie.workbench.common.services.backend.builder.compiler;
 
-import org.kie.workbench.common.services.backend.builder.compiler.impl.KieCliRequest;
+import org.kie.workbench.common.services.backend.builder.compiler.external.KieCliRequest;
 import org.kie.workbench.common.services.backend.builder.compiler.impl.WorkspaceCompilationInfo;
 
 import java.nio.file.Path;

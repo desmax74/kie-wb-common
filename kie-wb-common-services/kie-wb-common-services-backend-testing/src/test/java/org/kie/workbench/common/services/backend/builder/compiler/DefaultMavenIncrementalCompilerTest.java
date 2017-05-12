@@ -20,7 +20,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.MavenArgs;
 import org.kie.workbench.common.services.backend.builder.compiler.impl.DefaultCompilationRequest;
-import org.kie.workbench.common.services.backend.builder.compiler.impl.KieCliRequest;
 import org.kie.workbench.common.services.backend.builder.compiler.impl.WorkspaceCompilationInfo;
 
 import java.net.URI;
@@ -51,9 +50,9 @@ public class DefaultMavenIncrementalCompilerTest {
 
         DefaultMavenCompiler compiler = new DefaultMavenCompiler(mavenRepo);
         Assert.assertTrue(compiler.isValid());
-        KieCliRequest kcr = new KieCliRequest(tmp, new String[]{MavenArgs.VERSION, MavenArgs.DEBUG});
+
         WorkspaceCompilationInfo info = new WorkspaceCompilationInfo(tmp, URI.create("git://repo"), compiler, Boolean.TRUE);
-        CompilationRequest req = new DefaultCompilationRequest(kcr, info);
+        CompilationRequest req = new DefaultCompilationRequest(info, new String[]{MavenArgs.VERSION, MavenArgs.DEBUG});
         CompilationResponse res = compiler.compileSync(req);
         Assert.assertTrue(res.isSuccessful());
 
@@ -75,9 +74,8 @@ public class DefaultMavenIncrementalCompilerTest {
 
         MavenCompiler compiler = new DefaultMavenCompiler(mavenRepo);
 
-        KieCliRequest kcr = new KieCliRequest(tmp, new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE, MavenArgs.DEBUG});
         WorkspaceCompilationInfo info = new WorkspaceCompilationInfo(tmp, URI.create("git://repo"), compiler, Boolean.TRUE);
-        CompilationRequest req = new DefaultCompilationRequest(kcr, info);
+        CompilationRequest req = new DefaultCompilationRequest(info, new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE, MavenArgs.DEBUG});
         CompilationResponse res = compiler.compileSync(req);
         Assert.assertTrue(res.isSuccessful());
 

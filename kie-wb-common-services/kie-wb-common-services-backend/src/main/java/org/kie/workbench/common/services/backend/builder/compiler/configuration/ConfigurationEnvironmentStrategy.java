@@ -21,7 +21,6 @@ import org.kie.workbench.common.services.backend.builder.compiler.Order;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 
 public class ConfigurationEnvironmentStrategy implements ConfigurationStrategy, Order {
 
@@ -31,15 +30,15 @@ public class ConfigurationEnvironmentStrategy implements ConfigurationStrategy, 
 
     public ConfigurationEnvironmentStrategy() {
         conf = new HashMap<>();
-        Map<String,String> env = System.getenv();
+        Map<String, String> env = System.getenv();
         ConfigurationKey[] keys = ConfigurationKey.values();
-        for (ConfigurationKey key :keys){
+        for (ConfigurationKey key : keys) {
             String value = env.get(key.name());
-            if(value == null){
+            if (value == null) {
                 valid = Boolean.FALSE;
                 break;
-            } else{
-                conf.put(key,value);
+            } else {
+                conf.put(key, value);
             }
         }
     }
