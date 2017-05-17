@@ -38,7 +38,7 @@ public class DefaultCompilationRequest implements CompilationRequest {
         return info;
     }
 
-    public URI getRepoURI() {
+    public Optional<URI> getRepoURI() {
         return info.getRemoteRepo();
     }
 

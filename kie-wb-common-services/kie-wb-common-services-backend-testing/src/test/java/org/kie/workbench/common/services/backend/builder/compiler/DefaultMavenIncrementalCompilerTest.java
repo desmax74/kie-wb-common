@@ -53,7 +53,7 @@ public class DefaultMavenIncrementalCompilerTest {
         MavenCompiler compiler = MavenCompilerFactory.getCompiler(mavenRepo, Decorator.NONE);
         Assert.assertTrue(compiler.isValid());
 
-        WorkspaceCompilationInfo info = new WorkspaceCompilationInfo(tmp, URI.create("git://repo"), compiler, Boolean.TRUE);
+        WorkspaceCompilationInfo info = new WorkspaceCompilationInfo(tmp, compiler);
         CompilationRequest req = new DefaultCompilationRequest(info, new String[]{MavenArgs.VERSION, MavenArgs.DEBUG});
         CompilationResponse res = compiler.compileSync(req);
         Assert.assertTrue(res.isSuccessful());
@@ -76,7 +76,7 @@ public class DefaultMavenIncrementalCompilerTest {
 
         MavenCompiler compiler = MavenCompilerFactory.getCompiler(mavenRepo, Decorator.NONE);
 
-        WorkspaceCompilationInfo info = new WorkspaceCompilationInfo(tmp, URI.create("git://repo"), compiler, Boolean.TRUE);
+        WorkspaceCompilationInfo info = new WorkspaceCompilationInfo(tmp, compiler);
         CompilationRequest req = new DefaultCompilationRequest(info, new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE, MavenArgs.DEBUG});
         CompilationResponse res = compiler.compileSync(req);
         Assert.assertTrue(res.isSuccessful());

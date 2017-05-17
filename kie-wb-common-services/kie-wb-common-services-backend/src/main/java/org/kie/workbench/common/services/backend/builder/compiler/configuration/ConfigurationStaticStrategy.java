@@ -50,6 +50,9 @@ public class ConfigurationStaticStrategy implements ConfigurationStrategy, Order
         conf.put(ConfigurationKey.ALTERNATIVE_COMPILER_PLUGIN, "takari-lifecycle-plugin");
         conf.put(ConfigurationKey.ALTERNATIVE_COMPILER_PLUGIN_VERSION, "1.12.4");
 
+        conf.put(ConfigurationKey.KIE_MAVEN_PLUGINS, "org.kie");
+        conf.put(ConfigurationKey.KIE_MAVEN_PLUGIN, "kie-maven-plugin");
+
         valid = Boolean.TRUE;
     }
 

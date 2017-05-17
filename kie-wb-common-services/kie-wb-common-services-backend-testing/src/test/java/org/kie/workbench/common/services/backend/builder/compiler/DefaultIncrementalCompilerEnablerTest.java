@@ -46,7 +46,7 @@ public class DefaultIncrementalCompilerEnablerTest {
         String pomAsAstring = new String(encoded, StandardCharsets.UTF_8);
         Assert.assertFalse(pomAsAstring.contains("<artifactId>takari-lifecycle-plugin</artifactId>"));
 
-        WorkspaceCompilationInfo info = new WorkspaceCompilationInfo(tmp, mavenRepo, new URI("git://repo"), MavenCompilerFactory.getCompiler(mavenRepo, Decorator.NONE));
+        WorkspaceCompilationInfo info = new WorkspaceCompilationInfo(tmp, MavenCompilerFactory.getCompiler(mavenRepo, Decorator.NONE));
         CompilationRequest req = new DefaultCompilationRequest(info, new String[]{MavenArgs.COMPILE});
         DefaultIncrementalCompilerEnabler enabler = new DefaultIncrementalCompilerEnabler(Compilers.JAVAC);
         Assert.assertTrue(enabler.process(req));
@@ -54,6 +54,34 @@ public class DefaultIncrementalCompilerEnablerTest {
         encoded = Files.readAllBytes(Paths.get(mainPom.toString()));
         pomAsAstring = new String(encoded, StandardCharsets.UTF_8);
         Assert.assertTrue(pomAsAstring.contains("<artifactId>takari-lifecycle-plugin</artifactId>"));
+
+        TestUtil.rm(tmpRoot.toFile());
+    }
+
+
+    @Test
+    public void testReadKiePluginTest() throws Exception {
+        Path tmpRoot = Files.createTempDirectory("repo");
+        Path tmp = Files.createDirectories(Paths.get(tmpRoot.toString(), "dummy"));
+        TestUtil.copyTree(Paths.get("src/test/projects/dummy_kie_multimodule_untouched"), tmp);
+        Path mainPom = Paths.get(tmp.toAbsolutePath().toString(), "pom.xml");
+
+        byte[] encoded = Files.readAllBytes(Paths.get(tmp.toAbsolutePath().toString(), "pom.xml"));
+        String pomAsAstring = new String(encoded, StandardCharsets.UTF_8);
+        Assert.assertFalse(pomAsAstring.contains("<artifactId>takari-lifecycle-plugin</artifactId>"));
+
+        WorkspaceCompilationInfo info = new WorkspaceCompilationInfo(tmp, MavenCompilerFactory.getCompiler(mavenRepo, Decorator.NONE));
+        CompilationRequest req = new DefaultCompilationRequest(info, new String[]{MavenArgs.COMPILE});
+        DefaultIncrementalCompilerEnabler enabler = new DefaultIncrementalCompilerEnabler(Compilers.JAVAC);
+        Assert.assertTrue(enabler.process(req));
+
+        Assert.assertTrue(info.isKiePluginPresent());
+
+        encoded = Files.readAllBytes(Paths.get(mainPom.toString()));
+        pomAsAstring = new String(encoded, StandardCharsets.UTF_8);
+        Assert.assertTrue(pomAsAstring.contains("<artifactId>takari-lifecycle-plugin</artifactId>"));
+
+        Assert.assertTrue(pomAsAstring.contains("kie-maven-plugin"));
 
         TestUtil.rm(tmpRoot.toFile());
     }

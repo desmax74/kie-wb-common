@@ -57,6 +57,9 @@ public class ConfigurationPropertiesStrategy implements ConfigurationStrategy, O
 
             conf.put(ConfigurationKey.MAVEN_DEFAULT_COMPILE, props.getProperty(ConfigurationKey.MAVEN_DEFAULT_COMPILE.name()));
             conf.put(ConfigurationKey.MAVEN_PHASE_NONE, props.getProperty(ConfigurationKey.MAVEN_PHASE_NONE.name()));
+
+            conf.put(ConfigurationKey.KIE_MAVEN_PLUGINS, props.getProperty(ConfigurationKey.KIE_MAVEN_PLUGINS.name()));
+            conf.put(ConfigurationKey.KIE_MAVEN_PLUGIN, props.getProperty(ConfigurationKey.KIE_MAVEN_PLUGIN.name()));
         }
     }
 

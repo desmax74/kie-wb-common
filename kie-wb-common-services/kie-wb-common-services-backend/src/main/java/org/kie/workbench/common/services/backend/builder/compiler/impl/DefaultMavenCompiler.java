@@ -99,14 +99,6 @@ public class DefaultMavenCompiler implements MavenCompiler {
         }
         req.getKieCliRequest().getRequest().setLocalRepositoryPath(mavenRepo.toAbsolutePath().toString());
         int exitCode = cli.doMain(req.getKieCliRequest());
-        try {
-            //this will not be common
-            if (req.getPomFile().isPresent() && req.getInfo().deleteEnhancedPomBetweenCompilation()) {
-                Files.deleteIfExists(req.getPomFile().get());
-            }
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-        }
         if (exitCode == 0) {
             return new DefaultCompilationResponse(Boolean.TRUE);
         } else {

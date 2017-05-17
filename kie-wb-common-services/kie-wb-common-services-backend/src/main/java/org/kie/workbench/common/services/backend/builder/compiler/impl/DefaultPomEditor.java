@@ -94,9 +94,9 @@ public class DefaultPomEditor implements PomEditor {
 
             PomPlaceHolder pomPH = new PomPlaceHolder(pom.toAbsolutePath().toString(), model.getArtifactId(), model.getGroupId(), model.getVersion(), model.getPackaging(), Files.readAllBytes(Paths.get(pom.toAbsolutePath().toString())));
 
-            if (/*model.getPackaging().equals(POM) &&*/ !history.contains(pomPH)) {
+            if (!history.contains(pomPH) /* && model.getPackaging().equals(POM)*/) {
 
-                updatePom(model);
+                updatePom(model, request);
 
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 writer.write(baos, model);
@@ -113,7 +113,7 @@ public class DefaultPomEditor implements PomEditor {
         }
     }
 
-    private void updatePom(Model model) {
+    private void updatePom(Model model, CompilationRequest req) {
 
         Build build = model.getBuild();
         if (build == null) {  //pom without build tag
@@ -124,15 +124,24 @@ public class DefaultPomEditor implements PomEditor {
         Boolean alternativeCompilerPluginPresent = Boolean.FALSE;
         List<Plugin> buildPlugins = build.getPlugins();
         for (Plugin plugin : buildPlugins) {
+
+            // Check if is present the default maven compiler
             if (plugin.getGroupId().equals(conf.get(ConfigurationKey.MAVEN_PLUGINS)) &&
                     plugin.getArtifactId().equals(conf.get(ConfigurationKey.MAVEN_COMPILER_PLUGIN))) {
                 defaultCompilerPluginPresent = Boolean.TRUE;
                 disableMavenCompilerAlreadyPresent(plugin); // disable the maven compiler if present
             }
+            //check if is present the alternative maven compiler
             if (plugin.getGroupId().equals(conf.get(ConfigurationKey.ALTERNATIVE_COMPILER_PLUGINS)) &&
                     plugin.getArtifactId().equals(conf.get(ConfigurationKey.ALTERNATIVE_COMPILER_PLUGIN))) {
                 alternativeCompilerPluginPresent = Boolean.TRUE;
                 break; // alternative compiler plugin is present skip the pom
+            }
+
+            //check if is present the kie plugin  @TODO is configured with kjar packaging ?
+            if(plugin.getGroupId().equals(conf.get(ConfigurationKey.KIE_MAVEN_PLUGINS)) &&
+                    plugin.getArtifactId().equals(conf.get(ConfigurationKey.KIE_MAVEN_PLUGIN))){
+                 req.getInfo().lateAdditionKiePluginPresent(Boolean.TRUE);
             }
         }
 

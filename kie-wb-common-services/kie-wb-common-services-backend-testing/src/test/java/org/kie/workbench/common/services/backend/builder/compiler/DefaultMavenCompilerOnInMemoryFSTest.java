@@ -157,7 +157,7 @@ public class DefaultMavenCompilerOnInMemoryFSTest {
 
 
         //KieCliRequest kcr = new KieCliRequest(prjFolder, new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE});
-        WorkspaceCompilationInfo info = new WorkspaceCompilationInfo(prjFolder, URI.create("git://repo"), compiler, Boolean.FALSE);
+        WorkspaceCompilationInfo info = new WorkspaceCompilationInfo(prjFolder, compiler);
         CompilationRequest req = new DefaultCompilationRequest(info, new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE});
 
         CompilationResponse res = compiler.compileSync(req);
@@ -264,8 +264,7 @@ public class DefaultMavenCompilerOnInMemoryFSTest {
         String pomAsAstring = new String(encoded, StandardCharsets.UTF_8);
         Assert.assertFalse(pomAsAstring.contains("<artifactId>takari-lifecycle-plugin</artifactId>"));
 
-        //KieCliRequest kcr = new KieCliRequest(prjFolder, new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE});
-        WorkspaceCompilationInfo info = new WorkspaceCompilationInfo(prjFolder, URI.create("git://repo"), compiler, Boolean.FALSE);
+        WorkspaceCompilationInfo info = new WorkspaceCompilationInfo(prjFolder, compiler);
         CompilationRequest req = new DefaultCompilationRequest(info, new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE});
 
         CompilationResponse res = compiler.compileSync(req);
@@ -342,7 +341,7 @@ public class DefaultMavenCompilerOnInMemoryFSTest {
 
         Path prjFolder = Paths.get(tmpCloned + "/dummy/");
 
-        WorkspaceCompilationInfo info = new WorkspaceCompilationInfo(prjFolder, URI.create("git://repo"), compiler, Boolean.FALSE);
+        WorkspaceCompilationInfo info = new WorkspaceCompilationInfo(prjFolder, compiler);
         CompilationRequest req = new DefaultCompilationRequest(info, new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE, MavenArgs.DEBUG});
 
         CompilationResponse res = compiler.compileSync(req);
