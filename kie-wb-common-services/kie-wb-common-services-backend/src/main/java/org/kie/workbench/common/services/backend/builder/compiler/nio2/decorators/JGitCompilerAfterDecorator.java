@@ -14,14 +14,15 @@
  * limitations under the License.
  */
 
-package org.kie.workbench.common.services.backend.builder.compiler.decorators;
+package org.kie.workbench.common.services.backend.builder.compiler.nio2.decorators;
 
 import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.kie.workbench.common.services.backend.builder.compiler.CompilationRequest;
 import org.kie.workbench.common.services.backend.builder.compiler.CompilationResponse;
-import org.kie.workbench.common.services.backend.builder.compiler.MavenCompiler;
+import org.kie.workbench.common.services.backend.builder.compiler.decorators.CompilerDecorator;
+import org.kie.workbench.common.services.backend.builder.compiler.nio2.NIOCompilationRequest;
+import org.kie.workbench.common.services.backend.builder.compiler.nio2.NIOMavenCompiler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,9 +38,9 @@ public class JGitCompilerAfterDecorator extends CompilerDecorator {
     private final String COMPILED_EXTENSION = ".class";
     private final String REMOTE = "origin";
     private final String REMOTE_BRANCH = "master";
-    private MavenCompiler compiler;
+    private NIOMavenCompiler compiler;
 
-    public JGitCompilerAfterDecorator(MavenCompiler compiler) {
+    public JGitCompilerAfterDecorator(NIOMavenCompiler compiler) {
         this.compiler = compiler;
     }
 
@@ -54,7 +55,7 @@ public class JGitCompilerAfterDecorator extends CompilerDecorator {
     }
 
     @Override
-    public CompilationResponse compileSync(CompilationRequest req) {
+    public CompilationResponse compileSync(NIOCompilationRequest req) {
 
         CompilationResponse res = compiler.compileSync(req);
         if (res.isSuccessful()) {
@@ -64,7 +65,7 @@ public class JGitCompilerAfterDecorator extends CompilerDecorator {
     }
 
 
-    private void applyAfter(CompilationRequest req, CompilationResponse res) {
+    private void applyAfter(NIOCompilationRequest req, CompilationResponse res) {
         //@TODO ADD JGIT push to sync the .class files
         Path prj = req.getInfo().getPrjPath().toAbsolutePath();
 

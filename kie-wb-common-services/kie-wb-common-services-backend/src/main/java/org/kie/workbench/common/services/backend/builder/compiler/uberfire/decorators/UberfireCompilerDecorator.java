@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package org.kie.workbench.common.services.backend.builder.compiler.decorators;
+package org.kie.workbench.common.services.backend.builder.compiler.uberfire.decorators;
 
-import org.kie.workbench.common.services.backend.builder.compiler.nio2.NIOMavenCompiler;
+import org.kie.workbench.common.services.backend.builder.compiler.uberfire.UberfireMavenCompiler;
 
-public abstract class CompilerDecorator implements NIOMavenCompiler {
+public abstract class UberfireCompilerDecorator implements UberfireMavenCompiler {
 }

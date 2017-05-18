@@ -13,28 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.kie.workbench.common.services.backend.builder.compiler.impl;
+package org.kie.workbench.common.services.backend.builder.compiler.nio2.impl;
 
-import org.kie.workbench.common.services.backend.builder.compiler.CompilationRequest;
 import org.kie.workbench.common.services.backend.builder.compiler.external.KieCliRequest;
+import org.kie.workbench.common.services.backend.builder.compiler.nio2.NIOCompilationRequest;
 
 import java.net.URI;
 import java.nio.file.Path;
 import java.util.Optional;
 
-public class DefaultCompilationRequest implements CompilationRequest {
+public class NIODefaultCompilationRequest implements NIOCompilationRequest {
 
     private KieCliRequest req;
-    private WorkspaceCompilationInfo info;
+    private NIOWorkspaceCompilationInfo info;
 
-    public DefaultCompilationRequest(WorkspaceCompilationInfo info, String[] args) {
+    public NIODefaultCompilationRequest(NIOWorkspaceCompilationInfo info, String[] args) {
         this.info = info;
-        this.req = new KieCliRequest(info.getPrjPath(), args);
+        this.req = new KieCliRequest(info.getPrjPath().toAbsolutePath().toString(), args);
     }
 
 
     @Override
-    public WorkspaceCompilationInfo getInfo() {
+    public NIOWorkspaceCompilationInfo getInfo() {
         return info;
     }
 

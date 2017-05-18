@@ -13,18 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.kie.workbench.common.services.backend.builder.compiler;
+package org.kie.workbench.common.services.backend.builder.compiler.nio;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.kie.workbench.common.services.backend.builder.compiler.CompilationResponse;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.Decorator;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.MavenArgs;
-import org.kie.workbench.common.services.backend.builder.compiler.impl.DefaultCompilationRequest;
-import org.kie.workbench.common.services.backend.builder.compiler.impl.MavenCompilerFactory;
-import org.kie.workbench.common.services.backend.builder.compiler.impl.WorkspaceCompilationInfo;
+import org.kie.workbench.common.services.backend.builder.compiler.nio2.NIOCompilationRequest;
+import org.kie.workbench.common.services.backend.builder.compiler.nio2.NIOMavenCompiler;
+import org.kie.workbench.common.services.backend.builder.compiler.nio2.impl.NIODefaultCompilationRequest;
+import org.kie.workbench.common.services.backend.builder.compiler.nio2.impl.NIOMavenCompilerFactory;
+import org.kie.workbench.common.services.backend.builder.compiler.nio2.impl.NIOWorkspaceCompilationInfo;
 
-import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -50,11 +52,11 @@ public class DefaultMavenIncrementalCompilerTest {
         Path tmp = Files.createDirectories(Paths.get(tmpRoot.toString(), "dummy"));
         TestUtil.copyTree(Paths.get("src/test/projects/dummy"), tmp);
 
-        MavenCompiler compiler = MavenCompilerFactory.getCompiler(mavenRepo, Decorator.NONE);
+        NIOMavenCompiler compiler = NIOMavenCompilerFactory.getCompiler(mavenRepo, Decorator.NONE);
         Assert.assertTrue(compiler.isValid());
 
-        WorkspaceCompilationInfo info = new WorkspaceCompilationInfo(tmp, compiler);
-        CompilationRequest req = new DefaultCompilationRequest(info, new String[]{MavenArgs.VERSION, MavenArgs.DEBUG});
+        NIOWorkspaceCompilationInfo info = new NIOWorkspaceCompilationInfo(tmp, compiler);
+        NIOCompilationRequest req = new NIODefaultCompilationRequest(info, new String[]{MavenArgs.VERSION, MavenArgs.DEBUG});
         CompilationResponse res = compiler.compileSync(req);
         Assert.assertTrue(res.isSuccessful());
 
@@ -63,7 +65,7 @@ public class DefaultMavenIncrementalCompilerTest {
 
     @Test()
     public void testIncompleteArguments() {
-        MavenCompiler compiler = MavenCompilerFactory.getCompiler(Paths.get(""), Decorator.NONE);
+        NIOMavenCompiler compiler = NIOMavenCompilerFactory.getCompiler(Paths.get(""), Decorator.NONE);
         Assert.assertFalse(compiler.isValid());
     }
 
@@ -74,10 +76,10 @@ public class DefaultMavenIncrementalCompilerTest {
         Path tmp = Files.createDirectories(Paths.get(tmpRoot.toString(), "dummy"));
         TestUtil.copyTree(Paths.get("src/test/projects/dummy"), tmp);
 
-        MavenCompiler compiler = MavenCompilerFactory.getCompiler(mavenRepo, Decorator.NONE);
+        NIOMavenCompiler compiler = NIOMavenCompilerFactory.getCompiler(mavenRepo, Decorator.NONE);
 
-        WorkspaceCompilationInfo info = new WorkspaceCompilationInfo(tmp, compiler);
-        CompilationRequest req = new DefaultCompilationRequest(info, new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE, MavenArgs.DEBUG});
+        NIOWorkspaceCompilationInfo info = new NIOWorkspaceCompilationInfo(tmp, compiler);
+        NIOCompilationRequest req = new NIODefaultCompilationRequest(info, new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE, MavenArgs.DEBUG});
         CompilationResponse res = compiler.compileSync(req);
         Assert.assertTrue(res.isSuccessful());
 

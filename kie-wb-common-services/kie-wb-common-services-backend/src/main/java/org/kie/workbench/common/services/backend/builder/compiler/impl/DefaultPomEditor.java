@@ -23,7 +23,7 @@ import org.apache.maven.model.PluginExecution;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
-import org.kie.workbench.common.services.backend.builder.compiler.CompilationRequest;
+import org.kie.workbench.common.services.backend.builder.compiler.PluginPresents;
 import org.kie.workbench.common.services.backend.builder.compiler.PomEditor;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.Compilers;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.ConfigurationKey;
@@ -32,26 +32,19 @@ import org.kie.workbench.common.services.backend.builder.compiler.configuration.
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.*;
 
 public class DefaultPomEditor implements PomEditor {
 
-    private static final Logger logger = LoggerFactory.getLogger(DefaultPomEditor.class);
     public final String POM = "pom";
     public final String TRUE = "true";
-    private final String POM_NAME = "pom.xml";
-    private Compilers compiler;
-    private Map<ConfigurationKey, String> conf;
-    private MavenXpp3Reader reader;
-    private MavenXpp3Writer writer;
-    private Set<PomPlaceHolder> history;
+    public final String POM_NAME = "pom.xml";
+    protected final Logger logger = LoggerFactory.getLogger(DefaultPomEditor.class);
+    protected Compilers compiler;
+    protected Map<ConfigurationKey, String> conf;
+    protected MavenXpp3Reader reader;
+    protected MavenXpp3Writer writer;
+    protected Set<PomPlaceHolder> history;
 
     public DefaultPomEditor(Set<PomPlaceHolder> history, ConfigurationProvider config, Compilers compiler) {
         conf = config.loadConfiguration();
@@ -71,49 +64,7 @@ public class DefaultPomEditor implements PomEditor {
     }
 
 
-    public PomPlaceHolder readSingle(Path pom) {
-        PomPlaceHolder holder = new PomPlaceHolder();
-        try {
-            Model model = reader.read(new ByteArrayInputStream(Files.readAllBytes(pom)));
-            holder = new PomPlaceHolder(pom.toAbsolutePath().toString(), model.getArtifactId(), model.getGroupId(), model.getVersion(), model.getPackaging());
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-        }
-        return holder;
-    }
-
-
-    public void write(Path pom, CompilationRequest request) {
-
-        try {
-            Model model = reader.read(new ByteArrayInputStream(Files.readAllBytes(pom)));
-            if (model == null) {
-                logger.error("Model null from pom file:", pom.toString());
-                return;
-            }
-
-            PomPlaceHolder pomPH = new PomPlaceHolder(pom.toAbsolutePath().toString(), model.getArtifactId(), model.getGroupId(), model.getVersion(), model.getPackaging(), Files.readAllBytes(Paths.get(pom.toAbsolutePath().toString())));
-
-            if (!history.contains(pomPH) /* && model.getPackaging().equals(POM)*/) {
-
-                updatePom(model, request);
-
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                writer.write(baos, model);
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Pom changed:{}", new String(baos.toByteArray(), StandardCharsets.UTF_8));
-                }
-                Files.write(Paths.get(pom.getParent().toAbsolutePath().toString(), POM_NAME),
-                        baos.toByteArray(), StandardOpenOption.WRITE);//enhanced pom
-                history.add(pomPH);
-            }
-
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-        }
-    }
-
-    private void updatePom(Model model, CompilationRequest req) {
+    protected PluginPresents updatePom(Model model) {
 
         Build build = model.getBuild();
         if (build == null) {  //pom without build tag
@@ -122,6 +73,7 @@ public class DefaultPomEditor implements PomEditor {
         }
         Boolean defaultCompilerPluginPresent = Boolean.FALSE;
         Boolean alternativeCompilerPluginPresent = Boolean.FALSE;
+        Boolean kiePluginPresent = Boolean.FALSE;
         List<Plugin> buildPlugins = build.getPlugins();
         for (Plugin plugin : buildPlugins) {
 
@@ -139,9 +91,9 @@ public class DefaultPomEditor implements PomEditor {
             }
 
             //check if is present the kie plugin  @TODO is configured with kjar packaging ?
-            if(plugin.getGroupId().equals(conf.get(ConfigurationKey.KIE_MAVEN_PLUGINS)) &&
-                    plugin.getArtifactId().equals(conf.get(ConfigurationKey.KIE_MAVEN_PLUGIN))){
-                 req.getInfo().lateAdditionKiePluginPresent(Boolean.TRUE);
+            if (plugin.getGroupId().equals(conf.get(ConfigurationKey.KIE_MAVEN_PLUGINS)) &&
+                    plugin.getArtifactId().equals(conf.get(ConfigurationKey.KIE_MAVEN_PLUGIN))) {
+                kiePluginPresent = Boolean.TRUE;
             }
         }
 
@@ -156,9 +108,11 @@ public class DefaultPomEditor implements PomEditor {
             disableMavenCompilerAlreadyPresent(disabledDefaultCompiler);
             build.addPlugin(disabledDefaultCompiler);
         }
+
+        return new DefaultPluginPresents(defaultCompilerPluginPresent, alternativeCompilerPluginPresent, kiePluginPresent);
     }
 
-    private Plugin getNewCompilerPlugin() {
+    protected Plugin getNewCompilerPlugin() {
 
         Plugin newCompilerPlugin = new Plugin();
         newCompilerPlugin.setGroupId(conf.get(ConfigurationKey.ALTERNATIVE_COMPILER_PLUGINS));
@@ -181,7 +135,7 @@ public class DefaultPomEditor implements PomEditor {
         return newCompilerPlugin;
     }
 
-    private void disableMavenCompilerAlreadyPresent(Plugin plugin) {
+    protected void disableMavenCompilerAlreadyPresent(Plugin plugin) {
         Xpp3Dom skipMain = new Xpp3Dom(conf.get(ConfigurationKey.MAVEN_SKIP_MAIN));
         skipMain.setValue(TRUE);
         Xpp3Dom skip = new Xpp3Dom(conf.get(ConfigurationKey.MAVEN_SKIP));

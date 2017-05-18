@@ -21,7 +21,6 @@ import org.apache.maven.execution.DefaultMavenExecutionRequest;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.codehaus.plexus.classworlds.ClassWorld;
 
-import java.nio.file.Path;
 import java.util.Properties;
 
 /**
@@ -33,7 +32,7 @@ public class KieCliRequest {
     private CommandLine commandLine;
     private ClassWorld classWorld;
     private String workingDirectory;
-    private Path multiModuleProjectDirectory;
+    private String multiModuleProjectDirectory;
     private boolean debug;
     private boolean quiet;
     private boolean showErrors = true;
@@ -41,7 +40,7 @@ public class KieCliRequest {
     private Properties systemProperties = new Properties();
     private MavenExecutionRequest request;
 
-    public KieCliRequest(Path multiModuleProjectDirectory, String[] args) {
+    public KieCliRequest(String multiModuleProjectDirectory, String[] args) {
         this.multiModuleProjectDirectory = multiModuleProjectDirectory;
         this.workingDirectory = multiModuleProjectDirectory.toString();
         this.request = new DefaultMavenExecutionRequest();
@@ -80,11 +79,11 @@ public class KieCliRequest {
         this.workingDirectory = workingDirectory;
     }
 
-    public Path getMultiModuleProjectDirectory() {
+    public String getMultiModuleProjectDirectory() {
         return multiModuleProjectDirectory;
     }
 
-    public void setMultiModuleProjectDirectory(Path multiModuleProjectDirectory) {
+    public void setMultiModuleProjectDirectory(String multiModuleProjectDirectory) {
         this.multiModuleProjectDirectory = multiModuleProjectDirectory;
     }
 

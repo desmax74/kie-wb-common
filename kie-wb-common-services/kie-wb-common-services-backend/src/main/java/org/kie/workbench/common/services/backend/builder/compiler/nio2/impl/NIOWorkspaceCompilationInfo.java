@@ -14,21 +14,21 @@
  * limitations under the License.
  */
 
-package org.kie.workbench.common.services.backend.builder.compiler.impl;
+package org.kie.workbench.common.services.backend.builder.compiler.nio2.impl;
 
 import org.eclipse.jgit.api.Git;
-import org.kie.workbench.common.services.backend.builder.compiler.MavenCompiler;
+import org.kie.workbench.common.services.backend.builder.compiler.nio2.NIOMavenCompiler;
 
 import java.net.URI;
 import java.nio.file.Path;
 import java.util.Optional;
 
-public class WorkspaceCompilationInfo {
+public class NIOWorkspaceCompilationInfo {
 
     private Path prjPath;
     private Path enhancedMainPomFile;
     private URI remoteRepo;
-    private MavenCompiler compiler;
+    private NIOMavenCompiler compiler;
     private Git gitRepo;
     private Boolean kiePluginPresent = Boolean.FALSE;
 
@@ -39,14 +39,14 @@ public class WorkspaceCompilationInfo {
         this.compiler = compiler;
     }*/
 
-    public WorkspaceCompilationInfo(Path prjPath, URI remoteRepo, MavenCompiler compiler, Git gitRepo) {
+    public NIOWorkspaceCompilationInfo(Path prjPath, URI remoteRepo, NIOMavenCompiler compiler, Git gitRepo) {
         this.prjPath = prjPath;
         this.remoteRepo = remoteRepo;
         this.compiler = compiler;
         this.gitRepo = gitRepo;
     }
 
-    public WorkspaceCompilationInfo(Path prjPath, MavenCompiler compiler) {
+    public NIOWorkspaceCompilationInfo(Path prjPath, NIOMavenCompiler compiler) {
         this.prjPath = prjPath;
         this.compiler = compiler;
     }
@@ -75,20 +75,20 @@ public class WorkspaceCompilationInfo {
         return Boolean.FALSE;
     }
 
-    public Boolean lateAdditionKiePluginPresent(Boolean present){
-        if((kiePluginPresent == null && present != null)) {
+    public Boolean lateAdditionKiePluginPresent(Boolean present) {
+        if ((kiePluginPresent == null && present != null)) {
             this.kiePluginPresent = present;
-            return  Boolean.TRUE;
+            return Boolean.TRUE;
         }
-        if(present != null){
+        if (present != null) {
             kiePluginPresent = present;
             return Boolean.TRUE;
         }
         return Boolean.FALSE;
     }
 
-    public Boolean isKiePluginPresent(){
-        return  kiePluginPresent;
+    public Boolean isKiePluginPresent() {
+        return kiePluginPresent;
     }
 
     public Optional<Git> getGitRepo() {
@@ -116,14 +116,14 @@ public class WorkspaceCompilationInfo {
     }
 
     public Optional<URI> getRemoteRepo() {
-        if(remoteRepo != null){
+        if (remoteRepo != null) {
             return Optional.of(remoteRepo);
-        }else{
+        } else {
             return Optional.empty();
         }
     }
 
-    public MavenCompiler getCompiler() {
+    public NIOMavenCompiler getCompiler() {
         return compiler;
     }
 

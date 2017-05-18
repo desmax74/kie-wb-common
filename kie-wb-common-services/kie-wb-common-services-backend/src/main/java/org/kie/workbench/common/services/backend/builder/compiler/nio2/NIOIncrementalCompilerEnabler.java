@@ -14,25 +14,13 @@
  * limitations under the License.
  */
 
-package org.kie.workbench.common.services.backend.builder.compiler;
+package org.kie.workbench.common.services.backend.builder.compiler.nio2;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
+/**
+ * Process the pom files before the compilation
+ */
+public interface NIOIncrementalCompilerEnabler {
 
-public class TestUtil {
+    Boolean process(NIOCompilationRequest req);
 
-    public static void copyTree(Path source, Path target) throws IOException {
-        Files.walkFileTree(source, new CopyFileVisitor(source, target));
-    }
-
-    public static void rm(File f) {
-        if (f.isDirectory()) {
-            for (File c : f.listFiles())
-                rm(c);
-        }
-        if (!f.delete())
-            System.err.println("Couldn't delete file " + f);
-    }
 }

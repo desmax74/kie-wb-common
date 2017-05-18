@@ -14,9 +14,25 @@
  * limitations under the License.
  */
 
-package org.kie.workbench.common.services.backend.builder.compiler.decorators;
+package org.kie.workbench.common.services.backend.builder.compiler.nio;
 
-import org.kie.workbench.common.services.backend.builder.compiler.nio2.NIOMavenCompiler;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
-public abstract class CompilerDecorator implements NIOMavenCompiler {
+public class TestUtil {
+
+    public static void copyTree(Path source, Path target) throws IOException {
+        Files.walkFileTree(source, new CopyFileVisitor(source, target));
+    }
+
+    public static void rm(File f) {
+        if (f.isDirectory()) {
+            for (File c : f.listFiles())
+                rm(c);
+        }
+        if (!f.delete())
+            System.err.println("Couldn't delete file " + f);
+    }
 }

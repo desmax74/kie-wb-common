@@ -13,18 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.kie.workbench.common.services.backend.builder.compiler.impl;
+package org.kie.workbench.common.services.backend.builder.compiler.nio2.impl;
 
-import org.kie.workbench.common.services.backend.builder.compiler.CompilationRequest;
 import org.kie.workbench.common.services.backend.builder.compiler.CompilationResponse;
-import org.kie.workbench.common.services.backend.builder.compiler.IncrementalCompilerEnabler;
-import org.kie.workbench.common.services.backend.builder.compiler.MavenCompiler;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.Compilers;
 import org.kie.workbench.common.services.backend.builder.compiler.external.KieMavenCli;
+import org.kie.workbench.common.services.backend.builder.compiler.impl.DefaultCompilationResponse;
+import org.kie.workbench.common.services.backend.builder.compiler.nio2.NIOCompilationRequest;
+import org.kie.workbench.common.services.backend.builder.compiler.nio2.NIOIncrementalCompilerEnabler;
+import org.kie.workbench.common.services.backend.builder.compiler.nio2.NIOMavenCompiler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
@@ -39,20 +39,20 @@ import java.util.Optional;
  * CompilationRequest req = new DefaultCompilationRequest(info, new String[]{MavenArgs.COMPILE});
  * CompilationResponse res = compiler.compileSync(req);
  */
-public class DefaultMavenCompiler implements MavenCompiler {
+public class NIODefaultMavenCompiler implements NIOMavenCompiler {
 
-    private static final Logger logger = LoggerFactory.getLogger(DefaultMavenCompiler.class);
+    private static final Logger logger = LoggerFactory.getLogger(NIODefaultMavenCompiler.class);
 
     private KieMavenCli cli;
 
     private Path mavenRepo;
 
-    private IncrementalCompilerEnabler enabler;
+    private NIOIncrementalCompilerEnabler enabler;
 
-    public DefaultMavenCompiler(Path mavenRepo) {
+    public NIODefaultMavenCompiler(Path mavenRepo) {
         this.mavenRepo = mavenRepo;
         cli = new KieMavenCli();
-        enabler = new DefaultIncrementalCompilerEnabler(Compilers.JAVAC);
+        enabler = new NIODefaultIncrementalCompilerEnabler(Compilers.JAVAC);
     }
 
 
@@ -86,7 +86,7 @@ public class DefaultMavenCompiler implements MavenCompiler {
 
 
     @Override
-    public CompilationResponse compileSync(CompilationRequest req) {
+    public CompilationResponse compileSync(NIOCompilationRequest req) {
         if (logger.isDebugEnabled()) {
             logger.debug("KieCompilationRequest:{}", req);
         }

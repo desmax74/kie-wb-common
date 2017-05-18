@@ -14,30 +14,30 @@
  * limitations under the License.
  */
 
-package org.kie.workbench.common.services.backend.builder.compiler.impl;
+package org.kie.workbench.common.services.backend.builder.compiler.nio2.impl;
 
-import org.kie.workbench.common.services.backend.builder.compiler.MavenCompiler;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.Decorator;
-import org.kie.workbench.common.services.backend.builder.compiler.decorators.JGITCompilerBeforeDecorator;
-import org.kie.workbench.common.services.backend.builder.compiler.decorators.JGitCompilerAfterDecorator;
+import org.kie.workbench.common.services.backend.builder.compiler.nio2.NIOMavenCompiler;
+import org.kie.workbench.common.services.backend.builder.compiler.nio2.decorators.JGITCompilerBeforeDecorator;
+import org.kie.workbench.common.services.backend.builder.compiler.nio2.decorators.JGitCompilerAfterDecorator;
 
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class MavenCompilerFactory {
+public class NIOMavenCompilerFactory {
 
-    private static Map<Path, MavenCompiler> compilers = new ConcurrentHashMap<>();
+    private static Map<Path, NIOMavenCompiler> compilers = new ConcurrentHashMap<>();
 
-    private MavenCompilerFactory() {
+    private NIOMavenCompilerFactory() {
     }
 
 
     /**
      * Provides a Maven compiler decorated with a Decorator Behaviour
      */
-    public static MavenCompiler getCompiler(Path mavenRepo, Decorator decorator) {
-        MavenCompiler compiler = compilers.get(mavenRepo);
+    public static NIOMavenCompiler getCompiler(Path mavenRepo, Decorator decorator) {
+        NIOMavenCompiler compiler = compilers.get(mavenRepo);
         if (compiler == null) {
             compiler = createAndAddNewCompiler(mavenRepo, decorator);
         }
@@ -45,26 +45,26 @@ public class MavenCompilerFactory {
     }
 
 
-    private static MavenCompiler createAndAddNewCompiler(Path mavenRepo, Decorator decorator) {
+    private static NIOMavenCompiler createAndAddNewCompiler(Path mavenRepo, Decorator decorator) {
         switch (decorator) {
             case NONE:
-                compilers.put(mavenRepo, new DefaultMavenCompiler(mavenRepo));
+                compilers.put(mavenRepo, new NIODefaultMavenCompiler(mavenRepo));
                 break;
 
             case JGIT_BEFORE:
-                compilers.put(mavenRepo, new JGITCompilerBeforeDecorator(new DefaultMavenCompiler(mavenRepo)));
+                compilers.put(mavenRepo, new JGITCompilerBeforeDecorator(new NIODefaultMavenCompiler(mavenRepo)));
                 break;
 
             case JGIT_AFTER:
-                compilers.put(mavenRepo, new JGitCompilerAfterDecorator(new DefaultMavenCompiler(mavenRepo)));
+                compilers.put(mavenRepo, new JGitCompilerAfterDecorator(new NIODefaultMavenCompiler(mavenRepo)));
                 break;
 
             case JGIT_BEFORE_AND_AFTER:
-                compilers.put(mavenRepo, new JGITCompilerBeforeDecorator(new JGitCompilerAfterDecorator(new DefaultMavenCompiler(mavenRepo))));
+                compilers.put(mavenRepo, new JGITCompilerBeforeDecorator(new JGitCompilerAfterDecorator(new NIODefaultMavenCompiler(mavenRepo))));
                 break;
 
             default:
-                compilers.put(mavenRepo, new DefaultMavenCompiler(mavenRepo));
+                compilers.put(mavenRepo, new NIODefaultMavenCompiler(mavenRepo));
         }
         return compilers.get(mavenRepo);
     }
@@ -89,7 +89,7 @@ public class MavenCompilerFactory {
         compilers.remove(mavenRepo);
     }
 
-    public static void replaceCompiler(Path mavenRepo, MavenCompiler compiler) {
+    public static void replaceCompiler(Path mavenRepo, NIOMavenCompiler compiler) {
         compilers.replace(mavenRepo, compiler);
     }
 

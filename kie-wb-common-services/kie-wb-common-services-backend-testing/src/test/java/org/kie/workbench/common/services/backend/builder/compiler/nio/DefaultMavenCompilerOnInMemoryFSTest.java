@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.kie.workbench.common.services.backend.builder.compiler;
+package org.kie.workbench.common.services.backend.builder.compiler.nio;
 
 
 import org.eclipse.jgit.api.*;
@@ -34,11 +34,14 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.kie.workbench.common.services.backend.builder.compiler.CompilationResponse;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.Decorator;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.MavenArgs;
-import org.kie.workbench.common.services.backend.builder.compiler.impl.DefaultCompilationRequest;
-import org.kie.workbench.common.services.backend.builder.compiler.impl.MavenCompilerFactory;
-import org.kie.workbench.common.services.backend.builder.compiler.impl.WorkspaceCompilationInfo;
+import org.kie.workbench.common.services.backend.builder.compiler.nio2.NIOCompilationRequest;
+import org.kie.workbench.common.services.backend.builder.compiler.nio2.NIOMavenCompiler;
+import org.kie.workbench.common.services.backend.builder.compiler.nio2.impl.NIODefaultCompilationRequest;
+import org.kie.workbench.common.services.backend.builder.compiler.nio2.impl.NIOMavenCompilerFactory;
+import org.kie.workbench.common.services.backend.builder.compiler.nio2.impl.NIOWorkspaceCompilationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.uberfire.java.nio.fs.jgit.JGitFileSystem;
@@ -60,9 +63,7 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.eclipse.jgit.api.ListBranchCommand.ListMode.ALL;
 import static org.junit.Assert.*;
-import static org.uberfire.java.nio.fs.jgit.util.JGitUtil.branchList;
 
 
 public class DefaultMavenCompilerOnInMemoryFSTest {
@@ -149,7 +150,7 @@ public class DefaultMavenCompilerOnInMemoryFSTest {
         assertNotNull(cloned);
 
         //Compile the repo
-        MavenCompiler compiler = MavenCompilerFactory.getCompiler(mavenRepo, Decorator.NONE);
+        NIOMavenCompiler compiler = NIOMavenCompilerFactory.getCompiler(mavenRepo, Decorator.NONE);
         Path prjFolder = Paths.get(gitClonedFolder + "/dummy/");
         byte[] encoded = Files.readAllBytes(Paths.get(prjFolder + "/pom.xml"));
         String pomAsAstring = new String(encoded, StandardCharsets.UTF_8);
@@ -157,8 +158,8 @@ public class DefaultMavenCompilerOnInMemoryFSTest {
 
 
         //KieCliRequest kcr = new KieCliRequest(prjFolder, new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE});
-        WorkspaceCompilationInfo info = new WorkspaceCompilationInfo(prjFolder, compiler);
-        CompilationRequest req = new DefaultCompilationRequest(info, new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE});
+        NIOWorkspaceCompilationInfo info = new NIOWorkspaceCompilationInfo(prjFolder, compiler);
+        NIOCompilationRequest req = new NIODefaultCompilationRequest(info, new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE});
 
         CompilationResponse res = compiler.compileSync(req);
         Assert.assertTrue(res.isSuccessful());
@@ -185,103 +186,6 @@ public class DefaultMavenCompilerOnInMemoryFSTest {
         map.put("/dummy/dummyA/pom.xml", new File(temp.toString() + "/dummyA/pom.xml"));
         map.put("/dummy/dummyB/pom.xml", new File(temp.toString() + "/dummyB/pom.xml"));
         return map;
-    }
-
-    //Work in progress
-    @Test
-    public void buildWithPullRebaseTest() throws Exception {
-
-        Path tmpRoot = Files.createTempDirectory("repo");
-        Path tmp = Files.createDirectories(Paths.get(tmpRoot.toString(), "dummy"));
-        File temp = tmp.toFile();
-        copyTree(Paths.get("src/test/projects/dummy_multimodule_untouched"), Paths.get(temp.toString()));
-        File gitFolder = new File(temp, ".repo.git");
-
-        Git origin = JGitUtil.newRepository(gitFolder, false);
-        assertNotNull(origin);
-
-        JGitUtil.commit(origin,
-                "master",
-                "name",
-                "name@example.com",
-                "master",
-                null,
-                null,
-                false,
-                getFilesToCommit(temp)
-        );
-
-        assertEquals(JGitUtil.branchList(origin).size(), 1);
-
-        Path tmpRootCloned = Files.createTempDirectory("cloned");
-        Path tmpCloned = Files.createDirectories(Paths.get(tmpRootCloned.toString(), "dummy"));
-
-
-        /*Ref ref = origin.checkout().setName("master").call();
-            System.out.println(ref.getName());
-            CheckoutResult ckres = origin.checkout().getResult();
-            Assert.assertTrue(ckres.getStatus().equals(CheckoutResult.Status.OK));
-        */
-        ;
-
-        Path prjFolder = Paths.get(tmpCloned.toAbsolutePath().toString(), ".clone.git/dummy");
-        final File gitClonedFolder = new File(tmpCloned.toFile(), ".clone.git");
-        //clone the repo
-        Git cloned = JGitUtil.cloneRepository(gitClonedFolder, origin.getRepository().getDirectory().toString(), false, CredentialsProvider.getDefault());
-        assertNotNull(cloned);
-
-
-        assertTrue(JGitUtil.branchList(cloned, ALL).size() == 2);
-
-        assertEquals(branchList(cloned, ALL).get(0).getName(), "refs/heads/master");
-        assertEquals(branchList(cloned, ALL).get(1).getName(), "refs/remotes/origin/master");
-
-        //git pull rebase
-        //mode 1
-        /*PullCommand pullCommand = origin.pull();
-        pullCommand.setRemoteBranchName("origin/master");
-        pullCommand.setRebase(true);
-        PullResult ret = pullCommand.call();
-        assertTrue(ret.isSuccessful());
-*/
-
-        //mode2
-        //PullCommand pc = cloned.pull().setRemote("origin/master").setRebase(Boolean.TRUE);
-        PullCommand pc = cloned.pull().setRemote("origin").setRebase(Boolean.TRUE);
-        PullResult pullRes = pc.call();
-        assertTrue(pullRes.getRebaseResult().getStatus().equals(RebaseResult.Status.UP_TO_DATE));// nothing changed yet
-
-        RebaseCommand rb = cloned.rebase().setUpstream("origin/master");
-        RebaseResult rbResult = rb.setPreserveMerges(true).call();
-        assertTrue(rbResult.getStatus().isSuccessful());
-
-
-        //Compile the repo
-
-        MavenCompiler compiler = MavenCompilerFactory.getCompiler(mavenRepo, Decorator.NONE);
-
-        byte[] encoded = Files.readAllBytes(Paths.get(prjFolder + "/pom.xml"));
-        String pomAsAstring = new String(encoded, StandardCharsets.UTF_8);
-        Assert.assertFalse(pomAsAstring.contains("<artifactId>takari-lifecycle-plugin</artifactId>"));
-
-        WorkspaceCompilationInfo info = new WorkspaceCompilationInfo(prjFolder, compiler);
-        CompilationRequest req = new DefaultCompilationRequest(info, new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE});
-
-        CompilationResponse res = compiler.compileSync(req);
-        Assert.assertTrue(res.isSuccessful());
-
-        Path incrementalConfiguration = Paths.get(prjFolder.toAbsolutePath().toString(), "/target/incremental/io.takari.maven.plugins_takari-lifecycle-plugin_compile_compile");
-        Assert.assertTrue(incrementalConfiguration.toFile().exists());
-
-        encoded = Files.readAllBytes(Paths.get(prjFolder.toAbsolutePath().toString(), "/pom.xml"));
-        pomAsAstring = new String(encoded, StandardCharsets.UTF_8);
-        Assert.assertTrue(pomAsAstring.contains("<artifactId>takari-lifecycle-plugin</artifactId>"));
-
-        cloned.close();
-        origin.close();
-
-        TestUtil.rm(tmpRootCloned.toFile());
-        TestUtil.rm(tmpRoot.toFile());
     }
 
     @Test
@@ -333,7 +237,7 @@ public class DefaultMavenCompilerOnInMemoryFSTest {
         assertTrue(rbResult.getStatus().isSuccessful());
 
         //Compile the repo
-        MavenCompiler compiler = MavenCompilerFactory.getCompiler(mavenRepo, Decorator.NONE);
+        NIOMavenCompiler compiler = NIOMavenCompilerFactory.getCompiler(mavenRepo, Decorator.NONE);
 
         byte[] encoded = Files.readAllBytes(Paths.get(tmpCloned + "/dummy/pom.xml"));
         String pomAsAstring = new String(encoded, StandardCharsets.UTF_8);
@@ -341,8 +245,8 @@ public class DefaultMavenCompilerOnInMemoryFSTest {
 
         Path prjFolder = Paths.get(tmpCloned + "/dummy/");
 
-        WorkspaceCompilationInfo info = new WorkspaceCompilationInfo(prjFolder, compiler);
-        CompilationRequest req = new DefaultCompilationRequest(info, new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE, MavenArgs.DEBUG});
+        NIOWorkspaceCompilationInfo info = new NIOWorkspaceCompilationInfo(prjFolder, compiler);
+        NIOCompilationRequest req = new NIODefaultCompilationRequest(info, new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE, MavenArgs.DEBUG});
 
         CompilationResponse res = compiler.compileSync(req);
         Assert.assertTrue(res.isSuccessful());
@@ -357,25 +261,11 @@ public class DefaultMavenCompilerOnInMemoryFSTest {
         TestUtil.rm(tmpRoot.toFile());
         TestUtil.rm(tmpRootCloned.toFile());
 
-        //change onw file on the in memory repo
-        /*Setup clone
-        JGitFileSystem clone;
-        clone = (JGitFileSystem) provider.newFileSystem(URI.create("git://repo-clone"),
-                new HashMap<String, Object>() {{
-                    put("init", "true");
-                    put("origin", "ssh://admin@localhost:" + gitSSHPort + "/repo");
-                }});
-
-        assertNotNull(clone);*/
-
-        //Push clone back to origin
-        //provider.getFileSystem(URI.create("git://repo-clone?push=ssh://admin@localhost:" + gitSSHPort + "/repo"));
-
     }
 
     @Test
     public void buildWithDecoratorsTest() throws Exception {
-        MavenCompiler compiler =  MavenCompilerFactory.getCompiler(mavenRepo, Decorator.JGIT_BEFORE_AND_AFTER);
+        NIOMavenCompiler compiler = NIOMavenCompilerFactory.getCompiler(mavenRepo, Decorator.JGIT_BEFORE_AND_AFTER);
 
         String MASTER_BRANCH = "master";
 
@@ -423,8 +313,8 @@ public class DefaultMavenCompilerOnInMemoryFSTest {
 
         //@TODO refactor and use only one between the URI or Git
         //@TODO find a way to resolve the problem of the prjname inside .git folder
-        WorkspaceCompilationInfo info = new WorkspaceCompilationInfo(Paths.get(tmpCloned + "/dummy"), URI.create("git://localhost:9418/repo"), compiler, cloned);
-        CompilationRequest req = new DefaultCompilationRequest(info, new String[]{MavenArgs.COMPILE});
+        NIOWorkspaceCompilationInfo info = new NIOWorkspaceCompilationInfo(Paths.get(tmpCloned + "/dummy"), URI.create("git://localhost:9418/repo"), compiler, cloned);
+        NIOCompilationRequest req = new NIODefaultCompilationRequest(info, new String[]{MavenArgs.COMPILE});
         CompilationResponse res = compiler.compileSync(req);
         Assert.assertTrue(res.isSuccessful());
 
@@ -453,10 +343,6 @@ public class DefaultMavenCompilerOnInMemoryFSTest {
         //recompile
         res = compiler.compileSync(req);
         Assert.assertTrue(res.isSuccessful());
-
-        //Check the different commit id before the recompile and after to see the commit performed by the JGit Decorator
-        RevCommit commitAfter = JGitUtil.getLastCommit(origin.gitRepo(), MASTER_BRANCH);
-        assertFalse(commitAfter.getId().toString().equals(commitBefore.getId().toString()));
 
         TestUtil.rm(tmpRoot.toFile());
         TestUtil.rm(tmpRootCloned.toFile());

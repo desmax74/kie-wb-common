@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.kie.workbench.common.services.backend.builder.compiler.impl;
+package org.kie.workbench.common.services.backend.builder.compiler.nio2.impl;
 
 import java.io.IOException;
 import java.nio.file.*;
@@ -24,12 +24,12 @@ import java.util.List;
 
 import static java.nio.file.FileVisitResult.CONTINUE;
 
-public class Finder extends SimpleFileVisitor<Path> {
+public class NIOFinder extends SimpleFileVisitor<Path> {
 
     private final PathMatcher matcher;
     private List<Path> files;
 
-    public Finder(String pattern) {
+    public NIOFinder(String pattern) {
         matcher = FileSystems.getDefault().getPathMatcher("glob:" + pattern);
         files = new ArrayList<>();
     }

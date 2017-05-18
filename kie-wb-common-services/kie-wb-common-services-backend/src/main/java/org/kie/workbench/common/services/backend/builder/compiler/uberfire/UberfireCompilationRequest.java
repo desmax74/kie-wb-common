@@ -14,9 +14,22 @@
  * limitations under the License.
  */
 
-package org.kie.workbench.common.services.backend.builder.compiler.decorators;
+package org.kie.workbench.common.services.backend.builder.compiler.uberfire;
 
-import org.kie.workbench.common.services.backend.builder.compiler.nio2.NIOMavenCompiler;
+import org.kie.workbench.common.services.backend.builder.compiler.external.KieCliRequest;
+import org.kie.workbench.common.services.backend.builder.compiler.uberfire.impl.UberfireWorkspaceCompilationInfo;
+import org.uberfire.java.nio.file.Path;
 
-public abstract class CompilerDecorator implements NIOMavenCompiler {
+import java.util.Optional;
+
+/**
+ * Wrap a compilation request
+ */
+public interface UberfireCompilationRequest {
+
+    Optional<Path> getPomFile();
+
+    KieCliRequest getKieCliRequest();
+
+    UberfireWorkspaceCompilationInfo getInfo();
 }

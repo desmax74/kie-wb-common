@@ -14,9 +14,20 @@
  * limitations under the License.
  */
 
-package org.kie.workbench.common.services.backend.builder.compiler.decorators;
+package org.kie.workbench.common.services.backend.builder.compiler.uberfire;
 
-import org.kie.workbench.common.services.backend.builder.compiler.nio2.NIOMavenCompiler;
+import java.io.File;
 
-public abstract class CompilerDecorator implements NIOMavenCompiler {
+
+public class UberfireTestUtil {
+
+
+    public static void rm(File f) {
+        if (f.isDirectory()) {
+            for (File c : f.listFiles())
+                rm(c);
+        }
+        if (!f.delete())
+            System.err.println("Couldn't delete file " + f);
+    }
 }

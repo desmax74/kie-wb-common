@@ -14,30 +14,30 @@
  * limitations under the License.
  */
 
-package org.kie.workbench.common.services.backend.builder.compiler.decorators;
+package org.kie.workbench.common.services.backend.builder.compiler.uberfire.decorators;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.PullCommand;
 import org.eclipse.jgit.api.PullResult;
 import org.eclipse.jgit.api.RebaseResult;
-import org.kie.workbench.common.services.backend.builder.compiler.CompilationRequest;
 import org.kie.workbench.common.services.backend.builder.compiler.CompilationResponse;
-import org.kie.workbench.common.services.backend.builder.compiler.MavenCompiler;
 import org.kie.workbench.common.services.backend.builder.compiler.impl.DefaultCompilationResponse;
+import org.kie.workbench.common.services.backend.builder.compiler.uberfire.UberfireCompilationRequest;
+import org.kie.workbench.common.services.backend.builder.compiler.uberfire.UberfireMavenCompiler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.uberfire.java.nio.file.Path;
 
-import java.nio.file.Path;
 
-public class JGITCompilerBeforeDecorator extends CompilerDecorator {
+public class UberfireJGITCompilerBeforeDecorator extends UberfireCompilerDecorator {
 
-    private static final Logger logger = LoggerFactory.getLogger(JGITCompilerBeforeDecorator.class);
+    private static final Logger logger = LoggerFactory.getLogger(UberfireJGITCompilerBeforeDecorator.class);
     private final String COMPILED_EXTENSION = ".class";
     private final String REMOTE = "origin";
     private final String REMOTE_BRANCH = "master";
-    private MavenCompiler compiler;
+    private UberfireMavenCompiler compiler;
 
-    public JGITCompilerBeforeDecorator(MavenCompiler compiler) {
+    public UberfireJGITCompilerBeforeDecorator(UberfireMavenCompiler compiler) {
         this.compiler = compiler;
     }
 
@@ -52,7 +52,7 @@ public class JGITCompilerBeforeDecorator extends CompilerDecorator {
     }
 
     @Override
-    public CompilationResponse compileSync(CompilationRequest req) {
+    public CompilationResponse compileSync(UberfireCompilationRequest req) {
         if (applyBefore(req)) {
             CompilationResponse res = compiler.compileSync(req);
             return res;
@@ -61,7 +61,7 @@ public class JGITCompilerBeforeDecorator extends CompilerDecorator {
         }
     }
 
-    private Boolean applyBefore(CompilationRequest req) {
+    private Boolean applyBefore(UberfireCompilationRequest req) {
         Boolean result = Boolean.FALSE;
         if (req.getInfo().getGitRepo().isPresent()) {
             try {

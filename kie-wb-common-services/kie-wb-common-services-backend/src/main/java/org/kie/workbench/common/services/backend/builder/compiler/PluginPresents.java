@@ -16,11 +16,11 @@
 
 package org.kie.workbench.common.services.backend.builder.compiler;
 
-/**
- * Process the pom files before the compilation
- */
-public interface IncrementalCompilerEnabler {
+public interface PluginPresents {
 
-    Boolean process(CompilationRequest req);
+    Boolean isDefaultCompilerPresent();
 
+    Boolean isAlternativeCompilerPresent();
+
+    Boolean isKiePluginPresent();
 }

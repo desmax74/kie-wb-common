@@ -14,16 +14,19 @@
  * limitations under the License.
  */
 
-package org.kie.workbench.common.services.backend.builder.compiler;
+package org.kie.workbench.common.services.backend.builder.compiler.nio;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.Compilers;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.Decorator;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.MavenArgs;
-import org.kie.workbench.common.services.backend.builder.compiler.impl.*;
+import org.kie.workbench.common.services.backend.builder.compiler.nio2.NIOCompilationRequest;
+import org.kie.workbench.common.services.backend.builder.compiler.nio2.impl.NIODefaultCompilationRequest;
+import org.kie.workbench.common.services.backend.builder.compiler.nio2.impl.NIODefaultIncrementalCompilerEnabler;
+import org.kie.workbench.common.services.backend.builder.compiler.nio2.impl.NIOMavenCompilerFactory;
+import org.kie.workbench.common.services.backend.builder.compiler.nio2.impl.NIOWorkspaceCompilationInfo;
 
-import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -46,9 +49,9 @@ public class DefaultIncrementalCompilerEnablerTest {
         String pomAsAstring = new String(encoded, StandardCharsets.UTF_8);
         Assert.assertFalse(pomAsAstring.contains("<artifactId>takari-lifecycle-plugin</artifactId>"));
 
-        WorkspaceCompilationInfo info = new WorkspaceCompilationInfo(tmp, MavenCompilerFactory.getCompiler(mavenRepo, Decorator.NONE));
-        CompilationRequest req = new DefaultCompilationRequest(info, new String[]{MavenArgs.COMPILE});
-        DefaultIncrementalCompilerEnabler enabler = new DefaultIncrementalCompilerEnabler(Compilers.JAVAC);
+        NIOWorkspaceCompilationInfo info = new NIOWorkspaceCompilationInfo(tmp, NIOMavenCompilerFactory.getCompiler(mavenRepo, Decorator.NONE));
+        NIOCompilationRequest req = new NIODefaultCompilationRequest(info, new String[]{MavenArgs.COMPILE});
+        NIODefaultIncrementalCompilerEnabler enabler = new NIODefaultIncrementalCompilerEnabler(Compilers.JAVAC);
         Assert.assertTrue(enabler.process(req));
 
         encoded = Files.readAllBytes(Paths.get(mainPom.toString()));
@@ -70,9 +73,9 @@ public class DefaultIncrementalCompilerEnablerTest {
         String pomAsAstring = new String(encoded, StandardCharsets.UTF_8);
         Assert.assertFalse(pomAsAstring.contains("<artifactId>takari-lifecycle-plugin</artifactId>"));
 
-        WorkspaceCompilationInfo info = new WorkspaceCompilationInfo(tmp, MavenCompilerFactory.getCompiler(mavenRepo, Decorator.NONE));
-        CompilationRequest req = new DefaultCompilationRequest(info, new String[]{MavenArgs.COMPILE});
-        DefaultIncrementalCompilerEnabler enabler = new DefaultIncrementalCompilerEnabler(Compilers.JAVAC);
+        NIOWorkspaceCompilationInfo info = new NIOWorkspaceCompilationInfo(tmp, NIOMavenCompilerFactory.getCompiler(mavenRepo, Decorator.NONE));
+        NIOCompilationRequest req = new NIODefaultCompilationRequest(info, new String[]{MavenArgs.COMPILE});
+        NIODefaultIncrementalCompilerEnabler enabler = new NIODefaultIncrementalCompilerEnabler(Compilers.JAVAC);
         Assert.assertTrue(enabler.process(req));
 
         Assert.assertTrue(info.isKiePluginPresent());

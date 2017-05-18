@@ -240,7 +240,7 @@ public class KieMavenCli {
                 throw new ExitException(1);
             }
             Path basedir = basedirProperty != null ? Paths.get(basedirProperty) : Paths.get("");
-            cliRequest.setMultiModuleProjectDirectory(basedir.toAbsolutePath());
+            cliRequest.setMultiModuleProjectDirectory(basedir.toAbsolutePath().toString());
         }
 
     }
@@ -258,7 +258,7 @@ public class KieMavenCli {
         List<String> args = new ArrayList<String>();
 
         try {
-            Path configFile = Paths.get(cliRequest.getMultiModuleProjectDirectory().toString(), ".mvn/maven.config");
+            Path configFile = Paths.get(cliRequest.getMultiModuleProjectDirectory(), ".mvn/maven.config");
 
             if (java.nio.file.Files.isRegularFile(configFile)) {
                 for (String arg : Files.toString(configFile.toFile(), Charsets.UTF_8).split("\\s+")) {
@@ -947,7 +947,7 @@ public class KieMavenCli {
                 .setUpdateSnapshots(updateSnapshots) // default: false
                 .setNoSnapshotUpdates(noSnapshotUpdates) // default: false
                 .setGlobalChecksumPolicy(globalChecksumPolicy) // default: warn
-                .setMultiModuleProjectDirectory(cliRequest.getMultiModuleProjectDirectory().toFile());
+                .setMultiModuleProjectDirectory(new File(cliRequest.getMultiModuleProjectDirectory()));
 
         if (alternatePomFile != null) {
             File pom = resolveFile(new File(alternatePomFile.trim()), workingDirectory);

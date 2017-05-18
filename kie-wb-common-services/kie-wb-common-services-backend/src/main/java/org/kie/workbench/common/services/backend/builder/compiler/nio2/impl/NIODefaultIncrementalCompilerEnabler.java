@@ -13,12 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.kie.workbench.common.services.backend.builder.compiler.impl;
+package org.kie.workbench.common.services.backend.builder.compiler.nio2.impl;
 
-import org.kie.workbench.common.services.backend.builder.compiler.CompilationRequest;
-import org.kie.workbench.common.services.backend.builder.compiler.IncrementalCompilerEnabler;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.Compilers;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.ConfigurationContextProvider;
+import org.kie.workbench.common.services.backend.builder.compiler.impl.PomPlaceHolder;
+import org.kie.workbench.common.services.backend.builder.compiler.nio2.NIOCompilationRequest;
+import org.kie.workbench.common.services.backend.builder.compiler.nio2.NIOIncrementalCompilerEnabler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,20 +30,20 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
-public class DefaultIncrementalCompilerEnabler implements IncrementalCompilerEnabler {
+public class NIODefaultIncrementalCompilerEnabler implements NIOIncrementalCompilerEnabler {
 
-    private static final Logger logger = LoggerFactory.getLogger(DefaultIncrementalCompilerEnabler.class);
+    private static final Logger logger = LoggerFactory.getLogger(NIODefaultIncrementalCompilerEnabler.class);
 
     private final String POM_NAME = "pom.xml";
 
-    private DefaultPomEditor editor;
+    private NIODefaultPomEditor editor;
 
-    public DefaultIncrementalCompilerEnabler(Compilers compiler) {
-        editor = new DefaultPomEditor(new HashSet<PomPlaceHolder>(), new ConfigurationContextProvider(), compiler);
+    public NIODefaultIncrementalCompilerEnabler(Compilers compiler) {
+        editor = new NIODefaultPomEditor(new HashSet<PomPlaceHolder>(), new ConfigurationContextProvider(), compiler);
     }
 
     @Override
-    public Boolean process(final CompilationRequest req) {
+    public Boolean process(final NIOCompilationRequest req) {
         Path mainPom = Paths.get(req.getInfo().getPrjPath().toString(), POM_NAME);
         if (!Files.isReadable(mainPom)) {
             return Boolean.FALSE;
@@ -62,7 +63,7 @@ public class DefaultIncrementalCompilerEnabler implements IncrementalCompilerEna
         }
     }
 
-    private void processFoundedPoms(List<String> poms, CompilationRequest request) {
+    private void processFoundedPoms(List<String> poms, NIOCompilationRequest request) {
 
         for (String pom : poms) {
             Path tmpPom = Paths.get(pom);
