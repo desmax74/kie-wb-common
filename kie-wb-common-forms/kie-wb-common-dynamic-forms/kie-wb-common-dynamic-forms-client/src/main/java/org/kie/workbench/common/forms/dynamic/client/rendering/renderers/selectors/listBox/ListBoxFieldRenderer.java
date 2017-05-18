@@ -27,6 +27,7 @@ import org.kie.workbench.common.forms.common.rendering.client.widgets.util.Defau
 import org.kie.workbench.common.forms.dynamic.client.rendering.renderers.selectors.SelectorFieldRenderer;
 import org.kie.workbench.common.forms.fields.shared.fieldTypes.basic.selectors.SelectorOption;
 import org.kie.workbench.common.forms.fields.shared.fieldTypes.basic.selectors.listBox.definition.ListBoxBaseDefinition;
+import org.kie.workbench.common.forms.fields.shared.fieldTypes.basic.selectors.listBox.type.ListBoxFieldType;
 
 @Dependent
 public class ListBoxFieldRenderer<F extends ListBoxBaseDefinition, O extends SelectorOption<T>, T>
@@ -34,34 +35,35 @@ public class ListBoxFieldRenderer<F extends ListBoxBaseDefinition, O extends Sel
 
     protected DefaultValueListBoxRenderer<T> optionsRenderer = new DefaultValueListBoxRenderer();
 
-    protected ValueListBox<T> widgetList = new ValueListBox<T>( optionsRenderer );
+    protected ValueListBox<T> widgetList = new ValueListBox<T>(optionsRenderer);
 
     @Override
     public String getName() {
-        return "ListBoxField";
+        return ListBoxFieldType.NAME;
     }
 
     @Override
-    protected void refreshInput( Map<T, String> optionsValues, T defaultValue ) {
+    protected void refreshInput(Map<T, String> optionsValues,
+                                T defaultValue) {
         Set<T> values = optionsValues.keySet();
 
-        if ( field.getRequired() ) {
-            if ( defaultValue == null && !values.isEmpty() ) {
+        if (field.getRequired()) {
+            if (defaultValue == null && !values.isEmpty()) {
                 defaultValue = values.iterator().next();
             }
         }
 
-        if ( defaultValue != null ) {
-            widgetList.setValue( defaultValue );
+        if (defaultValue != null) {
+            widgetList.setValue(defaultValue);
         }
 
-        optionsRenderer.setValues( optionsValues );
-        widgetList.setAcceptableValues( optionsValues.keySet() );
+        optionsRenderer.setValues(optionsValues);
+        widgetList.setAcceptableValues(optionsValues.keySet());
     }
 
     @Override
     public void initInputWidget() {
-        widgetList.setEnabled( !field.getReadOnly() );
+        widgetList.setEnabled(!field.getReadOnly());
         refreshSelectorOptions();
     }
 
@@ -81,7 +83,7 @@ public class ListBoxFieldRenderer<F extends ListBoxBaseDefinition, O extends Sel
     }
 
     @Override
-    protected void setReadOnly( boolean readOnly ) {
-        widgetList.setEnabled( !readOnly );
+    protected void setReadOnly(boolean readOnly) {
+        widgetList.setEnabled(!readOnly);
     }
 }

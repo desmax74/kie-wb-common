@@ -21,12 +21,12 @@ import org.jboss.errai.common.client.api.annotations.Portable;
 
 @Portable
 public class JBPMVariable {
+
     protected String name;
     protected String type;
 
-
-    public JBPMVariable( @MapsTo( "name" ) String name,
-                         @MapsTo( "type" ) String type ) {
+    public JBPMVariable(@MapsTo("name") String name,
+                        @MapsTo("type") String type) {
         this.name = name;
         this.type = type;
     }
@@ -35,7 +35,7 @@ public class JBPMVariable {
         return name;
     }
 
-    public void setName( String name ) {
+    public void setName(String name) {
         this.name = name;
     }
 
@@ -43,7 +43,33 @@ public class JBPMVariable {
         return type;
     }
 
-    public void setType( String type ) {
+    public void setType(String type) {
         this.type = type;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        JBPMVariable that = (JBPMVariable) o;
+
+        if (!name.equals(that.name)) {
+            return false;
+        }
+        return type.equals(that.type);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = name.hashCode();
+        result = ~~result;
+        result = 31 * result + type.hashCode();
+        result = ~~result;
+        return result;
     }
 }

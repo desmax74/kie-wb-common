@@ -15,10 +15,13 @@
  */
 package org.kie.workbench.common.screens.library.client.screens;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import javax.enterprise.event.Event;
 
+import org.guvnor.common.services.project.client.security.ProjectController;
 import org.guvnor.common.services.project.model.Project;
 import org.guvnor.structure.repositories.Repository;
 import org.jboss.errai.common.client.api.Caller;
@@ -29,6 +32,7 @@ import org.kie.workbench.common.screens.examples.model.ExampleProject;
 import org.kie.workbench.common.screens.library.api.LibraryInfo;
 import org.kie.workbench.common.screens.library.api.LibraryService;
 import org.kie.workbench.common.screens.library.api.ProjectInfo;
+import org.kie.workbench.common.screens.library.api.search.FilterUpdateEvent;
 import org.kie.workbench.common.screens.library.client.events.ProjectDetailEvent;
 import org.kie.workbench.common.screens.library.client.util.ExamplesUtils;
 import org.kie.workbench.common.screens.library.client.util.LibraryPlaces;
@@ -64,6 +68,9 @@ public class LibraryScreenTest {
     @Mock
     private ExamplesUtils examplesUtils;
 
+    @Mock
+    private ProjectController projectController;
+
     private LibraryScreen libraryScreen;
 
     private ExampleProject exampleProject1;
@@ -95,7 +102,8 @@ public class LibraryScreenTest {
                                               libraryPlaces,
                                               projectDetailEvent,
                                               libraryServiceCaller,
-                                              examplesUtils));
+                                              examplesUtils,
+                                              projectController));
 
         project1 = mock(Project.class);
         doReturn("project1Name").when(project1).getProjectName();
@@ -104,7 +112,7 @@ public class LibraryScreenTest {
         project3 = mock(Project.class);
         doReturn("project3Name").when(project3).getProjectName();
 
-        final Set<Project> projects = new HashSet<>();
+        final List<Project> projects = new ArrayList<>();
         projects.add(project1);
         projects.add(project2);
         projects.add(project3);
@@ -114,9 +122,13 @@ public class LibraryScreenTest {
         doReturn(libraryInfo).when(libraryService).getLibraryInfo(any(Repository.class),
                                                                   anyString());
 
+        doReturn(true).when(projectController).canCreateProjects();
+        doReturn(true).when(projectController).canReadProjects();
+        doReturn(true).when(projectController).canReadProject(any());
+        doReturn(false).when(projectController).canReadProject(project2);
+
         libraryScreen.setup();
     }
-
 
     @Test
     public void setupTest() {
@@ -125,7 +137,7 @@ public class LibraryScreenTest {
         verify(placeManager).closePlace(LibraryPlaces.EMPTY_LIBRARY_SCREEN);
 
         verify(view,
-               times(3)).addProject(anyString(),
+               times(2)).addProject(anyString(),
                                     any(Command.class),
                                     any(Command.class));
 
@@ -134,9 +146,9 @@ public class LibraryScreenTest {
                                     any(Command.class),
                                     any(Command.class));
         verify(view,
-               times(1)).addProject(eq("project2Name"),
-                                    any(Command.class),
-                                    any(Command.class));
+               never()).addProject(eq("project2Name"),
+                                   any(Command.class),
+                                   any(Command.class));
         verify(view,
                times(1)).addProject(eq("project3Name"),
                                     any(Command.class),
@@ -144,19 +156,24 @@ public class LibraryScreenTest {
     }
 
     @Test
-    public void newProjectTest() {
-        libraryScreen.newProject();
-
-        verify(libraryPlaces).goToNewProject();
-    }
-
-    @Test
-    public void importProjectTest() {
+    public void canImportProjectTest() {
         final ExampleProject exampleProject = mock(ExampleProject.class);
 
         libraryScreen.importProject(exampleProject);
 
         verify(examplesUtils).importProject(exampleProject);
+    }
+
+    @Test
+    public void cannotImportProjectTest() {
+        doReturn(false).when(projectController).canCreateProjects();
+
+        final ExampleProject exampleProject = mock(ExampleProject.class);
+
+        libraryScreen.importProject(exampleProject);
+
+        verify(examplesUtils,
+               never()).importProject(exampleProject);
     }
 
     @Test
@@ -187,9 +204,17 @@ public class LibraryScreenTest {
 
     @Test
     public void filterProjectsTest() {
-        assertEquals(3,
-                     libraryScreen.libraryInfo.getProjects().size());
+        assertEquals(2,
+                     libraryScreen.projects.size());
         assertEquals(1,
                      libraryScreen.filterProjects("project1").size());
+    }
+
+    @Test
+    public void filterUpdateTest() {
+        libraryScreen.filterUpdate(new FilterUpdateEvent("name"));
+
+        verify(view).setFilterName("name");
+        verify(libraryScreen).filterProjects("name");
     }
 }

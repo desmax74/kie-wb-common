@@ -20,7 +20,7 @@ public interface HasControlPoints<T> {
 
     enum ControlPointType {
         RESIZE,
-        MAGNET
+        POINTS
     }
 
     T showControlPoints(final ControlPointType type);

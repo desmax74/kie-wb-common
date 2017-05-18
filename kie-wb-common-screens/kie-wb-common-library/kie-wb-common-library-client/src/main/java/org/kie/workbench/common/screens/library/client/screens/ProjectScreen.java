@@ -17,14 +17,14 @@
 package org.kie.workbench.common.screens.library.client.screens;
 
 import java.util.List;
-import java.util.stream.Collectors;
 import javax.enterprise.event.Event;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.IsWidget;
 import org.ext.uberfire.social.activities.client.widgets.utils.SocialDateFormatter;
-import org.guvnor.common.services.project.context.ProjectContextChangeEvent;
 import org.jboss.errai.common.client.api.Caller;
 import org.jboss.errai.common.client.api.RemoteCallback;
 import org.jboss.errai.ui.client.local.spi.TranslationService;
@@ -33,7 +33,9 @@ import org.kie.workbench.common.screens.explorer.client.utils.Utils;
 import org.kie.workbench.common.screens.explorer.model.FolderItemType;
 import org.kie.workbench.common.screens.library.api.AssetInfo;
 import org.kie.workbench.common.screens.library.api.LibraryService;
+import org.kie.workbench.common.screens.library.api.ProjectAssetsQuery;
 import org.kie.workbench.common.screens.library.api.ProjectInfo;
+import org.kie.workbench.common.screens.library.api.search.FilterUpdateEvent;
 import org.kie.workbench.common.screens.library.client.events.AssetDetailEvent;
 import org.kie.workbench.common.screens.library.client.events.ProjectDetailEvent;
 import org.kie.workbench.common.screens.library.client.perspective.LibraryPerspective;
@@ -57,39 +59,49 @@ public class ProjectScreen {
 
     public interface View extends UberElement<ProjectScreen> {
 
-        void setProjectName(String projectName);
+        void setProjectName(final String projectName);
 
         void clearAssets();
 
-        void addAsset(String assetName,
-                      String assetPath,
-                      String assetType,
-                      IsWidget assetIcon,
-                      String lastModifiedTime,
-                      String createdTime,
-                      Command details,
-                      Command select);
+        void addAsset(final String assetName,
+                      final String assetPath,
+                      final String assetType,
+                      final IsWidget assetIcon,
+                      final String lastModifiedTime,
+                      final String createdTime,
+                      final Command details,
+                      final Command select);
+
+        String getFilterValue();
+
+        void setFilterName(final String name);
+
+        Integer getStep();
+
+        void showIndexingIncomplete();
+
+        void showSearchHitNothing();
+
+        void showNoMoreAssets();
+
+        int getFirstIndex();
+
+        void resetList();
     }
 
     private View view;
-
     private LibraryPlaces libraryPlaces;
-
     private TranslationService ts;
-
     private Caller<LibraryService> libraryService;
-
     private Classifier assetClassifier;
-
     private Event<AssetDetailEvent> assetDetailEvent;
-
-    private Event<ProjectContextChangeEvent> projectContextChangeEvent;
-
     private BusyIndicatorView busyIndicatorView;
-
     private ProjectInfo projectInfo;
-
     private List<AssetInfo> assets;
+    private Reloader reloader = new Reloader();
+    private Timer projectLoadTimer;
+    private boolean isProjectLoadPending = false;
+    private boolean isProjectLoadInProgress = false;
 
     @Inject
     public ProjectScreen(final View view,
@@ -98,7 +110,6 @@ public class ProjectScreen {
                          final Caller<LibraryService> libraryService,
                          final Classifier assetClassifier,
                          final Event<AssetDetailEvent> assetDetailEvent,
-                         final Event<ProjectContextChangeEvent> projectContextChangeEvent,
                          final BusyIndicatorView busyIndicatorView) {
         this.view = view;
         this.libraryPlaces = libraryPlaces;
@@ -106,7 +117,6 @@ public class ProjectScreen {
         this.libraryService = libraryService;
         this.assetClassifier = assetClassifier;
         this.assetDetailEvent = assetDetailEvent;
-        this.projectContextChangeEvent = projectContextChangeEvent;
         this.busyIndicatorView = busyIndicatorView;
     }
 
@@ -123,11 +133,24 @@ public class ProjectScreen {
         }
     }
 
-    public void updateAssetsBy(final String filter) {
-        if (assets != null) {
-            List<AssetInfo> filteredAssets = filterAssets(assets,
-                                                          filter);
-            setupAssets(filteredAssets);
+    protected Timer createTimer() {
+        return new Timer() {
+            @Override
+            public void run() {
+                onTimerAction();
+            }
+        };
+    }
+
+    protected void onTimerAction() {
+        view.resetList();
+        loadProjectInfo();
+    }
+
+    private void cancel() {
+        if (projectLoadTimer != null) {
+            projectLoadTimer.cancel();
+            projectLoadTimer = null;
         }
     }
 
@@ -138,13 +161,6 @@ public class ProjectScreen {
 
     public String getProjectName() {
         return projectInfo.getProject().getProjectName();
-    }
-
-    List<AssetInfo> filterAssets(final List<AssetInfo> assets,
-                                 final String filter) {
-        return assets.stream()
-                .filter(a -> a.getFolderItem().getFileName().toUpperCase().startsWith(filter.toUpperCase()))
-                .collect(Collectors.toList());
     }
 
     String getLastModifiedTime(final AssetInfo asset) {
@@ -164,41 +180,84 @@ public class ProjectScreen {
         return selectCommand(assetPath);
     }
 
-    private void loadProjectInfo() {
+    void loadProjectInfo() {
+        if (isProjectLoadInProgress) {
+            isProjectLoadPending = true;
+            return;
+        }
         busyIndicatorView.showBusyIndicator(ts.getTranslation(LibraryConstants.LoadingAssets));
+
+        isProjectLoadInProgress = true;
+
         libraryService.call(new RemoteCallback<List<AssetInfo>>() {
             @Override
             public void callback(List<AssetInfo> assetsList) {
+
                 assets = assetsList;
-                loadProject(assets);
+
+                setupAssets(assets);
+
                 busyIndicatorView.hideBusyIndicator();
+
+                isProjectLoadInProgress = false;
+
+                if (isProjectLoadPending) {
+                    isProjectLoadPending = false;
+                    loadProjectInfo();
+                } else {
+                    reloader.check(assetsList);
+                }
             }
-        }).getProjectAssets(projectInfo.getProject());
+        }).getProjectAssets(new ProjectAssetsQuery(projectInfo.getProject(),
+                                                   view.getFilterValue(),
+                                                   view.getFirstIndex(),
+                                                   view.getStep()));
     }
 
-    private void loadProject(List<AssetInfo> assets) {
-        setupAssets(assets);
-    }
-
-    private void setupAssets(List<AssetInfo> assets) {
+    private void setupAssets(final List<AssetInfo> assets) {
         view.clearAssets();
 
-        assets.stream().forEach(asset -> {
-            if (!asset.getFolderItem().getType().equals(FolderItemType.FOLDER)) {
-                final ClientResourceType assetResourceType = assetClassifier.findResourceType(asset.getFolderItem());
-                final String assetName = Utils.getBaseFileName(asset.getFolderItem().getFileName(),
-                                                               assetResourceType.getSuffix());
-
-                view.addAsset(assetName,
-                              getAssetPath(asset),
-                              assetResourceType.getDescription(),
-                              assetResourceType.getIcon(),
-                              getLastModifiedTime(asset),
-                              getCreatedTime(asset),
-                              detailsCommand((Path) asset.getFolderItem().getItem()),
-                              selectCommand((Path) asset.getFolderItem().getItem()));
+        if (assets.isEmpty()) {
+            if (isFilterEmpty()) {
+                if (view.getFirstIndex() == 0) {
+                    view.showIndexingIncomplete();
+                } else {
+                    view.showNoMoreAssets();
+                }
+            } else {
+                if (view.getFirstIndex() == 0) {
+                    view.showSearchHitNothing();
+                } else {
+                    view.showNoMoreAssets();
+                }
             }
-        });
+        } else {
+            assets.stream().forEach(asset -> {
+                if (!asset.getFolderItem().getType().equals(FolderItemType.FOLDER)) {
+                    final ClientResourceType assetResourceType = assetClassifier.findResourceType(asset.getFolderItem());
+                    final String assetName = Utils.getBaseFileName(asset.getFolderItem().getFileName(),
+                                                                   assetResourceType.getSuffix());
+
+                    view.addAsset(assetName,
+                                  getAssetPath(asset),
+                                  assetResourceType.getDescription(),
+                                  assetResourceType.getIcon(),
+                                  getLastModifiedTime(asset),
+                                  getCreatedTime(asset),
+                                  detailsCommand((Path) asset.getFolderItem().getItem()),
+                                  selectCommand((Path) asset.getFolderItem().getItem()));
+                }
+            });
+        }
+    }
+
+    public void filterUpdate(@Observes final FilterUpdateEvent event) {
+        view.setFilterName(event.getName());
+        onFilterChange();
+    }
+
+    private boolean isFilterEmpty() {
+        return view.getFilterValue().isEmpty();
     }
 
     private String getAssetPath(final AssetInfo asset) {
@@ -218,5 +277,67 @@ public class ProjectScreen {
     @WorkbenchPartView
     public UberElement<ProjectScreen> getView() {
         return view;
+    }
+
+    public void onReload() {
+        loadProjectInfo();
+    }
+
+    protected void reload() {
+        Scheduler.get().scheduleFixedDelay(new Scheduler.RepeatingCommand() {
+                                               @Override
+                                               public boolean execute() {
+                                                   loadProjectInfo();
+                                                   return false;
+                                               }
+                                           },
+                                           1000);
+    }
+
+    public void onFilterChange() {
+        cancel();
+        projectLoadTimer = createTimer();
+        projectLoadTimer.schedule(250);
+    }
+
+    /**
+     * This class is needed in situations where you open the project screen, but the indexing has not yet finished.
+     * <p/>
+     * It keeps reloading the file list from the backend server until either the page is full or
+     * when the indexing runs out of files and stops.
+     */
+    private class Reloader {
+
+        private boolean active = false;
+        private int previousAmount = -1;
+
+        public void check(final List<AssetInfo> assetsList) {
+
+            if (assets != null && assetsList.size() <= previousAmount && !assets.isEmpty()) {
+                active = false;
+            }
+
+            if (assetsList.isEmpty() && view.getFirstIndex() == 0 && filterIsNotSet()) {
+                active = true;
+            }
+
+            if (active && view.getFirstIndex() != 0) {
+                active = false;
+            }
+
+            if (assetsList.size() == view.getStep()) {
+                active = false;
+            }
+
+            previousAmount = assetsList.size();
+
+            if (active) {
+                reload();
+            }
+        }
+
+        private boolean filterIsNotSet() {
+            return view.getFilterValue() == null || view.getFilterValue().trim().isEmpty();
+        }
     }
 }

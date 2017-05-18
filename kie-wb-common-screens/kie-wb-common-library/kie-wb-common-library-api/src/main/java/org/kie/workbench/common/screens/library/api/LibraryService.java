@@ -40,12 +40,14 @@ public interface LibraryService {
                                final String branch);
 
     KieProject createProject(final String projectName,
+                             final OrganizationalUnit selectedOrganizationalUnit,
                              final Repository selectedRepository,
-                             final String baseURL);
+                             final String baseURL,
+                             final String projectDescription);
 
     Boolean thereIsAProjectInTheWorkbench();
 
-    List<AssetInfo> getProjectAssets(final Project project);
+    List<AssetInfo> getProjectAssets(final ProjectAssetsQuery query);
 
     Boolean hasProjects(final Repository repository,
                         final String branch);
@@ -58,4 +60,8 @@ public interface LibraryService {
                           final Repository repository,
                           final String branch,
                           final ExampleProject exampleProject);
+
+    Project importProject(final ExampleProject exampleProject);
+
+    List<OrganizationalUnit> getOrganizationalUnits();
 }

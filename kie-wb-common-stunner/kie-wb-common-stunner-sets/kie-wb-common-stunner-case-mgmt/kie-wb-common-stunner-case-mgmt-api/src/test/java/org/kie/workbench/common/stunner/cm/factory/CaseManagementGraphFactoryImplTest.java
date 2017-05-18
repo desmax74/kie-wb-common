@@ -16,27 +16,15 @@
 
 package org.kie.workbench.common.stunner.cm.factory;
 
-import java.util.List;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.kie.workbench.common.stunner.bpmn.definition.StartNoneEvent;
-import org.kie.workbench.common.stunner.cm.definition.BPMNDiagram;
-import org.kie.workbench.common.stunner.core.api.DefinitionManager;
-import org.kie.workbench.common.stunner.core.api.FactoryManager;
-import org.kie.workbench.common.stunner.core.command.Command;
-import org.kie.workbench.common.stunner.core.graph.Node;
-import org.kie.workbench.common.stunner.core.graph.command.GraphCommandManager;
-import org.kie.workbench.common.stunner.core.graph.command.impl.GraphCommandFactory;
-import org.kie.workbench.common.stunner.core.graph.processing.index.GraphIndexBuilder;
-import org.kie.workbench.common.stunner.core.rule.RuleManager;
+import org.kie.workbench.common.stunner.bpmn.factory.BPMNGraphFactory;
+import org.kie.workbench.common.stunner.cm.definition.CaseManagementDiagram;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import static org.junit.Assert.*;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
@@ -44,33 +32,20 @@ import static org.mockito.Mockito.*;
 public class CaseManagementGraphFactoryImplTest {
 
     @Mock
-    private DefinitionManager definitionManager;
-
-    @Mock
-    private FactoryManager factoryManager;
-
-    @Mock
-    private GraphCommandManager graphCommandManager;
-
-    @Mock
-    private GraphCommandFactory graphCommandFactory;
-
-    @Mock
-    private RuleManager ruleManager;
-
-    @Mock
-    private GraphIndexBuilder<?> indexBuilder;
+    private BPMNGraphFactory bpmnGraphFactory;
 
     private CaseManagementGraphFactoryImpl factory;
 
     @Before
     public void setup() {
-        this.factory = new CaseManagementGraphFactoryImpl(definitionManager,
-                                                          factoryManager,
-                                                          ruleManager,
-                                                          graphCommandManager,
-                                                          graphCommandFactory,
-                                                          indexBuilder);
+        this.factory = new CaseManagementGraphFactoryImpl(bpmnGraphFactory);
+    }
+
+    @Test
+    public void assertSetDiagramType() {
+        factory.init();
+        verify(bpmnGraphFactory,
+               times(1)).setDiagramType(eq(CaseManagementDiagram.class));
     }
 
     @Test
@@ -83,19 +58,12 @@ public class CaseManagementGraphFactoryImplTest {
     }
 
     @Test
-    public void checkBuildInitialisationCommands() {
-        final List<Command> commands = factory.buildInitialisationCommands();
-
-        assertEquals(2,
-                     commands.size());
-        verify(factoryManager).newElement(anyString(),
-                                          eq(BPMNDiagram.class));
-        verify(factoryManager).newElement(anyString(),
-                                          eq(StartNoneEvent.class));
-        verify(graphCommandFactory).addNode(any(Node.class));
-        verify(graphCommandFactory).addChildNode(any(Node.class),
-                                                 any(Node.class),
-                                                 eq(100d),
-                                                 eq(100d));
+    public void testBuild() {
+        factory.init();
+        factory.build("uuid1",
+                      "defSet1");
+        verify(bpmnGraphFactory,
+               times(1)).build(eq("uuid1"),
+                               eq("defSet1"));
     }
 }

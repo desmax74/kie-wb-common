@@ -15,15 +15,22 @@
 
 package org.kie.workbench.common.screens.library.client.perspective;
 
+import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.event.Event;
 import javax.inject.Inject;
 
+import org.kie.workbench.common.screens.library.api.search.FilterUpdateEvent;
 import org.kie.workbench.common.screens.library.client.util.LibraryPlaces;
+import org.kie.workbench.common.widgets.client.search.ContextualSearch;
+import org.kie.workbench.common.widgets.client.search.SearchBehavior;
 import org.uberfire.client.annotations.Perspective;
 import org.uberfire.client.annotations.WorkbenchPerspective;
-import org.uberfire.client.mvp.PlaceManager;
 import org.uberfire.client.workbench.panels.impl.MultiListWorkbenchPanelPresenter;
 import org.uberfire.lifecycle.OnOpen;
+import org.uberfire.lifecycle.OnStartup;
+import org.uberfire.mvp.Command;
+import org.uberfire.mvp.PlaceRequest;
 import org.uberfire.workbench.model.PanelDefinition;
 import org.uberfire.workbench.model.PerspectiveDefinition;
 import org.uberfire.workbench.model.impl.PerspectiveDefinitionImpl;
@@ -34,27 +41,58 @@ public class LibraryPerspective {
 
     private LibraryPlaces libraryPlaces;
 
+    private ContextualSearch contextualSearch;
+
+    private Event<FilterUpdateEvent> filterUpdateEvent;
+
     private PerspectiveDefinition perspectiveDefinition;
+
+    private boolean refresh = true;
 
     public LibraryPerspective() {
     }
 
     @Inject
-    public LibraryPerspective( final LibraryPlaces libraryPlaces ) {
+    public LibraryPerspective(final LibraryPlaces libraryPlaces,
+                              final ContextualSearch contextualSearch,
+                              final Event<FilterUpdateEvent> filterUpdateEvent) {
         this.libraryPlaces = libraryPlaces;
+        this.contextualSearch = contextualSearch;
+        this.filterUpdateEvent = filterUpdateEvent;
     }
 
     @Perspective
     public PerspectiveDefinition buildPerspective() {
-        perspectiveDefinition = new PerspectiveDefinitionImpl( MultiListWorkbenchPanelPresenter.class.getName() );
-        perspectiveDefinition.setName( "Library Perspective" );
+        perspectiveDefinition = new PerspectiveDefinitionImpl(MultiListWorkbenchPanelPresenter.class.getName());
+        perspectiveDefinition.setName("Library Perspective");
 
         return perspectiveDefinition;
     }
 
+    @PostConstruct
+    public void registerSearchHandler() {
+        final SearchBehavior searchBehavior = searchFilter -> {
+            filterUpdateEvent.fire(new FilterUpdateEvent(searchFilter));
+        };
+
+        contextualSearch.setPerspectiveSearchBehavior(LibraryPlaces.LIBRARY_PERSPECTIVE,
+                                                      searchBehavior);
+    }
+
+    @OnStartup
+    public void onStartup(final PlaceRequest placeRequest) {
+        final boolean refresh = Boolean.parseBoolean(placeRequest.getParameter("refresh",
+                                                                               "true"));
+        this.refresh = refresh;
+    }
+
     @OnOpen
     public void onOpen() {
-        libraryPlaces.refresh();
+        Command callback = null;
+        if (refresh) {
+            callback = () -> libraryPlaces.goToLibrary();
+        }
+        libraryPlaces.refresh(callback);
     }
 
     public PanelDefinition getRootPanel() {

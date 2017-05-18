@@ -16,12 +16,14 @@
 
 package org.kie.workbench.common.screens.library.client.screens;
 
-import java.util.Set;
+import java.util.List;
 import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.enterprise.event.Event;
+import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 
+import org.guvnor.common.services.project.client.security.ProjectController;
 import org.guvnor.common.services.project.model.Project;
 import org.guvnor.structure.repositories.Repository;
 import org.jboss.errai.common.client.api.Caller;
@@ -30,6 +32,7 @@ import org.kie.workbench.common.screens.examples.model.ExampleProject;
 import org.kie.workbench.common.screens.library.api.LibraryInfo;
 import org.kie.workbench.common.screens.library.api.LibraryService;
 import org.kie.workbench.common.screens.library.api.ProjectInfo;
+import org.kie.workbench.common.screens.library.api.search.FilterUpdateEvent;
 import org.kie.workbench.common.screens.library.client.events.ProjectDetailEvent;
 import org.kie.workbench.common.screens.library.client.perspective.LibraryPerspective;
 import org.kie.workbench.common.screens.library.client.util.ExamplesUtils;
@@ -55,12 +58,13 @@ public class LibraryScreen {
 
         void clearFilterText();
 
+        void setFilterName(String name);
+
         void addProjectToImport(ExampleProject exampleProject);
 
         void clearImportProjectsContainer();
     }
 
-    LibraryInfo libraryInfo;
     private View view;
 
     private PlaceManager placeManager;
@@ -73,62 +77,77 @@ public class LibraryScreen {
 
     private ExamplesUtils examplesUtils;
 
+    private ProjectController projectController;
+
+    List<Project> projects;
+
     @Inject
     public LibraryScreen(final View view,
                          final PlaceManager placeManager,
                          final LibraryPlaces libraryPlaces,
                          final Event<ProjectDetailEvent> projectDetailEvent,
                          final Caller<LibraryService> libraryService,
-                         final ExamplesUtils examplesUtils) {
+                         final ExamplesUtils examplesUtils,
+                         final ProjectController projectController) {
         this.view = view;
         this.placeManager = placeManager;
         this.libraryPlaces = libraryPlaces;
         this.projectDetailEvent = projectDetailEvent;
         this.libraryService = libraryService;
         this.examplesUtils = examplesUtils;
+        this.projectController = projectController;
     }
 
     @PostConstruct
     public void setup() {
         Repository selectedRepository = libraryPlaces.getSelectedRepository();
         String selectedBranch = libraryPlaces.getSelectedBranch();
-        libraryService.call(new RemoteCallback<LibraryInfo>() {
-            @Override
-            public void callback(LibraryInfo libraryInfo) {
-                updateLibrary(libraryInfo);
-            }
-        }).getLibraryInfo(selectedRepository,
-                          selectedBranch);
+
+        libraryService.call((RemoteCallback<LibraryInfo>) this::updateLibrary)
+                .getLibraryInfo(selectedRepository,
+                                selectedBranch);
+
         placeManager.closePlace(LibraryPlaces.EMPTY_LIBRARY_SCREEN);
     }
 
     private void updateLibrary(final LibraryInfo libraryInfo) {
-        LibraryScreen.this.libraryInfo = libraryInfo;
+        projects = libraryInfo.getProjects();
         view.clearFilterText();
-        setupProjects(libraryInfo.getProjects());
+        setupProjects();
     }
 
-    private void setupProjects(final Set<Project> projects) {
-        view.clearProjects();
+    private void setupProjects() {
+        if (projectController.canReadProjects()) {
+            projects = projects.stream()
+                    .filter(p -> projectController.canReadProject(p))
+                    .collect(Collectors.toList());
+            projects.sort((p1, p2) -> p1.getProjectName().compareTo(p2.getProjectName()));
 
+            updateView(projects);
+        }
+    }
+
+    public List<Project> filterProjects(final String filter) {
+        List<Project> filteredProjects = projects.stream()
+                .filter(p -> p.getProjectName().toUpperCase().startsWith(filter.toUpperCase()))
+                .collect(Collectors.toList());
+
+        updateView(filteredProjects);
+
+        return filteredProjects;
+    }
+
+    private void updateView(final List<Project> projects) {
+        view.clearProjects();
         projects.stream().forEach(p -> view.addProject(p.getProjectName(),
                                                        detailsCommand(p),
                                                        selectCommand(p)));
     }
 
-    public void newProject() {
-        libraryPlaces.goToNewProject();
-    }
-
-    public void updateProjectsBy(final String filter) {
-        if (libraryInfo != null) {
-            Set<Project> filteredProjects = filterProjects(filter);
-            setupProjects(filteredProjects);
-        }
-    }
-
     public void importProject(final ExampleProject exampleProject) {
-        examplesUtils.importProject(exampleProject);
+        if (userCanCreateProjects()) {
+            examplesUtils.importProject(exampleProject);
+        }
     }
 
     public void updateImportProjects() {
@@ -138,6 +157,15 @@ public class LibraryScreen {
                 view.addProjectToImport(exampleProject);
             }
         });
+    }
+
+    public void filterUpdate(@Observes final FilterUpdateEvent event) {
+        view.setFilterName(event.getName());
+        filterProjects(event.getName());
+    }
+
+    public boolean userCanCreateProjects() {
+        return projectController.canCreateProjects();
     }
 
     Command selectCommand(final Project project) {
@@ -152,14 +180,6 @@ public class LibraryScreen {
             final ProjectInfo projectInfo = getProjectInfo(project);
             projectDetailEvent.fire(new ProjectDetailEvent(projectInfo));
         };
-    }
-
-    Set<Project> filterProjects(final String filter) {
-        return libraryInfo.getProjects().stream()
-                .filter(p -> p.getProjectName() != null)
-                .filter(p -> p.getProjectName().toUpperCase()
-                        .startsWith(filter.toUpperCase()))
-                .collect(Collectors.toSet());
     }
 
     private ProjectInfo getProjectInfo(final Project project) {

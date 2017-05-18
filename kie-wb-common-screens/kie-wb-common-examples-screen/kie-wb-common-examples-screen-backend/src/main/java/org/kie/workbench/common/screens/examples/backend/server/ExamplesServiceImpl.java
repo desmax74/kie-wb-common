@@ -42,6 +42,7 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.guvnor.common.services.backend.config.SafeSessionInfo;
 import org.guvnor.common.services.project.context.ProjectContextChangeEvent;
 import org.guvnor.common.services.project.events.NewProjectEvent;
+import org.guvnor.common.services.project.model.POM;
 import org.guvnor.common.services.project.model.Project;
 import org.guvnor.common.services.shared.metadata.MetadataService;
 import org.guvnor.structure.organizationalunit.OrganizationalUnit;
@@ -169,7 +170,9 @@ public class ExamplesServiceImpl implements ExamplesService {
                                                  false);
                 git.add().addFilepattern(".").call();
                 git.commit().setMessage("Initial commit").call();
-                playgroundRepository = new ExampleRepository("file://" + playgroundDirectory.getAbsolutePath());
+
+                String repositoryUrl = resolveRepositoryUrl(playgroundDirectory.getAbsolutePath());
+                playgroundRepository = new ExampleRepository(repositoryUrl);
             }
         } catch (java.io.IOException | GitAPIException e) {
             logger.error("Unable to initialize playground git repository. Only custom repository definition will be available in the Workbench.",
@@ -183,17 +186,26 @@ public class ExamplesServiceImpl implements ExamplesService {
                                              @Override
                                              public java.nio.file.FileVisitResult visitFile(java.nio.file.Path file,
                                                                                             java.nio.file.attribute.BasicFileAttributes attrs) throws java.io.IOException {
-                                                 java.nio.file.Files.delete(file);
+                                                 file.toFile().delete();
                                                  return java.nio.file.FileVisitResult.CONTINUE;
                                              }
 
                                              @Override
                                              public java.nio.file.FileVisitResult postVisitDirectory(java.nio.file.Path dir,
                                                                                                      java.io.IOException exc) throws java.io.IOException {
-                                                 java.nio.file.Files.delete(dir);
+                                                 dir.toFile().delete();
                                                  return java.nio.file.FileVisitResult.CONTINUE;
                                              }
                                          });
+    }
+
+    String resolveRepositoryUrl(final String playgroundDirectoryPath) {
+        if ("\\".equals(getFileSeparator())) {
+            return "file:///" + playgroundDirectoryPath.replaceAll("\\\\",
+                                                                   "/");
+        } else {
+            return "file://" + playgroundDirectoryPath;
+        }
     }
 
     @Override
@@ -225,7 +237,10 @@ public class ExamplesServiceImpl implements ExamplesService {
         if (repositoryURL == null || repositoryURL.trim().isEmpty()) {
             return Collections.emptySet();
         }
-        final Repository gitRepository = cloneRepository(repositoryURL);
+
+        // Avoid cloning playground repository multiple times
+        Repository gitRepository = resolveGitRepository(repository);
+
         if (gitRepository == null) {
             return Collections.emptySet();
         }
@@ -233,6 +248,14 @@ public class ExamplesServiceImpl implements ExamplesService {
         final Set<Project> projects = projectService.getProjects(gitRepository,
                                                                  "master");
         return convert(projects);
+    }
+
+    Repository resolveGitRepository(final ExampleRepository exampleRepository) {
+        if (exampleRepository.equals(playgroundRepository)) {
+            return clonedRepositories.stream().filter(r -> exampleRepository.getUrl().equals(r.getEnvironment().get("origin"))).findFirst().orElseGet(() -> cloneRepository(exampleRepository.getUrl()));
+        } else {
+            return cloneRepository(exampleRepository.getUrl());
+        }
     }
 
     private Repository cloneRepository(final String repositoryURL) {
@@ -268,7 +291,7 @@ public class ExamplesServiceImpl implements ExamplesService {
 
     String getExampleAlias(final String repositoryURL) {
         String alias = repositoryURL;
-        alias = alias.substring(alias.lastIndexOf(getFileSeparator()) + 1);
+        alias = alias.substring(alias.lastIndexOf("/") + 1);
         final int lastDotIndex = alias.lastIndexOf('.');
         if (lastDotIndex > 0) {
             alias = alias.substring(0,
@@ -292,12 +315,19 @@ public class ExamplesServiceImpl implements ExamplesService {
 
     private String readDescription(final Project project) {
         final Path root = project.getRootPath();
+        final POM pom = project.getPom();
         final org.uberfire.java.nio.file.Path nioRoot = Paths.convert(root);
         final org.uberfire.java.nio.file.Path nioDescription = nioRoot.resolve(PROJECT_DESCRIPTON);
         String description = "Example '" + project.getProjectName() + "' project";
+
         if (ioService.exists(nioDescription)) {
             description = ioService.readAllString(nioDescription);
+        } else if (pom != null
+                && pom.getDescription() != null
+                && !pom.getDescription().isEmpty()) {
+            description = pom.getDescription();
         }
+
         return description;
     }
 
@@ -461,5 +491,14 @@ public class ExamplesServiceImpl implements ExamplesService {
                                                final IOException exc) {
             return FileVisitResult.CONTINUE;
         }
+    }
+
+    // Test getters and setters
+    Set<Repository> getClonedRepositories() {
+        return clonedRepositories;
+    }
+
+    void setPlaygroundRepository(final ExampleRepository playgroundRepository) {
+        this.playgroundRepository = playgroundRepository;
     }
 }

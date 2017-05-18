@@ -16,21 +16,39 @@
 
 package org.kie.workbench.common.stunner.cm.project.factory;
 
-import javax.enterprise.context.ApplicationScoped;
+import javax.annotation.PostConstruct;
+import javax.enterprise.context.Dependent;
+import javax.inject.Inject;
 
-import org.kie.workbench.common.stunner.bpmn.definition.property.diagram.DiagramSet;
 import org.kie.workbench.common.stunner.bpmn.project.factory.impl.BPMNProjectDiagramFactory;
 import org.kie.workbench.common.stunner.cm.CaseManagementDefinitionSet;
-import org.kie.workbench.common.stunner.cm.definition.BPMNDiagram;
-import org.kie.workbench.common.stunner.cm.util.CaseManagementUtils;
+import org.kie.workbench.common.stunner.cm.definition.CaseManagementDiagram;
+import org.kie.workbench.common.stunner.core.diagram.Metadata;
+import org.kie.workbench.common.stunner.core.factory.impl.BindableDiagramFactory;
 import org.kie.workbench.common.stunner.core.graph.Graph;
-import org.kie.workbench.common.stunner.core.graph.Node;
-import org.kie.workbench.common.stunner.core.graph.content.definition.Definition;
 import org.kie.workbench.common.stunner.core.graph.content.definition.DefinitionSet;
+import org.kie.workbench.common.stunner.project.diagram.ProjectDiagram;
+import org.kie.workbench.common.stunner.project.diagram.ProjectMetadata;
 
-@ApplicationScoped
+@Dependent
 public class CaseManagementProjectDiagramFactory
-        extends BPMNProjectDiagramFactory {
+        extends BindableDiagramFactory<ProjectMetadata, ProjectDiagram> {
+
+    private final BPMNProjectDiagramFactory bpmnDiagramFactory;
+
+    protected CaseManagementProjectDiagramFactory() {
+        this(null);
+    }
+
+    @Inject
+    public CaseManagementProjectDiagramFactory(final BPMNProjectDiagramFactory bpmnDiagramFactory) {
+        this.bpmnDiagramFactory = bpmnDiagramFactory;
+    }
+
+    @PostConstruct
+    public void init() {
+        this.bpmnDiagramFactory.setDiagramType(CaseManagementDiagram.class);
+    }
 
     @Override
     protected Class<?> getDefinitionSetType() {
@@ -38,17 +56,16 @@ public class CaseManagementProjectDiagramFactory
     }
 
     @Override
-    protected DiagramSet getDiagramSet(final Graph<DefinitionSet, ?> graph) {
-        final Node<Definition<BPMNDiagram>, ?> diagramNode = getFirstDiagramNode(graph);
-        if (null == diagramNode) {
-            throw new IllegalStateException("A BPMN Diagram is expected to be present on BPMN Diagram graphs.");
-        }
-        final BPMNDiagram diagram = diagramNode.getContent().getDefinition();
-        return diagram.getDiagramSet();
+    public Class<? extends Metadata> getMetadataType() {
+        return ProjectMetadata.class;
     }
 
-    @SuppressWarnings("unchecked")
-    private Node<Definition<BPMNDiagram>, ?> getFirstDiagramNode(final Graph graph) {
-        return CaseManagementUtils.getFirstDiagramNode(graph);
+    @Override
+    public ProjectDiagram build(final String name,
+                                final ProjectMetadata metadata,
+                                final Graph<DefinitionSet, ?> graph) {
+        return bpmnDiagramFactory.build(name,
+                                        metadata,
+                                        graph);
     }
 }

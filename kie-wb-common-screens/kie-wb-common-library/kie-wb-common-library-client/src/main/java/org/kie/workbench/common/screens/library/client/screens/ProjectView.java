@@ -20,9 +20,7 @@ import javax.inject.Inject;
 
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.IsWidget;
-import org.jboss.errai.common.client.dom.DOMUtil;
 import org.jboss.errai.common.client.dom.Div;
-import org.jboss.errai.common.client.dom.Form;
 import org.jboss.errai.common.client.dom.Input;
 import org.jboss.errai.ioc.client.api.ManagedInstance;
 import org.jboss.errai.ui.client.local.api.IsElement;
@@ -38,8 +36,33 @@ import org.kie.workbench.common.screens.library.client.widgets.ProjectActionsWid
 import org.uberfire.mvp.Command;
 
 @Templated
-public class ProjectView implements ProjectScreen.View,
-                                    IsElement {
+public class ProjectView
+        implements ProjectScreen.View,
+                   IsElement {
+
+    @Inject
+    @DataField("project-toolbar")
+    Div projectToolbar;
+
+    @Inject
+    @DataField("assets-toolbar")
+    Div assetsToolbar;
+
+    @Inject
+    @DataField("details-container")
+    Div detailsContainer;
+
+    @Inject
+    @DataField("filter-text")
+    Input filterText;
+
+    @Inject
+    @DataField("project-name")
+    Div projectNameContainer;
+
+    @Inject
+    @DataField
+    Div assetListContainer;
 
     private ProjectScreen presenter;
 
@@ -58,29 +81,15 @@ public class ProjectView implements ProjectScreen.View,
     @Inject
     private AssetsActionsWidget assetsActionsWidget;
 
-    @Inject
-    @DataField("project-toolbar")
-    Div projectToolbar;
+    private AssetList assetList;
+
+    public ProjectView() {
+    }
 
     @Inject
-    @DataField("assets-toolbar")
-    Form assetsToolbar;
-
-    @Inject
-    @DataField("details-container")
-    Div detailsContainer;
-
-    @Inject
-    @DataField("asset-list")
-    Div assetList;
-
-    @Inject
-    @DataField("filter-text")
-    Input filterText;
-
-    @Inject
-    @DataField("project-name")
-    Div projectNameContainer;
+    public ProjectView(final AssetList assetList) {
+        this.assetList = assetList;
+    }
 
     @Override
     public void init(ProjectScreen presenter) {
@@ -88,10 +97,17 @@ public class ProjectView implements ProjectScreen.View,
         assetsActionsWidget.init();
         projectActionsWidget.init(presenter::goToSettings);
         filterText.setAttribute("placeholder",
-                                ts.getTranslation(LibraryConstants.LibraryView_Filter));
+                                ts.getTranslation(LibraryConstants.FilterByName));
         detailsContainer.appendChild(projectsDetailScreen.getView().getElement());
         assetsToolbar.appendChild(assetsActionsWidget.getView().getElement());
         projectToolbar.appendChild(projectActionsWidget.getView().getElement());
+        assetListContainer.appendChild(assetList.getElement());
+        assetList.addChangeHandler(new Command() {
+            @Override
+            public void execute() {
+                presenter.onReload();
+            }
+        });
     }
 
     @Override
@@ -101,7 +117,12 @@ public class ProjectView implements ProjectScreen.View,
 
     @Override
     public void clearAssets() {
-        DOMUtil.removeAllChildren(assetList);
+        assetList.clear();
+    }
+
+    @Override
+    public void resetList() {
+        assetList.reset();
     }
 
     @Override
@@ -113,7 +134,7 @@ public class ProjectView implements ProjectScreen.View,
                          final String createdDate,
                          final Command details,
                          final Command select) {
-        AssetItemWidget assetItemWidget = itemWidgetsInstances.get();
+        final AssetItemWidget assetItemWidget = itemWidgetsInstances.get();
         assetItemWidget.init(assetName,
                              assetPath,
                              assetType,
@@ -122,12 +143,50 @@ public class ProjectView implements ProjectScreen.View,
                              createdDate,
                              details,
                              select);
-        assetList.appendChild(assetItemWidget.getElement());
+        assetList.add(assetItemWidget.getElement());
+    }
+
+    @Override
+    public void showIndexingIncomplete() {
+        assetList.showEmptyState(ts.getTranslation(LibraryConstants.IndexingHasNotFinished),
+                                 ts.getTranslation(LibraryConstants.PleaseWaitWhileTheProjectContentIsBeingIndexed));
+    }
+
+    @Override
+    public void showSearchHitNothing() {
+        assetList.showEmptyState(ts.getTranslation(LibraryConstants.EmptySearch),
+                                 ts.getTranslation(LibraryConstants.NoFilesWhereFoundWithTheGivenSearchCriteria));
+    }
+
+    @Override
+    public void showNoMoreAssets() {
+        assetList.showEmptyState(ts.getTranslation(LibraryConstants.EndOfFileList),
+                                 ts.getTranslation(LibraryConstants.NoMoreFilesPleasePressPrevious));
+    }
+
+    @Override
+    public int getFirstIndex() {
+        return assetList.getFirstIndex();
+    }
+
+    @Override
+    public Integer getStep() {
+        return assetList.getStep();
+    }
+
+    @Override
+    public String getFilterValue() {
+        return filterText.getValue();
+    }
+
+    @Override
+    public void setFilterName(String name) {
+        this.filterText.setValue(name);
     }
 
     @SinkNative(Event.ONKEYUP)
     @EventHandler("filter-text")
-    public void filterTextChange(Event e) {
-        presenter.updateAssetsBy(filterText.getValue());
+    public void onFilterTextChange(Event e) {
+        presenter.onFilterChange();
     }
 }

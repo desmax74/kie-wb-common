@@ -16,11 +16,11 @@
 
 package org.kie.workbench.common.stunner.shapes.client;
 
+import org.kie.workbench.common.stunner.client.lienzo.shape.impl.AnimationShapeStateHelper;
 import org.kie.workbench.common.stunner.core.client.shape.Shape;
 import org.kie.workbench.common.stunner.core.client.shape.impl.ContainerShape;
 import org.kie.workbench.common.stunner.core.client.shape.view.ShapeView;
 import org.kie.workbench.common.stunner.core.definition.shape.MutableShapeDef;
-import org.kie.workbench.common.stunner.shapes.client.view.animatiion.BasicShapeDecoratorAnimation;
 
 public class BasicContainerShape<W, D extends MutableShapeDef<W>, V extends ShapeView<?>>
         extends ContainerShape<W, D, V, Shape<?>> {
@@ -28,26 +28,7 @@ public class BasicContainerShape<W, D extends MutableShapeDef<W>, V extends Shap
     public BasicContainerShape(final D shapeDef,
                                final V view) {
         super(shapeDef,
-              view);
-    }
-
-    /**
-     * Use Lienzo animations for decorator updates.
-     */
-    protected void applyActiveState(final String color) {
-        new BasicShapeDecoratorAnimation<BasicContainerShape>(color,
-                                                              1.5,
-                                                              1).forShape(this).run();
-    }
-
-    /**
-     * Use Lienzo animations for decorator updates.
-     */
-    protected void applyNoneState() {
-        new BasicShapeDecoratorAnimation<BasicContainerShape>(_strokeColor,
-                                                              _strokeWidth,
-                                                              _strokeAlpha)
-                .forShape(this)
-                .run();
+              view,
+              new AnimationShapeStateHelper<>());
     }
 }

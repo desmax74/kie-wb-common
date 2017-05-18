@@ -18,21 +18,25 @@ package org.kie.workbench.common.forms.jbpm.model.authoring.document.definition;
 
 import org.jboss.errai.common.client.api.annotations.Portable;
 import org.jboss.errai.databinding.client.api.Bindable;
-import org.kie.workbench.common.forms.fields.shared.AbstractFieldDefinition;
 import org.kie.workbench.common.forms.adf.definitions.annotations.FormDefinition;
 import org.kie.workbench.common.forms.adf.definitions.annotations.i18n.I18nSettings;
+import org.kie.workbench.common.forms.fields.shared.AbstractFieldDefinition;
 import org.kie.workbench.common.forms.jbpm.model.authoring.document.type.DocumentFieldType;
 import org.kie.workbench.common.forms.model.FieldDefinition;
 
 @Portable
 @Bindable
 @FormDefinition(
-        i18n = @I18nSettings( keyPreffix = "FieldProperties" ),
+        i18n = @I18nSettings(keyPreffix = "FieldProperties"),
         startElement = "label"
 )
 public class DocumentFieldDefinition extends AbstractFieldDefinition {
 
     public static final DocumentFieldType FIELD_TYPE = new DocumentFieldType();
+
+    public DocumentFieldDefinition() {
+        super("org.jbpm.document.service.impl.DocumentImpl");
+    }
 
     @Override
     public DocumentFieldType getFieldType() {
@@ -40,7 +44,7 @@ public class DocumentFieldDefinition extends AbstractFieldDefinition {
     }
 
     @Override
-    protected void doCopyFrom( FieldDefinition other ) {
+    protected void doCopyFrom(FieldDefinition other) {
 
     }
 }

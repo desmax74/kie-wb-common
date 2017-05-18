@@ -27,7 +27,7 @@ import org.kie.workbench.common.screens.javaeditor.type.JavaResourceTypeDefiniti
 import org.kie.workbench.common.services.backend.project.ProjectClassLoaderHelper;
 import org.kie.workbench.common.services.refactoring.backend.server.indexing.AbstractFileIndexer;
 import org.kie.workbench.common.services.refactoring.backend.server.indexing.DefaultIndexBuilder;
-import org.kie.workbench.common.services.refactoring.model.index.Resource;
+import org.kie.workbench.common.services.refactoring.Resource;
 import org.kie.workbench.common.services.refactoring.service.ResourceType;
 import org.kie.workbench.common.services.shared.project.KieProject;
 import org.slf4j.Logger;
@@ -101,7 +101,7 @@ public class JavaFileIndexer extends AbstractFileIndexer {
         }
 
         // responsible for basic index info: project name, branch, etc
-        final DefaultIndexBuilder builder = new DefaultIndexBuilder(project, pkg);
+        final DefaultIndexBuilder builder = new DefaultIndexBuilder(Paths.convert(path).getFileName(), project, pkg);
 
         // visit/index java source
         final String javaSource = ioService.readAllString( path );

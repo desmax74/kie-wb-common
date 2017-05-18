@@ -21,8 +21,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import org.kie.workbench.common.stunner.bpmn.client.shape.def.BPMNDiagramShapeDef;
-import org.kie.workbench.common.stunner.bpmn.client.shape.def.EndNoneEventShapeDef;
-import org.kie.workbench.common.stunner.bpmn.client.shape.def.EndTerminateEventShapeDef;
+import org.kie.workbench.common.stunner.bpmn.client.shape.def.EndEventShapeDef;
 import org.kie.workbench.common.stunner.bpmn.client.shape.def.GatewayShapeDef;
 import org.kie.workbench.common.stunner.bpmn.client.shape.def.IntermediateTimerEventShapeDef;
 import org.kie.workbench.common.stunner.bpmn.client.shape.def.LaneShapeDef;
@@ -30,7 +29,7 @@ import org.kie.workbench.common.stunner.bpmn.client.shape.def.ReusableSubprocess
 import org.kie.workbench.common.stunner.bpmn.client.shape.def.SequenceFlowConnectorDef;
 import org.kie.workbench.common.stunner.bpmn.client.shape.def.StartEventShapeDef;
 import org.kie.workbench.common.stunner.bpmn.client.shape.def.TaskShapeDef;
-import org.kie.workbench.common.stunner.bpmn.definition.BPMNDiagram;
+import org.kie.workbench.common.stunner.bpmn.definition.BPMNDiagramImpl;
 import org.kie.workbench.common.stunner.bpmn.definition.BusinessRuleTask;
 import org.kie.workbench.common.stunner.bpmn.definition.EndNoneEvent;
 import org.kie.workbench.common.stunner.bpmn.definition.EndTerminateEvent;
@@ -98,7 +97,7 @@ public class BPMNSVGShapeFactory
                                     new StartEventShapeDef());
         svgShapeFactory.addShapeDef(StartTimerEvent.class,
                                     new StartEventShapeDef());
-        svgShapeFactory.addShapeDef(BPMNDiagram.class,
+        svgShapeFactory.addShapeDef(BPMNDiagramImpl.class,
                                     new BPMNDiagramShapeDef());
         svgShapeFactory.addShapeDef(BusinessRuleTask.class,
                                     new TaskShapeDef());
@@ -116,10 +115,10 @@ public class BPMNSVGShapeFactory
                                     new ReusableSubprocessShapeDef());
         svgShapeFactory.addShapeDef(NoneTask.class,
                                     new TaskShapeDef());
-        svgShapeFactory.addShapeDef(EndTerminateEvent.class,
-                                    new EndTerminateEventShapeDef());
         svgShapeFactory.addShapeDef(EndNoneEvent.class,
-                                    new EndNoneEventShapeDef());
+                                    new EndEventShapeDef());
+        svgShapeFactory.addShapeDef(EndTerminateEvent.class,
+                                    new EndEventShapeDef());
         svgShapeFactory.addShapeDef(IntermediateTimerEvent.class,
                                     new IntermediateTimerEventShapeDef());
         basicShapesFactory.addShapeDef(SequenceFlow.class,

@@ -42,19 +42,30 @@ import org.kie.workbench.common.screens.examples.model.ExampleRepository;
 import org.kie.workbench.common.screens.examples.model.ExampleTargetRepository;
 import org.kie.workbench.common.screens.examples.service.ExamplesService;
 import org.kie.workbench.common.screens.explorer.backend.server.ExplorerServiceHelper;
-import org.kie.workbench.common.screens.explorer.service.ActiveOptions;
 import org.kie.workbench.common.screens.library.api.LibraryInfo;
-import org.kie.workbench.common.screens.library.api.LibraryPreferences;
 import org.kie.workbench.common.screens.library.api.OrganizationalUnitRepositoryInfo;
+import org.kie.workbench.common.screens.library.api.ProjectAssetsQuery;
+import org.kie.workbench.common.screens.library.api.preferences.LibraryInternalPreferences;
+import org.kie.workbench.common.screens.library.api.preferences.LibraryOrganizationalUnitPreferences;
+import org.kie.workbench.common.screens.library.api.preferences.LibraryPreferences;
+import org.kie.workbench.common.screens.library.api.preferences.LibraryProjectPreferences;
+import org.kie.workbench.common.screens.library.api.preferences.LibraryRepositoryPreferences;
+import org.kie.workbench.common.services.refactoring.model.index.terms.valueterms.ValueIndexTerm;
+import org.kie.workbench.common.services.refactoring.model.query.RefactoringPageRequest;
+import org.kie.workbench.common.services.refactoring.model.query.RefactoringPageRow;
+import org.kie.workbench.common.services.refactoring.service.RefactoringQueryService;
 import org.kie.workbench.common.services.shared.project.KieProjectService;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.uberfire.backend.vfs.Path;
 import org.uberfire.io.IOService;
+import org.uberfire.paging.PageResponse;
 import org.uberfire.rpc.SessionInfo;
 import org.uberfire.security.authz.AuthorizationManager;
 
-import static org.jgroups.util.Util.assertEquals;
+import static java.util.Collections.singletonList;
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
@@ -76,6 +87,9 @@ public class LibraryServiceImplTest {
     private LibraryPreferences preferences;
 
     @Mock
+    private LibraryInternalPreferences internalPreferences;
+
+    @Mock
     private AuthorizationManager authorizationManager;
 
     @Mock
@@ -91,6 +105,9 @@ public class LibraryServiceImplTest {
     private ExamplesService examplesService;
 
     @Mock
+    private RefactoringQueryService refactoringQueryService;
+
+    @Mock
     private IOService ioService;
 
     @Mock
@@ -104,6 +121,12 @@ public class LibraryServiceImplTest {
 
     @Mock
     private Repository repo2Default;
+
+    @Captor
+    private ArgumentCaptor<RefactoringPageRequest> pageRequestArgumentCaptor;
+
+    @Captor
+    private ArgumentCaptor<POM> pomArgumentCaptor;
 
     private LibraryServiceImpl libraryService;
     private List<OrganizationalUnit> ous;
@@ -135,16 +158,23 @@ public class LibraryServiceImplTest {
         projectsMock.add(mock(Project.class));
         projectsMock.add(mock(Project.class));
 
+        when(preferences.getOrganizationalUnitPreferences()).thenReturn(spy(new LibraryOrganizationalUnitPreferences()));
+        when(preferences.getRepositoryPreferences()).thenReturn(spy(new LibraryRepositoryPreferences()));
+        when(preferences.getProjectPreferences()).thenReturn(spy(new LibraryProjectPreferences()));
+
         libraryService = spy(new LibraryServiceImpl(ouService,
                                                     repositoryService,
                                                     kieProjectService,
+                                                    refactoringQueryService,
                                                     preferences,
                                                     authorizationManager,
                                                     sessionInfo,
                                                     explorerServiceHelper,
                                                     projectService,
                                                     examplesService,
-                                                    ioService));
+                                                    ioService,
+                                                    internalPreferences
+        ));
     }
 
     @Test
@@ -158,7 +188,7 @@ public class LibraryServiceImplTest {
 
     @Test
     public void getOrganizationalUnitRepositoryInfoTest() {
-        when(preferences.getRepositoryAlias()).thenReturn("repository1");
+        when(preferences.getRepositoryPreferences().getName()).thenReturn("repository1");
         doAnswer(invocationOnMock -> getRepository((String) invocationOnMock.getArguments()[2]))
                 .when(repositoryService).createRepository(any(OrganizationalUnit.class),
                                                           anyString(),
@@ -169,6 +199,7 @@ public class LibraryServiceImplTest {
         final Repository repository2 = getRepository("repository2");
         final Repository repository3 = getRepository("repository3");
         final Repository repository4 = getRepository("organizationalUnit4-repository1");
+        final Repository repository5 = getRepository("organizationalUnit3-repository1");
 
         final OrganizationalUnit organizationalUnit1 = getOrganizationalUnit("organizationalUnit1",
                                                                              repository1);
@@ -195,6 +226,10 @@ public class LibraryServiceImplTest {
         organizationalUnitWithNoRepositoriesCreatesTheSecondaryRepositorySincePrimaryAlreadyExists(organizationalUnit3,
                                                                                                    "organizationalUnit3-repository1",
                                                                                                    repository1);
+        organizationalUnitWithNoRepositoriesCreatesATertiaryRepositorySincePrimaryAndSecondaryAlreadyExists(organizationalUnit3,
+                                                                                                            "organizationalUnit3-repository1-2",
+                                                                                                            repository1,
+                                                                                                            repository5);
         organizationalUnitWithSecondaryRepositoryExistent(organizationalUnit4,
                                                           "organizationalUnit4-repository1");
     }
@@ -212,31 +247,43 @@ public class LibraryServiceImplTest {
 
         assertEquals("master",
                      libraryInfo.getSelectedBranch());
-        assertEquals(projects,
+        assertEquals(new ArrayList<>(projects),
                      libraryInfo.getProjects());
     }
 
     @Test
     public void newProjectTest() {
-        when(preferences.getOuIdentifier()).thenReturn("ou2");
-        when(preferences.getRepositoryAlias()).thenReturn("repo-alias");
-        when(preferences.getOuAlias()).thenReturn("team");
-        when(preferences.getProjectDefaultBranch()).thenReturn("master");
-        when(preferences.getProjectGroupId()).thenReturn("projectGroupID");
-        when(preferences.getProjectVersion()).thenReturn("1.0");
+        when(preferences.getOrganizationalUnitPreferences().getName()).thenReturn("ou2");
+        when(preferences.getRepositoryPreferences().getName()).thenReturn("repo-alias");
+        when(preferences.getOrganizationalUnitPreferences().getAliasInSingular()).thenReturn("team");
+        when(preferences.getProjectPreferences().getBranch()).thenReturn("master");
+        when(preferences.getProjectPreferences().getVersion()).thenReturn("1.0");
+
+        final OrganizationalUnit organizationalUnit = mock(OrganizationalUnit.class);
+        when(organizationalUnit.getDefaultGroupId()).thenReturn("ouGroupID");
 
         final Repository repository = mock(Repository.class);
         final Path projectRootPath = mock(Path.class);
         when(repository.getRoot()).thenReturn(projectRootPath);
 
-        libraryService.createProject("projectName",
+        libraryService.createProject("Project Name",
+                                     organizationalUnit,
                                      repository,
-                                     "baseURL");
+                                     "baseURL",
+                                     "description");
 
         verify(kieProjectService).newProject(eq(projectRootPath),
-                                             any(),
+                                             pomArgumentCaptor.capture(),
                                              eq("baseURL"),
                                              any());
+
+        final POM pom = pomArgumentCaptor.getValue();
+        assertEquals("ouGroupID",
+                     pom.getGav().getGroupId());
+        assertEquals("ProjectName",
+                     pom.getGav().getArtifactId());
+        assertEquals("description",
+                     pom.getDescription());
     }
 
     @Test
@@ -276,12 +323,87 @@ public class LibraryServiceImplTest {
     }
 
     @Test
-    public void getProjectAssetsTest() {
-        libraryService.getProjectAssets(mock(Project.class));
+    public void emptyFirstPage() throws Exception {
+        final Project project = mock(Project.class);
+        final Path path = mock(Path.class);
+        when(project.getRootPath()).thenReturn(path);
+        when(path.toURI()).thenReturn("file://a/b/c");
 
-        verify(projectService).resolveDefaultPackage(any(Project.class));
-        verify(explorerServiceHelper).getAssetsRecursively(any(Package.class),
-                                                           any(ActiveOptions.class));
+        doReturn(true).when(ioService).exists(any());
+
+        final ProjectAssetsQuery query = new ProjectAssetsQuery(project,
+                                                                "",
+                                                                0,
+                                                                10);
+
+        final PageResponse<RefactoringPageRow> pageRowPageResponse = new PageResponse<>();
+        pageRowPageResponse.setPageRowList(new ArrayList<>());
+        when(refactoringQueryService.query(any(RefactoringPageRequest.class))).thenReturn(pageRowPageResponse);
+
+        libraryService.getProjectAssets(query);
+
+        verify(refactoringQueryService).query(pageRequestArgumentCaptor.capture());
+
+        final RefactoringPageRequest pageRequest = pageRequestArgumentCaptor.getValue();
+
+        assertEquals(FindAllLibraryAssetsQuery.NAME,
+                     pageRequest.getQueryName());
+        assertEquals(1,
+                     pageRequest.getQueryTerms().size());
+
+        assertEquals("file://a/b/c",
+                     pageRequest.getQueryTerms().iterator().next().getValue());
+
+        assertEquals(0,
+                     pageRequest.getStartRowIndex());
+        assertEquals(10,
+                     (int) pageRequest.getPageSize());
+    }
+
+    @Test
+    public void queryWithAFilter() throws Exception {
+
+        final Project project = mock(Project.class);
+        final Path path = mock(Path.class);
+        when(project.getRootPath()).thenReturn(path);
+        when(path.toURI()).thenReturn("file://the_project");
+
+        doReturn(true).when(ioService).exists(any());
+
+        final ProjectAssetsQuery query = new ProjectAssetsQuery(project,
+                                                                "helloo",
+                                                                10,
+                                                                20);
+
+        final PageResponse<RefactoringPageRow> pageRowPageResponse = new PageResponse<>();
+        pageRowPageResponse.setPageRowList(new ArrayList<>());
+        when(refactoringQueryService.query(any(RefactoringPageRequest.class))).thenReturn(pageRowPageResponse);
+
+        libraryService.getProjectAssets(query);
+
+        verify(refactoringQueryService).query(pageRequestArgumentCaptor.capture());
+
+        final RefactoringPageRequest pageRequest = pageRequestArgumentCaptor.getValue();
+
+        assertEquals(FindAllLibraryAssetsQuery.NAME,
+                     pageRequest.getQueryName());
+        assertEquals(2,
+                     pageRequest.getQueryTerms().size());
+
+        assertQueryTermsContains(pageRequest.getQueryTerms(),
+                                 "file://the_project");
+        assertQueryTermsContains(pageRequest.getQueryTerms(),
+                                 "*helloo*");
+
+        assertEquals(10,
+                     pageRequest.getStartRowIndex());
+        assertEquals(20,
+                     (int) pageRequest.getPageSize());
+    }
+
+    private void assertQueryTermsContains(final Set<ValueIndexTerm> terms,
+                                          final String value) {
+        assertTrue(terms.stream().filter((t) -> t.getValue().equals(value)).findFirst().isPresent());
     }
 
     @Test
@@ -373,20 +495,53 @@ public class LibraryServiceImplTest {
     }
 
     @Test
+    public void importDefaultProjectTest() {
+        final Repository repository = mock(Repository.class);
+        when(repository.getAlias()).thenReturn("repoAlias");
+        final OrganizationalUnit organizationalUnit = mock(OrganizationalUnit.class);
+        when(organizationalUnit.getName()).thenReturn("ou");
+        when(organizationalUnit.getIdentifier()).thenReturn("ou");
+        when(organizationalUnit.getRepositories()).thenReturn(singletonList(repository));
+        when(ouService.getOrganizationalUnits()).thenReturn(singletonList(organizationalUnit));
+
+        final ExampleProject exampleProject = mock(ExampleProject.class);
+
+        final Project project = mock(Project.class);
+        final ProjectContextChangeEvent projectContextChangeEvent = mock(ProjectContextChangeEvent.class);
+        doReturn(project).when(projectContextChangeEvent).getProject();
+        doReturn(projectContextChangeEvent).when(examplesService).setupExamples(any(ExampleOrganizationalUnit.class),
+                                                                                any(ExampleTargetRepository.class),
+                                                                                anyString(),
+                                                                                anyList());
+
+        final Project importedProject = libraryService.importProject(exampleProject);
+
+        assertEquals(project,
+                     importedProject);
+        verify(examplesService).setupExamples(new ExampleOrganizationalUnit(organizationalUnit.getName()),
+                                              new ExampleTargetRepository(repository.getAlias()),
+                                              "master",
+                                              singletonList(exampleProject));
+    }
+
+    @Test
     public void createPOM() {
-        when(preferences.getProjectGroupId()).thenReturn("projectGroupID");
-        when(preferences.getProjectVersion()).thenReturn("1.0");
-        when(preferences.getProjectDescription()).thenReturn("desc");
+        final OrganizationalUnit organizationalUnit = mock(OrganizationalUnit.class);
+        when(organizationalUnit.getDefaultGroupId()).thenReturn("ouGroupID");
+
+        when(preferences.getProjectPreferences().getVersion()).thenReturn("1.0");
+        when(preferences.getProjectPreferences().getDescription()).thenReturn("desc");
 
         GAV gav = libraryService.createGAV("proj",
-                                           preferences);
+                                           preferences,
+                                           organizationalUnit);
         POM proj = libraryService.createPOM("proj",
-                                            preferences,
+                                            "description",
                                             gav);
 
         assertEquals("proj",
                      proj.getName());
-        assertEquals(preferences.getProjectDescription(),
+        assertEquals("description",
                      proj.getDescription());
         assertEquals(gav,
                      proj.getGav());
@@ -394,17 +549,20 @@ public class LibraryServiceImplTest {
 
     @Test
     public void createGAV() {
-        when(preferences.getProjectGroupId()).thenReturn("projectGroupID");
-        when(preferences.getProjectVersion()).thenReturn("1.0");
+        final OrganizationalUnit organizationalUnit = mock(OrganizationalUnit.class);
+        when(organizationalUnit.getDefaultGroupId()).thenReturn("ouGroupID");
+
+        when(preferences.getProjectPreferences().getVersion()).thenReturn("1.0");
 
         GAV gav = libraryService.createGAV("proj",
-                                           preferences);
+                                           preferences,
+                                           organizationalUnit);
 
-        assertEquals(preferences.getProjectGroupId(),
+        assertEquals(organizationalUnit.getDefaultGroupId(),
                      gav.getGroupId());
         assertEquals("proj",
                      gav.getArtifactId());
-        assertEquals(preferences.getProjectVersion(),
+        assertEquals(preferences.getProjectPreferences().getVersion(),
                      gav.getVersion());
     }
 
@@ -422,6 +580,21 @@ public class LibraryServiceImplTest {
                                                                                                             final String repositoryIdentifier,
                                                                                                             final Repository alreadyExistentPrimaryRepository) {
         doReturn(alreadyExistentPrimaryRepository).when(repositoryService).getRepository("repository1");
+        final OrganizationalUnitRepositoryInfo info = libraryService.getOrganizationalUnitRepositoryInfo(organizationalUnit);
+        assertOrganizationalUnitRepositoryInfo(info,
+                                               4,
+                                               organizationalUnit.getIdentifier(),
+                                               0,
+                                               repositoryIdentifier);
+    }
+
+    private void organizationalUnitWithNoRepositoriesCreatesATertiaryRepositorySincePrimaryAndSecondaryAlreadyExists(final OrganizationalUnit organizationalUnit,
+                                                                                                                     final String repositoryIdentifier,
+                                                                                                                     final Repository alreadyExistentPrimaryRepository,
+                                                                                                                     final Repository alreadyExistentSecondaryRepository) {
+        doReturn(alreadyExistentPrimaryRepository).when(repositoryService).getRepository("repository1");
+        doReturn(alreadyExistentSecondaryRepository).when(repositoryService).getRepository("organizationalUnit3-repository1");
+
         final OrganizationalUnitRepositoryInfo info = libraryService.getOrganizationalUnitRepositoryInfo(organizationalUnit);
         assertOrganizationalUnitRepositoryInfo(info,
                                                4,
