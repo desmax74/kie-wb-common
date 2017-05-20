@@ -17,6 +17,7 @@
 package org.kie.workbench.common.services.backend.builder.compiler.nio;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.Compilers;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.Decorator;
@@ -37,6 +38,16 @@ public class DefaultIncrementalCompilerEnablerTest {
     private final Path prj = Paths.get("src/test/projects/dummy_multimodule");
 
     private final Path mavenRepo = Paths.get("src/test/resources/.ignore/m2_repo/");
+
+    @Before
+    public void setUp() throws Exception {
+        if (!Files.exists(mavenRepo)) {
+            System.out.println("Creating a m2_repo into src/test/resources/.ignore/m2_repo/");
+            if (!Files.exists(Files.createDirectories(mavenRepo))) {
+                throw new Exception("Folder not writable in the project");
+            }
+        }
+    }
 
     @Test
     public void testReadPomsInaPrjTest() throws Exception {

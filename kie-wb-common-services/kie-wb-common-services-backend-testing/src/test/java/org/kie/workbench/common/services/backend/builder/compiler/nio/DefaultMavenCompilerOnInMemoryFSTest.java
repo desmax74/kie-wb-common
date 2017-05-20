@@ -98,7 +98,6 @@ public class DefaultMavenCompilerOnInMemoryFSTest {
                 throw new Exception("Folder not writable in the project");
             }
         }
-        //fs = Jimfs.newFileSystem(Configuration.unix());
     }
 
     @After
