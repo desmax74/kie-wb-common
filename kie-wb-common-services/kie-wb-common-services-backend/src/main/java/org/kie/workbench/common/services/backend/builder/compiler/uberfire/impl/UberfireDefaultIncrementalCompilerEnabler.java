@@ -17,12 +17,13 @@ package org.kie.workbench.common.services.backend.builder.compiler.uberfire.impl
 
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.Compilers;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.ConfigurationContextProvider;
+import org.kie.workbench.common.services.backend.builder.compiler.impl.MavenUtils;
 import org.kie.workbench.common.services.backend.builder.compiler.impl.PomPlaceHolder;
+import org.kie.workbench.common.services.backend.builder.compiler.impl.ProcessedPoms;
 import org.kie.workbench.common.services.backend.builder.compiler.uberfire.UberfireCompilationRequest;
 import org.kie.workbench.common.services.backend.builder.compiler.uberfire.UberfireIncrementalCompilerEnabler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.uberfire.java.nio.file.DirectoryStream;
 import org.uberfire.java.nio.file.Files;
 import org.uberfire.java.nio.file.Path;
 import org.uberfire.java.nio.file.Paths;
@@ -42,23 +43,23 @@ public class UberfireDefaultIncrementalCompilerEnabler implements UberfireIncrem
     }
 
     @Override
-    public Boolean process(final UberfireCompilationRequest req) {
+    public ProcessedPoms process(final UberfireCompilationRequest req) {
         Path mainPom = Paths.get(req.getInfo().getPrjPath().toString(), POM_NAME);
         if (!Files.isReadable(mainPom)) {
-            return Boolean.FALSE;
+            return new ProcessedPoms(Boolean.FALSE, Collections.emptyList());
         }
 
         PomPlaceHolder placeHolder = editor.readSingle(mainPom);
         Boolean isPresent = isPresent(placeHolder);   // check if the main pom is already scanned and edited
         if (placeHolder.isValid() && !isPresent) {
             List<String> pomsList = new ArrayList();
-            searchPoms(Paths.get(req.getInfo().getPrjPath().toString()), pomsList);// recursive NIO search in all subfolders
+            MavenUtils.searchPomsForUberfire(Paths.get(req.getInfo().getPrjPath().toString()), pomsList);// recursive NIO search in all subfolders
             if (pomsList.size() > 0) {
                 processFoundedPoms(pomsList, req);
             }
-            return Boolean.TRUE;
+            return new ProcessedPoms(Boolean.TRUE, pomsList);
         } else {
-            return Boolean.FALSE;
+            return new ProcessedPoms(Boolean.FALSE, Collections.emptyList());
         }
     }
 
@@ -76,7 +77,7 @@ public class UberfireDefaultIncrementalCompilerEnabler implements UberfireIncrem
     }
 
 
-    private void searchPoms(Path file, List<String> pomsList) {
+    /*public void searchPoms(Path file, List<String> pomsList) {
         try (DirectoryStream<Path> ds = Files.newDirectoryStream(file.toAbsolutePath())) {
             for (Path p : ds) {
                 if (Files.isDirectory(p)) {
@@ -88,7 +89,7 @@ public class UberfireDefaultIncrementalCompilerEnabler implements UberfireIncrem
         } catch (Exception e) {
             logger.error(e.getMessage());
         }
-    }
+    }*/
 
     /**
      * Check if the artifact is in the hisotry

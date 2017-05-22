@@ -17,11 +17,13 @@
 package org.kie.workbench.common.services.backend.builder.compiler.uberfire;
 
 
+import org.kie.workbench.common.services.backend.builder.compiler.impl.ProcessedPoms;
+
 /**
  * Process the pom files before the compilation
  */
 public interface UberfireIncrementalCompilerEnabler {
 
-    Boolean process(UberfireCompilationRequest req);
+    ProcessedPoms process(UberfireCompilationRequest req);
 
 }

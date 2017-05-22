@@ -26,7 +26,7 @@ import java.util.Set;
 
 public class ClassloaderUtils {
 
-    public ClassLoader getProjectClassloader(MavenProject project) throws Exception{
+    public ClassLoader getProjectClassloader(MavenProject project) throws Exception {
         Set<URL> urls = new HashSet<URL>();
         for (String element : project.getCompileClasspathElements()) {
             urls.add(new File(element).toURI().toURL());

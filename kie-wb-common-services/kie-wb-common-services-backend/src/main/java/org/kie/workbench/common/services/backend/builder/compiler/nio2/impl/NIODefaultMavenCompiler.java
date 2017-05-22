@@ -19,6 +19,7 @@ import org.kie.workbench.common.services.backend.builder.compiler.CompilationRes
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.Compilers;
 import org.kie.workbench.common.services.backend.builder.compiler.external.KieMavenCli;
 import org.kie.workbench.common.services.backend.builder.compiler.impl.DefaultCompilationResponse;
+import org.kie.workbench.common.services.backend.builder.compiler.impl.ProcessedPoms;
 import org.kie.workbench.common.services.backend.builder.compiler.nio2.NIOCompilationRequest;
 import org.kie.workbench.common.services.backend.builder.compiler.nio2.NIOIncrementalCompilerEnabler;
 import org.kie.workbench.common.services.backend.builder.compiler.nio2.NIOMavenCompiler;
@@ -92,8 +93,8 @@ public class NIODefaultMavenCompiler implements NIOMavenCompiler {
         }
 
         if (!req.getInfo().getEnhancedMainPomFile().isPresent()) {
-            Boolean result = enabler.process(req);
-            if (!result) {
+            ProcessedPoms processedPoms = enabler.process(req);
+            if (!processedPoms.getResult()) {
                 return new DefaultCompilationResponse(Boolean.FALSE, Optional.of("Processing poms failed"));
             }
         }

@@ -14,15 +14,25 @@
  * limitations under the License.
  */
 
-package org.kie.workbench.common.services.backend.builder.compiler.nio2;
+package dummy;
 
-import org.kie.workbench.common.services.backend.builder.compiler.impl.ProcessedPoms;
+import java.io.Serializable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-/**
- * Process the pom files before the compilation
- */
-public interface NIOIncrementalCompilerEnabler {
+public class DummyB implements Serializable {
 
-    ProcessedPoms process(NIOCompilationRequest req);
+    private static final Logger logger = LoggerFactory.getLogger(DummyB.class);
+
+    private String name;
+
+    public DummyB(String name) {
+        this.name = name;
+        logger.info("Dummy B constructor");
+    }
+
+    public String greetings(){
+        return "Hello World !";
+    }
 
 }

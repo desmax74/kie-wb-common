@@ -62,7 +62,7 @@ public class UberfireDefaultIncrementalCompilerEnablerTest {
         UberfireWorkspaceCompilationInfo info = new UberfireWorkspaceCompilationInfo(tmp, UberfireMavenCompilerFactory.getCompiler(mavenRepo, Decorator.NONE));
         UberfireCompilationRequest req = new UberfireDefaultCompilationRequest(info, new String[]{MavenArgs.COMPILE});
         UberfireDefaultIncrementalCompilerEnabler enabler = new UberfireDefaultIncrementalCompilerEnabler(Compilers.JAVAC);
-        Assert.assertTrue(enabler.process(req));
+        Assert.assertTrue(enabler.process(req).getResult());
 
         encoded = Files.readAllBytes(Paths.get(mainPom.toString()));
         pomAsAstring = new String(encoded, StandardCharsets.UTF_8);
@@ -92,7 +92,7 @@ public class UberfireDefaultIncrementalCompilerEnablerTest {
         UberfireWorkspaceCompilationInfo info = new UberfireWorkspaceCompilationInfo(tmp, UberfireMavenCompilerFactory.getCompiler(mavenRepo, Decorator.NONE));
         UberfireCompilationRequest req = new UberfireDefaultCompilationRequest(info, new String[]{MavenArgs.COMPILE});
         UberfireDefaultIncrementalCompilerEnabler enabler = new UberfireDefaultIncrementalCompilerEnabler(Compilers.JAVAC);
-        Assert.assertTrue(enabler.process(req));
+        Assert.assertTrue(enabler.process(req).getResult());
 
         Assert.assertTrue(info.isKiePluginPresent());
 

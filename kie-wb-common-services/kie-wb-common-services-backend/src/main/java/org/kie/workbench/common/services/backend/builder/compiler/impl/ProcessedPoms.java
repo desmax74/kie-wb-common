@@ -14,15 +14,26 @@
  * limitations under the License.
  */
 
-package org.kie.workbench.common.services.backend.builder.compiler.nio2;
+package org.kie.workbench.common.services.backend.builder.compiler.impl;
 
-import org.kie.workbench.common.services.backend.builder.compiler.impl.ProcessedPoms;
+import java.util.List;
 
-/**
- * Process the pom files before the compilation
- */
-public interface NIOIncrementalCompilerEnabler {
+public class ProcessedPoms {
 
-    ProcessedPoms process(NIOCompilationRequest req);
+    private Boolean result;
+    private List<String> projectPoms;
+
+    public ProcessedPoms(Boolean result, List<String> projectPoms) {
+        this.result = result;
+        this.projectPoms = projectPoms;
+    }
+
+    public Boolean getResult() {
+        return result;
+    }
+
+    public List<String> getProjectPoms() {
+        return projectPoms;
+    }
 
 }

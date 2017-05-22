@@ -63,7 +63,7 @@ public class DefaultIncrementalCompilerEnablerTest {
         NIOWorkspaceCompilationInfo info = new NIOWorkspaceCompilationInfo(tmp, NIOMavenCompilerFactory.getCompiler(mavenRepo, Decorator.NONE));
         NIOCompilationRequest req = new NIODefaultCompilationRequest(info, new String[]{MavenArgs.COMPILE});
         NIODefaultIncrementalCompilerEnabler enabler = new NIODefaultIncrementalCompilerEnabler(Compilers.JAVAC);
-        Assert.assertTrue(enabler.process(req));
+        Assert.assertTrue(enabler.process(req).getResult());
 
         encoded = Files.readAllBytes(Paths.get(mainPom.toString()));
         pomAsAstring = new String(encoded, StandardCharsets.UTF_8);
@@ -87,7 +87,7 @@ public class DefaultIncrementalCompilerEnablerTest {
         NIOWorkspaceCompilationInfo info = new NIOWorkspaceCompilationInfo(tmp, NIOMavenCompilerFactory.getCompiler(mavenRepo, Decorator.NONE));
         NIOCompilationRequest req = new NIODefaultCompilationRequest(info, new String[]{MavenArgs.COMPILE});
         NIODefaultIncrementalCompilerEnabler enabler = new NIODefaultIncrementalCompilerEnabler(Compilers.JAVAC);
-        Assert.assertTrue(enabler.process(req));
+        Assert.assertTrue(enabler.process(req).getResult());
 
         Assert.assertTrue(info.isKiePluginPresent());
 

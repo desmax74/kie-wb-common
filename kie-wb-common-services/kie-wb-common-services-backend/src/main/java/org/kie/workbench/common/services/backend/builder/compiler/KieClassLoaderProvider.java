@@ -14,15 +14,19 @@
  * limitations under the License.
  */
 
-package org.kie.workbench.common.services.backend.builder.compiler.nio2;
+package org.kie.workbench.common.services.backend.builder.compiler;
 
-import org.kie.workbench.common.services.backend.builder.compiler.impl.ProcessedPoms;
+import java.util.List;
+import java.util.Optional;
 
 /**
- * Process the pom files before the compilation
- */
-public interface NIOIncrementalCompilerEnabler {
+ * Build a classloader using the dependencies founded in the poms inside a maven project
+ * */
+public interface KieClassLoaderProvider {
 
-    ProcessedPoms process(NIOCompilationRequest req);
+    Optional<ClassLoader> loadClassloaderFrom(String path);
 
+    Optional<ClassLoader> loadDependenciesClassloaderFromProject(String prjPath, String localRepo);
+
+    Optional<ClassLoader> loadDependenciesClassloaderFromProject(List<String> deps, String localRepo);
 }

@@ -14,15 +14,16 @@
  * limitations under the License.
  */
 
-package org.kie.workbench.common.services.backend.builder.compiler.nio2;
+package dummy;
 
-import org.kie.workbench.common.services.backend.builder.compiler.impl.ProcessedPoms;
+import java.io.Serializable;
 
-/**
- * Process the pom files before the compilation
- */
-public interface NIOIncrementalCompilerEnabler {
+public class DummyA implements Serializable {
 
-    ProcessedPoms process(NIOCompilationRequest req);
+    private String name;
+
+    public DummyA(String name) {
+        this.name = name;
+    }
 
 }

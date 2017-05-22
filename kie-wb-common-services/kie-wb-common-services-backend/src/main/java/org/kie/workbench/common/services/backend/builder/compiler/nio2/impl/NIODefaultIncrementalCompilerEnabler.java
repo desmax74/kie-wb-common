@@ -17,14 +17,14 @@ package org.kie.workbench.common.services.backend.builder.compiler.nio2.impl;
 
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.Compilers;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.ConfigurationContextProvider;
+import org.kie.workbench.common.services.backend.builder.compiler.impl.MavenUtils;
 import org.kie.workbench.common.services.backend.builder.compiler.impl.PomPlaceHolder;
+import org.kie.workbench.common.services.backend.builder.compiler.impl.ProcessedPoms;
 import org.kie.workbench.common.services.backend.builder.compiler.nio2.NIOCompilationRequest;
 import org.kie.workbench.common.services.backend.builder.compiler.nio2.NIOIncrementalCompilerEnabler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -43,23 +43,23 @@ public class NIODefaultIncrementalCompilerEnabler implements NIOIncrementalCompi
     }
 
     @Override
-    public Boolean process(final NIOCompilationRequest req) {
+    public ProcessedPoms process(final NIOCompilationRequest req) {
         Path mainPom = Paths.get(req.getInfo().getPrjPath().toString(), POM_NAME);
         if (!Files.isReadable(mainPom)) {
-            return Boolean.FALSE;
+            return new ProcessedPoms(Boolean.FALSE, Collections.emptyList());
         }
 
         PomPlaceHolder placeHolder = editor.readSingle(mainPom);
         Boolean isPresent = isPresent(placeHolder);   // check if the main pom is already scanned and edited
         if (placeHolder.isValid() && !isPresent) {
             List<String> pomsList = new ArrayList();
-            searchPoms(Paths.get(req.getInfo().getPrjPath().toString()), pomsList);// recursive NIO search in all subfolders
+            MavenUtils.searchPomsForNIO(Paths.get(req.getInfo().getPrjPath().toString()), pomsList);// recursive NIO search in all subfolders
             if (pomsList.size() > 0) {
                 processFoundedPoms(pomsList, req);
             }
-            return Boolean.TRUE;
+            return new ProcessedPoms(Boolean.TRUE, pomsList);
         } else {
-            return Boolean.FALSE;
+            return new ProcessedPoms(Boolean.FALSE, Collections.emptyList());
         }
     }
 
@@ -77,7 +77,7 @@ public class NIODefaultIncrementalCompilerEnabler implements NIOIncrementalCompi
     }
 
 
-    private void searchPoms(Path file, List<String> pomsList) {
+    /*public void searchPoms(Path file, List<String> pomsList) {
         try (DirectoryStream<Path> ds = Files.newDirectoryStream(file.toAbsolutePath())) {
             for (Path p : ds) {
                 if (Files.isDirectory(p)) {
@@ -89,7 +89,7 @@ public class NIODefaultIncrementalCompilerEnabler implements NIOIncrementalCompi
         } catch (IOException e) {
             logger.error(e.getMessage());
         }
-    }
+    }*/
 
     /**
      * Check if the artifact is in the hisotry

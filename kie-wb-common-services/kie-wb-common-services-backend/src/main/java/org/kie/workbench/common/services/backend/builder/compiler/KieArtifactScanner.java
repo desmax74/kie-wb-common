@@ -14,15 +14,11 @@
  * limitations under the License.
  */
 
-package org.kie.workbench.common.services.backend.builder.compiler.nio2;
+package org.kie.workbench.common.services.backend.builder.compiler;
 
-import org.kie.workbench.common.services.backend.builder.compiler.impl.ProcessedPoms;
+import org.kie.scanner.KieModuleMetaData;
 
-/**
- * Process the pom files before the compilation
- */
-public interface NIOIncrementalCompilerEnabler {
+public interface KieArtifactScanner {
 
-    ProcessedPoms process(NIOCompilationRequest req);
-
+    KieModuleMetaData loadMetaData(String prjPath);
 }
