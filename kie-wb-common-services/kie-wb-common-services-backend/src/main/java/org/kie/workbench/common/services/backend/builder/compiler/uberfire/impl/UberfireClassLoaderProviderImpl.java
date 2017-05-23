@@ -18,7 +18,6 @@ package org.kie.workbench.common.services.backend.builder.compiler.uberfire.impl
 
 import org.apache.maven.artifact.Artifact;
 import org.kie.workbench.common.services.backend.builder.compiler.KieClassLoaderProvider;
-import org.kie.workbench.common.services.backend.builder.compiler.impl.MavenUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.uberfire.java.nio.file.Path;
@@ -36,25 +35,13 @@ public class UberfireClassLoaderProviderImpl implements KieClassLoaderProvider {
     protected static final Logger logger = LoggerFactory.getLogger(UberfireClassLoaderProviderImpl.class);
 
     @Override
-    public Optional<ClassLoader> loadClassloaderFrom(String path) {
-        return Optional.empty();
-    }
-
-    @Override
     public Optional<ClassLoader> loadDependenciesClassloaderFromProject(String prjPath, String localRepo) {
-        List<String> deps = new ArrayList<>();
-        MavenUtils.searchPomsForUberfire(Paths.get(prjPath), deps);
+        List<String> poms = new ArrayList<>();
+        UberfireMavenUtils.searchPoms(Paths.get(prjPath), poms);
+        List<Artifact> artifacts = UberfireMavenUtils.resolveDependenciesFromMultimodulePrj(poms);
         List<URL> urls = new ArrayList();
-        List<Artifact> artifacts = new ArrayList<>();
         try {
-            for (Artifact artifact : artifacts) {
-                StringBuilder sb = new StringBuilder("file://");
-                sb.append(localRepo).append("/").append(artifact.getGroupId()).
-                        append("/").append(artifact.getVersion()).append(artifact.getArtifactId()).
-                        append("-").append(artifact.getVersion()).append(".").append(artifact.getType());
-                URL url = new URL(sb.toString());
-                urls.add(url);
-            }
+            buildUrlsFromArtifacts(localRepo, urls, artifacts);
         } catch (MalformedURLException ex) {
             logger.error(ex.getMessage());
         }
@@ -65,20 +52,24 @@ public class UberfireClassLoaderProviderImpl implements KieClassLoaderProvider {
     @Override
     public Optional<ClassLoader> loadDependenciesClassloaderFromProject(List<String> poms, String localRepo) {
         List<URL> urls = new ArrayList();
-        List<Artifact> artifacts = MavenUtils.resolveDependenciesFromMultimodulePrjNIO(poms);
+        List<Artifact> artifacts = UberfireMavenUtils.resolveDependenciesFromMultimodulePrj(poms);
         try {
-            for (Artifact artifact : artifacts) {
-                StringBuilder sb = new StringBuilder("file://");
-                sb.append(localRepo).append("/").append(artifact.getGroupId()).
-                        append("/").append(artifact.getVersion()).append("/").append(artifact.getArtifactId()).
-                        append("-").append(artifact.getVersion()).append(".").append(artifact.getType());
-                URL url = new URL(sb.toString());
-                urls.add(url);
-            }
+            buildUrlsFromArtifacts(localRepo, urls, artifacts);
         } catch (MalformedURLException ex) {
             logger.error(ex.getMessage());
         }
         return buildResult(urls);
+    }
+
+    private void buildUrlsFromArtifacts(String localRepo, List<URL> urls, List<Artifact> artifacts) throws MalformedURLException {
+        for (Artifact artifact : artifacts) {
+            StringBuilder sb = new StringBuilder("file://");
+            sb.append(localRepo).append("/").append(artifact.getGroupId()).
+                    append("/").append(artifact.getVersion()).append("/").append(artifact.getArtifactId()).
+                    append("-").append(artifact.getVersion()).append(".").append(artifact.getType());
+            URL url = new URL(sb.toString());
+            urls.add(url);
+        }
     }
 
     @Override

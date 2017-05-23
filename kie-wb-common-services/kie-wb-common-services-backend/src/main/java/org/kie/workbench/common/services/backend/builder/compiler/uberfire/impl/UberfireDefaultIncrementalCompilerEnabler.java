@@ -17,7 +17,6 @@ package org.kie.workbench.common.services.backend.builder.compiler.uberfire.impl
 
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.Compilers;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.ConfigurationContextProvider;
-import org.kie.workbench.common.services.backend.builder.compiler.impl.MavenUtils;
 import org.kie.workbench.common.services.backend.builder.compiler.impl.PomPlaceHolder;
 import org.kie.workbench.common.services.backend.builder.compiler.impl.ProcessedPoms;
 import org.kie.workbench.common.services.backend.builder.compiler.uberfire.UberfireCompilationRequest;
@@ -53,7 +52,7 @@ public class UberfireDefaultIncrementalCompilerEnabler implements UberfireIncrem
         Boolean isPresent = isPresent(placeHolder);   // check if the main pom is already scanned and edited
         if (placeHolder.isValid() && !isPresent) {
             List<String> pomsList = new ArrayList();
-            MavenUtils.searchPomsForUberfire(Paths.get(req.getInfo().getPrjPath().toString()), pomsList);// recursive NIO search in all subfolders
+            UberfireMavenUtils.searchPoms(Paths.get(req.getInfo().getPrjPath().toString()), pomsList);// recursive NIO search in all subfolders
             if (pomsList.size() > 0) {
                 processFoundedPoms(pomsList, req);
             }
@@ -75,21 +74,6 @@ public class UberfireDefaultIncrementalCompilerEnabler implements UberfireIncrem
         Path mainPom = Paths.get(request.getInfo().getPrjPath().toAbsolutePath().toString(), POM_NAME);
         request.getInfo().lateAdditionEnhancedMainPomFile(mainPom);
     }
-
-
-    /*public void searchPoms(Path file, List<String> pomsList) {
-        try (DirectoryStream<Path> ds = Files.newDirectoryStream(file.toAbsolutePath())) {
-            for (Path p : ds) {
-                if (Files.isDirectory(p)) {
-                    searchPoms(p, pomsList);
-                } else if (p.endsWith(POM_NAME)) {
-                    pomsList.add(p.toAbsolutePath().toString());
-                }
-            }
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-        }
-    }*/
 
     /**
      * Check if the artifact is in the hisotry

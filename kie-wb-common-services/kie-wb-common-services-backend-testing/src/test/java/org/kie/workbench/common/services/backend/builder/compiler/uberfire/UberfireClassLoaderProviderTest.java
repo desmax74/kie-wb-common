@@ -49,28 +49,8 @@ public class UberfireClassLoaderProviderTest {
                 throw new Exception("Folder not writable in the project");
             }
         }
-        compileToDownloadDeps();
-
     }
 
-    private void compileToDownloadDeps() throws Exception {
-        //we use NIO for this part of the test because Uberfire lack the implementation to copy a tree
-        java.nio.file.Path tmpRoot = java.nio.file.Files.createTempDirectory("repo");
-        java.nio.file.Path tmp = java.nio.file.Files.createDirectories(java.nio.file.Paths.get(tmpRoot.toString(), "dummy"));
-        TestUtil.copyTree(java.nio.file.Paths.get("src/test/projects/dummy_kie_multimodule_classloader"), tmp);
-
-
-        UberfireMavenCompiler compiler = UberfireMavenCompilerFactory.getCompiler(mavenRepo, Decorator.NONE);
-        Assert.assertTrue(compiler.isValid());
-
-        Path uberfireTmp = Paths.get(tmp.toAbsolutePath().toString());
-        UberfireWorkspaceCompilationInfo info = new UberfireWorkspaceCompilationInfo(uberfireTmp, compiler);
-        UberfireCompilationRequest req = new UberfireDefaultCompilationRequest(info, new String[]{MavenArgs.COMPILE, MavenArgs.INSTALL, MavenArgs.DEBUG});
-        CompilationResponse res = compiler.compileSync(req);
-        Assert.assertTrue(res.isSuccessful());
-
-        TestUtil.rm(tmpRoot.toFile());
-    }
 
     @Test
     public void loadProjectClassloaderTest() throws Exception {
@@ -94,6 +74,49 @@ public class UberfireClassLoaderProviderTest {
         List<String> pomList = new ArrayList<>();
         UberfireMavenUtils.searchPoms(Paths.get("src/test/projects/dummy_kie_multimodule_classloader/"), pomList);
         Optional<ClassLoader> clazzLoader = kieClazzLoaderProvider.loadDependenciesClassloaderFromProject(pomList, mavenRepo.toAbsolutePath().toString());
+        assertNotNull(clazzLoader);
+        assertTrue(clazzLoader.isPresent());
+        ClassLoader prjClassloader = clazzLoader.get();
+
+        //we try to load the only dep in the prj with a simple call method to see if is loaded or not
+        Class clazz;
+        try {
+            clazz = prjClassloader.loadClass("org.slf4j.LoggerFactory");
+            assertFalse(clazz.isInterface());
+
+            Method m = clazz.getMethod("getLogger", String.class);
+            Logger logger = (Logger) m.invoke(clazz, "Dummy");
+            assertTrue(logger.getName().equals("Dummy"));
+            logger.info("dependency loaded from the prj classpath");
+        } catch (ClassNotFoundException e) {
+            fail();
+        }
+
+        TestUtil.rm(tmpRoot.toFile());
+    }
+
+    @Test
+    public void loadProjectClassloaderFromStringTest() throws Exception {
+        //we use NIO for this part of the test because Uberfire lack the implementation to copy a tree
+        java.nio.file.Path tmpRoot = java.nio.file.Files.createTempDirectory("repo");
+        java.nio.file.Path tmp = java.nio.file.Files.createDirectories(java.nio.file.Paths.get(tmpRoot.toString(), "dummy"));
+        TestUtil.copyTree(java.nio.file.Paths.get("src/test/projects/dummy_kie_multimodule_classloader"), tmp);
+
+        UberfireMavenCompiler compiler = UberfireMavenCompilerFactory.getCompiler(mavenRepo, Decorator.NONE);
+        Assert.assertTrue(compiler.isValid());
+
+        Path uberfireTmp = Paths.get(tmp.toAbsolutePath().toString());
+        UberfireWorkspaceCompilationInfo info = new UberfireWorkspaceCompilationInfo(uberfireTmp, compiler);
+        UberfireCompilationRequest req = new UberfireDefaultCompilationRequest(info, new String[]{MavenArgs.COMPILE, MavenArgs.INSTALL, MavenArgs.DEBUG});
+        CompilationResponse res = compiler.compileSync(req);
+        Assert.assertTrue(res.isSuccessful());
+
+
+        Path mavenRepo = Paths.get("src/test/resources/.ignore/m2_repo/");
+        KieClassLoaderProvider kieClazzLoaderProvider = new UberfireClassLoaderProviderImpl();
+        /*List<String> pomList = new ArrayList<>();
+        UberfireMavenUtils.searchPoms(Paths.get("src/test/projects/dummy_kie_multimodule_classloader/"), pomList);*/
+        Optional<ClassLoader> clazzLoader = kieClazzLoaderProvider.loadDependenciesClassloaderFromProject(uberfireTmp.toAbsolutePath().toString(), mavenRepo.toAbsolutePath().toString());
         assertNotNull(clazzLoader);
         assertTrue(clazzLoader.isPresent());
         ClassLoader prjClassloader = clazzLoader.get();

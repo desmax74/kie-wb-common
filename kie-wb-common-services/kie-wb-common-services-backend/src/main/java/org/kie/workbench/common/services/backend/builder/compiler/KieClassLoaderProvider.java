@@ -24,8 +24,6 @@ import java.util.Optional;
  */
 public interface KieClassLoaderProvider {
 
-    Optional<ClassLoader> loadClassloaderFrom(String path);
-
     Optional<ClassLoader> loadDependenciesClassloaderFromProject(String prjPath, String localRepo);
 
     Optional<ClassLoader> loadDependenciesClassloaderFromProject(List<String> deps, String localRepo);
