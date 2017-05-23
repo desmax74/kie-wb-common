@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.kie.workbench.common.services.backend.builder.compiler.nio2.impl;
+package org.kie.workbench.common.services.backend.builder.compiler.nio.impl;
 
 import org.kie.workbench.common.services.backend.builder.compiler.external.KieCliRequest;
-import org.kie.workbench.common.services.backend.builder.compiler.nio2.NIOCompilationRequest;
+import org.kie.workbench.common.services.backend.builder.compiler.nio.NIOCompilationRequest;
 
 import java.net.URI;
 import java.nio.file.Path;

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.kie.workbench.common.services.backend.builder.compiler.nio2.impl;
+package org.kie.workbench.common.services.backend.builder.compiler.nio.impl;
 
 import java.io.IOException;
 import java.nio.file.*;

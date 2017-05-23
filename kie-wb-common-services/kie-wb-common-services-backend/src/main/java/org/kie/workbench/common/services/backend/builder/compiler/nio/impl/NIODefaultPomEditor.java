@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.kie.workbench.common.services.backend.builder.compiler.nio2.impl;
+package org.kie.workbench.common.services.backend.builder.compiler.nio.impl;
 
 import org.apache.maven.model.Model;
 import org.kie.workbench.common.services.backend.builder.compiler.PluginPresents;
@@ -22,7 +22,7 @@ import org.kie.workbench.common.services.backend.builder.compiler.configuration.
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.ConfigurationProvider;
 import org.kie.workbench.common.services.backend.builder.compiler.impl.DefaultPomEditor;
 import org.kie.workbench.common.services.backend.builder.compiler.impl.PomPlaceHolder;
-import org.kie.workbench.common.services.backend.builder.compiler.nio2.NIOCompilationRequest;
+import org.kie.workbench.common.services.backend.builder.compiler.nio.NIOCompilationRequest;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

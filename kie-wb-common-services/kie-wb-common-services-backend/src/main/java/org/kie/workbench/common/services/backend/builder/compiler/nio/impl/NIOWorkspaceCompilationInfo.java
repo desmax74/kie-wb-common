@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package org.kie.workbench.common.services.backend.builder.compiler.nio2.impl;
+package org.kie.workbench.common.services.backend.builder.compiler.nio.impl;
 
 import org.eclipse.jgit.api.Git;
-import org.kie.workbench.common.services.backend.builder.compiler.nio2.NIOMavenCompiler;
+import org.kie.workbench.common.services.backend.builder.compiler.nio.NIOMavenCompiler;
 
 import java.net.URI;
 import java.nio.file.Path;

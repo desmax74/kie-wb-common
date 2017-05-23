@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.kie.workbench.common.services.backend.builder.compiler.nio2.impl;
+package org.kie.workbench.common.services.backend.builder.compiler.nio.impl;
 
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.Compilers;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.ConfigurationContextProvider;
 import org.kie.workbench.common.services.backend.builder.compiler.impl.MavenUtils;
 import org.kie.workbench.common.services.backend.builder.compiler.impl.PomPlaceHolder;
 import org.kie.workbench.common.services.backend.builder.compiler.impl.ProcessedPoms;
-import org.kie.workbench.common.services.backend.builder.compiler.nio2.NIOCompilationRequest;
-import org.kie.workbench.common.services.backend.builder.compiler.nio2.NIOIncrementalCompilerEnabler;
+import org.kie.workbench.common.services.backend.builder.compiler.nio.NIOCompilationRequest;
+import org.kie.workbench.common.services.backend.builder.compiler.nio.NIOIncrementalCompilerEnabler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

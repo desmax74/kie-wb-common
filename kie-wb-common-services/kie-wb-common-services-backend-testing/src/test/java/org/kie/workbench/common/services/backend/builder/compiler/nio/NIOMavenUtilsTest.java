@@ -19,8 +19,8 @@ package org.kie.workbench.common.services.backend.builder.compiler.nio;
 import org.apache.maven.artifact.Artifact;
 import org.junit.Test;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.Compilers;
-import org.kie.workbench.common.services.backend.builder.compiler.nio2.impl.NIODefaultIncrementalCompilerEnabler;
-import org.kie.workbench.common.services.backend.builder.compiler.nio2.impl.NIOMavenUtils;
+import org.kie.workbench.common.services.backend.builder.compiler.nio.impl.NIODefaultIncrementalCompilerEnabler;
+import org.kie.workbench.common.services.backend.builder.compiler.nio.impl.NIOMavenUtils;
 
 import java.nio.file.Paths;
 import java.util.ArrayList;

@@ -25,12 +25,10 @@ import org.kie.workbench.common.services.backend.builder.compiler.TestUtil;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.Decorator;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.MavenArgs;
 import org.kie.workbench.common.services.backend.builder.compiler.impl.MavenUtils;
-import org.kie.workbench.common.services.backend.builder.compiler.nio2.NIOCompilationRequest;
-import org.kie.workbench.common.services.backend.builder.compiler.nio2.NIOMavenCompiler;
-import org.kie.workbench.common.services.backend.builder.compiler.nio2.impl.NIOClassLoaderProviderImpl;
-import org.kie.workbench.common.services.backend.builder.compiler.nio2.impl.NIODefaultCompilationRequest;
-import org.kie.workbench.common.services.backend.builder.compiler.nio2.impl.NIOMavenCompilerFactory;
-import org.kie.workbench.common.services.backend.builder.compiler.nio2.impl.NIOWorkspaceCompilationInfo;
+import org.kie.workbench.common.services.backend.builder.compiler.nio.impl.NIOClassLoaderProviderImpl;
+import org.kie.workbench.common.services.backend.builder.compiler.nio.impl.NIODefaultCompilationRequest;
+import org.kie.workbench.common.services.backend.builder.compiler.nio.impl.NIOMavenCompilerFactory;
+import org.kie.workbench.common.services.backend.builder.compiler.nio.impl.NIOWorkspaceCompilationInfo;
 import org.slf4j.Logger;
 
 import java.lang.reflect.Method;

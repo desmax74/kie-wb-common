@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package org.kie.workbench.common.services.backend.builder.compiler.nio2.impl;
+package org.kie.workbench.common.services.backend.builder.compiler.nio.impl;
 
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.Decorator;
-import org.kie.workbench.common.services.backend.builder.compiler.nio2.NIOMavenCompiler;
-import org.kie.workbench.common.services.backend.builder.compiler.nio2.decorators.JGITCompilerBeforeDecorator;
-import org.kie.workbench.common.services.backend.builder.compiler.nio2.decorators.JGitCompilerAfterDecorator;
+import org.kie.workbench.common.services.backend.builder.compiler.nio.NIOMavenCompiler;
+import org.kie.workbench.common.services.backend.builder.compiler.nio.decorators.JGITCompilerBeforeDecorator;
+import org.kie.workbench.common.services.backend.builder.compiler.nio.decorators.JGitCompilerAfterDecorator;
 
 import java.nio.file.Path;
 import java.util.Map;

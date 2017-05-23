@@ -14,22 +14,9 @@
  * limitations under the License.
  */
 
-package org.kie.workbench.common.services.backend.builder.compiler.nio2;
+package org.kie.workbench.common.services.backend.builder.compiler.nio.decorators;
 
-import org.kie.workbench.common.services.backend.builder.compiler.external.KieCliRequest;
-import org.kie.workbench.common.services.backend.builder.compiler.nio2.impl.NIOWorkspaceCompilationInfo;
+import org.kie.workbench.common.services.backend.builder.compiler.nio.NIOMavenCompiler;
 
-import java.nio.file.Path;
-import java.util.Optional;
-
-/**
- * Wrap a compilation request
- */
-public interface NIOCompilationRequest {
-
-    Optional<Path> getPomFile();
-
-    KieCliRequest getKieCliRequest();
-
-    NIOWorkspaceCompilationInfo getInfo();
+public abstract class CompilerDecorator implements NIOMavenCompiler {
 }

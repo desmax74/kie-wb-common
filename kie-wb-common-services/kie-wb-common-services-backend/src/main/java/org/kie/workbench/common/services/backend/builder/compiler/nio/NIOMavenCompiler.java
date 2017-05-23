@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.kie.workbench.common.services.backend.builder.compiler.nio2;
+package org.kie.workbench.common.services.backend.builder.compiler.nio;
 
 
 import org.kie.workbench.common.services.backend.builder.compiler.CompilationResponse;

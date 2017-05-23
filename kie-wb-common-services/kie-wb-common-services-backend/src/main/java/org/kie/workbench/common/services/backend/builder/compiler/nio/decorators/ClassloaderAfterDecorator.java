@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package org.kie.workbench.common.services.backend.builder.compiler.nio2.decorators;
+package org.kie.workbench.common.services.backend.builder.compiler.nio.decorators;
 
 import org.kie.workbench.common.services.backend.builder.compiler.CompilationResponse;
 import org.kie.workbench.common.services.backend.builder.compiler.decorators.CompilerDecorator;
-import org.kie.workbench.common.services.backend.builder.compiler.nio2.NIOCompilationRequest;
-import org.kie.workbench.common.services.backend.builder.compiler.nio2.NIOMavenCompiler;
+import org.kie.workbench.common.services.backend.builder.compiler.nio.NIOCompilationRequest;
+import org.kie.workbench.common.services.backend.builder.compiler.nio.NIOMavenCompiler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.kie.workbench.common.services.backend.builder.compiler.nio2.impl;
+package org.kie.workbench.common.services.backend.builder.compiler.nio.impl;
 
 import org.apache.maven.artifact.Artifact;
 import org.kie.workbench.common.services.backend.builder.compiler.KieClassLoaderProvider;
