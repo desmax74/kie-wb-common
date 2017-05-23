@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.kie.workbench.common.services.backend.builder.compiler.impl;
+package org.kie.workbench.common.services.backend.builder.compiler.uberfire.impl;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DefaultArtifact;
@@ -26,43 +26,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class MavenUtils {
+public class UberfireMavenUtils {
 
-    private static final Logger logger = LoggerFactory.getLogger(MavenUtils.class);
+    private static final Logger logger = LoggerFactory.getLogger(UberfireMavenUtils.class);
 
     private final static String POM_NAME = "pom.xml";
 
-    public static List<Artifact> resolveDependenciesFromMultimodulePrjNIO(List<String> pomsPaths) {
-        MavenXpp3Reader reader = new MavenXpp3Reader();
-        List<Artifact> deps = new ArrayList();
-        try {
-            for (String pomx : pomsPaths) {
-                Path pom = Paths.get(pomx);
-                Model model = reader.read(new ByteArrayInputStream(Files.readAllBytes(pom)));
-                if (model.getDependencyManagement() != null && model.getDependencyManagement().getDependencies() != null) {
-                    createArtifacts(model.getDependencyManagement().getDependencies(), deps);
-                }
-                if (model.getDependencies() != null) {
-                    createArtifacts(model.getDependencies(), deps);
-                }
-            }
-        } catch (Exception ex) {
-            logger.error(ex.getMessage());
-            return Collections.emptyList();
-        }
-        return deps;
-    }
 
-    public static List<Artifact> resolveDependenciesFromMultimodulePrjUberfire(List<String> pomsPaths) {
+    public static List<Artifact> resolveDependenciesFromMultimodulePrj(List<String> pomsPaths) {
         MavenXpp3Reader reader = new MavenXpp3Reader();
         List<Artifact> deps = new ArrayList();
         try {
@@ -92,30 +67,16 @@ public class MavenUtils {
         }
     }
 
-    public static void searchPomsForUberfire(org.uberfire.java.nio.file.Path file, List<String> pomsList) {
+    public static void searchPoms(org.uberfire.java.nio.file.Path file, List<String> pomsList) {
         try (org.uberfire.java.nio.file.DirectoryStream<org.uberfire.java.nio.file.Path> ds = org.uberfire.java.nio.file.Files.newDirectoryStream(file.toAbsolutePath())) {
             for (org.uberfire.java.nio.file.Path p : ds) {
                 if (org.uberfire.java.nio.file.Files.isDirectory(p)) {
-                    searchPomsForUberfire(p, pomsList);
+                    searchPoms(p, pomsList);
                 } else if (p.endsWith(POM_NAME)) {
                     pomsList.add(p.toAbsolutePath().toString());
                 }
             }
         } catch (Exception e) {
-            logger.error(e.getMessage());
-        }
-    }
-
-    public static void searchPomsForNIO(Path file, List<String> pomsList) {
-        try (DirectoryStream<Path> ds = Files.newDirectoryStream(file.toAbsolutePath())) {
-            for (Path p : ds) {
-                if (Files.isDirectory(p)) {
-                    searchPomsForNIO(p, pomsList);
-                } else if (p.endsWith(POM_NAME)) {
-                    pomsList.add(p.toAbsolutePath().toString());
-                }
-            }
-        } catch (IOException e) {
             logger.error(e.getMessage());
         }
     }

@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package org.kie.workbench.common.services.backend.builder.compiler;
+package org.kie.workbench.common.services.backend.builder.compiler.nio;
 
 import org.apache.maven.artifact.Artifact;
 import org.junit.Test;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.Compilers;
-import org.kie.workbench.common.services.backend.builder.compiler.impl.MavenUtils;
 import org.kie.workbench.common.services.backend.builder.compiler.nio2.impl.NIODefaultIncrementalCompilerEnabler;
+import org.kie.workbench.common.services.backend.builder.compiler.nio2.impl.NIOMavenUtils;
 
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -28,16 +28,15 @@ import java.util.List;
 
 import static org.junit.Assert.assertTrue;
 
-public class MavenUtilsTest {
+public class NIOMavenUtilsTest {
 
     @Test
-    public void presenceOfClassInThePrjClassloader() throws Exception {
-
+    public void presenceOfDepInThePrj() throws Exception {
         NIODefaultIncrementalCompilerEnabler compiler = new NIODefaultIncrementalCompilerEnabler(Compilers.JAVAC);
         List<String> pomList = new ArrayList<>();
-        MavenUtils.searchPomsForNIO(Paths.get("src/test/projects/dummy_kie_multimodule_untouched/"), pomList);
+        NIOMavenUtils.searchPoms(Paths.get("src/test/projects/dummy_kie_multimodule_untouched/"), pomList);
         assertTrue(pomList.size() == 3);
-        List<Artifact> deps = MavenUtils.resolveDependenciesFromMultimodulePrj(pomList);
+        List<Artifact> deps = NIOMavenUtils.resolveDependenciesFromMultimodulePrj(pomList);
         assertTrue(deps.size() == 1);
         Artifact artifact = deps.get(0);
         assertTrue(artifact.getArtifactId().equals("kie-api"));

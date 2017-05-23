@@ -29,6 +29,7 @@
         <module>dummyA</module>
         <module>dummyB</module>
     </modules>
+
     <repositories>
         <repository>
             <releases>
@@ -49,7 +50,7 @@
             <plugin>
                 <groupId>org.kie</groupId>
                 <artifactId>kie-maven-plugin</artifactId>
-                <version>7.1.0-SNAPSHOT</version>
+                <version>6.5.0.Final</version>
                 <extensions>true</extensions>
             </plugin>
         </plugins>

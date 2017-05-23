@@ -21,7 +21,7 @@ import java.util.Optional;
 
 /**
  * Build a classloader using the dependencies founded in the poms inside a maven project
- * */
+ */
 public interface KieClassLoaderProvider {
 
     Optional<ClassLoader> loadClassloaderFrom(String path);
@@ -29,4 +29,7 @@ public interface KieClassLoaderProvider {
     Optional<ClassLoader> loadDependenciesClassloaderFromProject(String prjPath, String localRepo);
 
     Optional<ClassLoader> loadDependenciesClassloaderFromProject(List<String> deps, String localRepo);
+
+    Optional<ClassLoader> loadClassesClassloaderFromProjectTargets(List<String> targets);
 }
+

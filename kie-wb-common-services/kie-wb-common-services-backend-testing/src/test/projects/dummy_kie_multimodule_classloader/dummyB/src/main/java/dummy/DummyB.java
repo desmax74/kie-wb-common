@@ -16,9 +16,10 @@
 
 package dummy;
 
-import java.io.Serializable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.Serializable;
 
 public class DummyB implements Serializable {
 
@@ -26,12 +27,15 @@ public class DummyB implements Serializable {
 
     private String name;
 
+    public DummyB() {
+    }
+
     public DummyB(String name) {
         this.name = name;
         logger.info("Dummy B constructor");
     }
 
-    public String greetings(){
+    public String greetings() {
         return "Hello World !";
     }
 

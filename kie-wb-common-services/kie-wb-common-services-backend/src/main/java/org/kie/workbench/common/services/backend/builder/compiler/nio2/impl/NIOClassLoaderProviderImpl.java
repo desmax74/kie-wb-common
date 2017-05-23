@@ -14,24 +14,26 @@
  * limitations under the License.
  */
 
-package org.kie.workbench.common.services.backend.builder.compiler.impl;
+package org.kie.workbench.common.services.backend.builder.compiler.nio2.impl;
 
 import org.apache.maven.artifact.Artifact;
 import org.kie.workbench.common.services.backend.builder.compiler.KieClassLoaderProvider;
+import org.kie.workbench.common.services.backend.builder.compiler.impl.MavenUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class KieClassLoaderProviderImpl implements KieClassLoaderProvider {
+public class NIOClassLoaderProviderImpl implements KieClassLoaderProvider {
 
-    protected static final Logger logger = LoggerFactory.getLogger(KieClassLoaderProviderImpl.class);
+    protected static final Logger logger = LoggerFactory.getLogger(NIOClassLoaderProviderImpl.class);
 
     @Override
     public Optional<ClassLoader> loadClassloaderFrom(String path) {
@@ -63,7 +65,7 @@ public class KieClassLoaderProviderImpl implements KieClassLoaderProvider {
     @Override
     public Optional<ClassLoader> loadDependenciesClassloaderFromProject(List<String> poms, String localRepo) {
         List<URL> urls = new ArrayList();
-        List<Artifact> artifacts = MavenUtils.resolveDependenciesFromMultimodulePrj(poms);
+        List<Artifact> artifacts = MavenUtils.resolveDependenciesFromMultimodulePrjNIO(poms);
         try {
             for (Artifact artifact : artifacts) {
                 StringBuilder sb = new StringBuilder("file://");
@@ -79,10 +81,27 @@ public class KieClassLoaderProviderImpl implements KieClassLoaderProvider {
         return buildResult(urls);
     }
 
-    private Optional<ClassLoader> buildResult(List<URL> urls){
-        if(urls.isEmpty()){
+    @Override
+    public Optional<ClassLoader> loadClassesClassloaderFromProjectTargets(List<String> pomsPaths) {
+        List<URL> urls = new ArrayList();
+        try {
+            for (String pomPath : pomsPaths) {
+                Path path = Paths.get(pomPath);
+                StringBuilder sb = new StringBuilder("file://")
+                        .append(path.getParent().toAbsolutePath().toString())
+                        .append("/target/classes/");
+                urls.add(new URL(sb.toString()));
+            }
+        } catch (MalformedURLException ex) {
+            logger.error(ex.getMessage());
+        }
+        return buildResult(urls);
+    }
+
+    private Optional<ClassLoader> buildResult(List<URL> urls) {
+        if (urls.isEmpty()) {
             return Optional.empty();
-        }else {
+        } else {
             URLClassLoader urlClassLoader = new URLClassLoader(urls.toArray(new URL[urls.size()]));
             return Optional.of(urlClassLoader);
         }
