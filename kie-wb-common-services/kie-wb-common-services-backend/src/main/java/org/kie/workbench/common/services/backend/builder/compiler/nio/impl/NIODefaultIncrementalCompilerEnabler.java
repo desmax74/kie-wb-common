@@ -77,21 +77,6 @@ public class NIODefaultIncrementalCompilerEnabler implements NIOIncrementalCompi
         request.getInfo().lateAdditionEnhancedMainPomFile(mainPom);
     }
 
-
-    /*public void searchPoms(Path file, List<String> pomsList) {
-        try (DirectoryStream<Path> ds = Files.newDirectoryStream(file.toAbsolutePath())) {
-            for (Path p : ds) {
-                if (Files.isDirectory(p)) {
-                    searchPoms(p, pomsList);
-                } else if (p.endsWith(POM_NAME)) {
-                    pomsList.add(p.toAbsolutePath().toString());
-                }
-            }
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-        }
-    }*/
-
     /**
      * Check if the artifact is in the hisotry
      */
@@ -107,6 +92,5 @@ public class NIODefaultIncrementalCompilerEnabler implements NIOIncrementalCompi
     public Set<PomPlaceHolder> getHistory() {
         return Collections.unmodifiableSet(editor.getHistory());
     }
-
 
 }

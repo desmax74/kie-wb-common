@@ -74,7 +74,7 @@ public class UberfireWorkspaceCompilationInfo {
             return Boolean.TRUE;
         }
         if (present != null) {
-            kiePluginPresent = present;
+            kiePluginPresent = kiePluginPresent | present;
             return Boolean.TRUE;
         }
         return Boolean.FALSE;
