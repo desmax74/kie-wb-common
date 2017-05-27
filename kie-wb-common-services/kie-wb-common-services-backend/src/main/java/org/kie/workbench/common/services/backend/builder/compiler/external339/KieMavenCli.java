@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.kie.workbench.common.services.backend.builder.compiler.external;
+package org.kie.workbench.common.services.backend.builder.compiler.external339;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
@@ -66,6 +66,7 @@ import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.eclipse.aether.transfer.TransferListener;
+import org.kie.workbench.common.services.backend.builder.compiler.configuration.ConfigurationKey;
 import org.slf4j.ILoggerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -216,6 +217,7 @@ public class KieMavenCli {
             KieCLIReportingUtils.showError(slf4jLogger, "ABORTED", e, cliRequest.isShowErrors());
             return 2;
         } catch (Exception e) {
+            e.getStackTrace();
             KieCLIReportingUtils.showError(slf4jLogger, "Error executing Maven.", e, cliRequest.isShowErrors());
 
             return 1;
@@ -397,6 +399,9 @@ public class KieMavenCli {
             }
         });
 
+        //@TODO @MAX
+        container.addComponent(cliRequest.getMap(), HashMap.class,"kieMap");
+
         // NOTE: To avoid inconsistencies, we'll use the TCCL exclusively for lookups
         container.setLookupRealm(null);
 
@@ -421,6 +426,7 @@ public class KieMavenCli {
         data.put("systemProperties", cliRequest.getSystemProperties());
         data.put("userProperties", cliRequest.getUserProperties());
         data.put("versionProperties", KieCLIReportingUtils.getBuildProperties());
+
         eventSpyDispatcher.init(eventSpyContext);
 
         slf4jLogger = slf4jLoggerFactory.getLogger(this.getClass().getName());
@@ -471,6 +477,8 @@ public class KieMavenCli {
                     bind(ILoggerFactory.class).toInstance(slf4jLoggerFactory);
                 }
             });
+
+            container.addComponent(cliRequest.getMap(), HashMap.class,"kieMap");
 
             try {
                 container.setLookupRealm(null);

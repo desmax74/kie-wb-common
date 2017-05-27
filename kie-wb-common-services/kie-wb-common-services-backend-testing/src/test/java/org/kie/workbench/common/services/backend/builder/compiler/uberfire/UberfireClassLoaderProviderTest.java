@@ -31,18 +31,17 @@ import org.uberfire.java.nio.file.Path;
 import org.uberfire.java.nio.file.Paths;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.junit.Assert.*;
 
 public class UberfireClassLoaderProviderTest {
 
-    private final Path mavenRepo = Paths.get("src/test/resources/.ignore/m2_repo/");
+    //private final Path mavenRepo = Paths.get("src/test/resources/.ignore/m2_repo/");
 
     @Before
     public void setUp() throws Exception {
+        Path mavenRepo = Paths.get("src/test/resources/.ignore/m2_repo/");
         if (!Files.exists(mavenRepo)) {
             System.out.println("Creating a m2_repo into src/test/resources/.ignore/m2_repo/");
             if (!Files.exists(Files.createDirectories(mavenRepo))) {
@@ -58,18 +57,18 @@ public class UberfireClassLoaderProviderTest {
         java.nio.file.Path tmpRoot = java.nio.file.Files.createTempDirectory("repo");
         java.nio.file.Path tmp = java.nio.file.Files.createDirectories(java.nio.file.Paths.get(tmpRoot.toString(), "dummy"));
         TestUtil.copyTree(java.nio.file.Paths.get("src/test/projects/dummy_kie_multimodule_classloader"), tmp);
-
+        Path mavenRepo = Paths.get("src/test/resources/.ignore/m2_repo/");
         UberfireMavenCompiler compiler = UberfireMavenCompilerFactory.getCompiler(mavenRepo, Decorator.NONE);
         Assert.assertTrue(compiler.isValid());
 
         Path uberfireTmp = Paths.get(tmp.toAbsolutePath().toString());
         UberfireWorkspaceCompilationInfo info = new UberfireWorkspaceCompilationInfo(uberfireTmp, compiler);
-        UberfireCompilationRequest req = new UberfireDefaultCompilationRequest(info, new String[]{MavenArgs.COMPILE, MavenArgs.INSTALL, MavenArgs.DEBUG});
+        UberfireCompilationRequest req = new UberfireDefaultCompilationRequest(info, new String[]{MavenArgs.COMPILE, MavenArgs.INSTALL, MavenArgs.DEBUG}, new HashMap<>(), UUID.randomUUID().toString());
         CompilationResponse res = compiler.compileSync(req);
         Assert.assertTrue(res.isSuccessful());
 
 
-        Path mavenRepo = Paths.get("src/test/resources/.ignore/m2_repo/");
+        //Path mavenRepo = Paths.get("src/test/resources/.ignore/m2_repo/");
         KieClassLoaderProvider kieClazzLoaderProvider = new UberfireClassLoaderProviderImpl();
         List<String> pomList = new ArrayList<>();
         UberfireMavenUtils.searchPoms(Paths.get("src/test/projects/dummy_kie_multimodule_classloader/"), pomList);
@@ -101,18 +100,18 @@ public class UberfireClassLoaderProviderTest {
         java.nio.file.Path tmpRoot = java.nio.file.Files.createTempDirectory("repo");
         java.nio.file.Path tmp = java.nio.file.Files.createDirectories(java.nio.file.Paths.get(tmpRoot.toString(), "dummy"));
         TestUtil.copyTree(java.nio.file.Paths.get("src/test/projects/dummy_kie_multimodule_classloader"), tmp);
-
+        Path mavenRepo = Paths.get("src/test/resources/.ignore/m2_repo/");
         UberfireMavenCompiler compiler = UberfireMavenCompilerFactory.getCompiler(mavenRepo, Decorator.NONE);
         Assert.assertTrue(compiler.isValid());
 
         Path uberfireTmp = Paths.get(tmp.toAbsolutePath().toString());
         UberfireWorkspaceCompilationInfo info = new UberfireWorkspaceCompilationInfo(uberfireTmp, compiler);
-        UberfireCompilationRequest req = new UberfireDefaultCompilationRequest(info, new String[]{MavenArgs.COMPILE, MavenArgs.INSTALL, MavenArgs.DEBUG});
+        UberfireCompilationRequest req = new UberfireDefaultCompilationRequest(info, new String[]{MavenArgs.COMPILE, MavenArgs.INSTALL, MavenArgs.DEBUG},new HashMap<>(), UUID.randomUUID().toString());
         CompilationResponse res = compiler.compileSync(req);
         Assert.assertTrue(res.isSuccessful());
 
 
-        Path mavenRepo = Paths.get("src/test/resources/.ignore/m2_repo/");
+        //Path mavenRepo = Paths.get("src/test/resources/.ignore/m2_repo/");
         KieClassLoaderProvider kieClazzLoaderProvider = new UberfireClassLoaderProviderImpl();
         /*List<String> pomList = new ArrayList<>();
         UberfireMavenUtils.searchPoms(Paths.get("src/test/projects/dummy_kie_multimodule_classloader/"), pomList);*/
@@ -144,13 +143,13 @@ public class UberfireClassLoaderProviderTest {
         java.nio.file.Path tmpRoot = java.nio.file.Files.createTempDirectory("repo");
         java.nio.file.Path tmp = java.nio.file.Files.createDirectories(java.nio.file.Paths.get(tmpRoot.toString(), "dummy"));
         TestUtil.copyTree(java.nio.file.Paths.get("src/test/projects/dummy_kie_multimodule_classloader"), tmp);
-
+        Path mavenRepo = Paths.get("src/test/resources/.ignore/m2_repo/");
         UberfireMavenCompiler compiler = UberfireMavenCompilerFactory.getCompiler(mavenRepo, Decorator.NONE);
         Assert.assertTrue(compiler.isValid());
 
         Path uberfireTmp = Paths.get(tmp.toAbsolutePath().toString());
         UberfireWorkspaceCompilationInfo info = new UberfireWorkspaceCompilationInfo(uberfireTmp, compiler);
-        UberfireCompilationRequest req = new UberfireDefaultCompilationRequest(info, new String[]{MavenArgs.COMPILE, MavenArgs.DEBUG});
+        UberfireCompilationRequest req = new UberfireDefaultCompilationRequest(info, new String[]{MavenArgs.COMPILE, MavenArgs.DEBUG},new HashMap<>(), UUID.randomUUID().toString());
         CompilationResponse res = compiler.compileSync(req);
         Assert.assertTrue(res.isSuccessful());
 
@@ -158,7 +157,7 @@ public class UberfireClassLoaderProviderTest {
         KieClassLoaderProvider kieClazzLoaderProvider = new UberfireClassLoaderProviderImpl();
         List<String> pomList = new ArrayList<>();
         UberfireMavenUtils.searchPoms(uberfireTmp, pomList);
-        Optional<ClassLoader> clazzLoader = kieClazzLoaderProvider.loadClassesClassloaderFromProjectTargets(pomList);
+        Optional<ClassLoader> clazzLoader = kieClazzLoaderProvider.getClassloaderFromProjectTargets(pomList, Boolean.FALSE);
         assertNotNull(clazzLoader);
         assertTrue(clazzLoader.isPresent());
         ClassLoader prjClassloader = clazzLoader.get();

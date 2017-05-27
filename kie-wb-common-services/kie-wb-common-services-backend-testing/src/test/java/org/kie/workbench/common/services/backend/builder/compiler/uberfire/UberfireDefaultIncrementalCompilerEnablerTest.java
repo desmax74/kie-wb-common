@@ -34,6 +34,8 @@ import org.uberfire.java.nio.file.spi.FileSystemProvider;
 
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.UUID;
 
 public class UberfireDefaultIncrementalCompilerEnablerTest {
 
@@ -60,7 +62,8 @@ public class UberfireDefaultIncrementalCompilerEnablerTest {
         String pomAsAstring = new String(encoded, StandardCharsets.UTF_8);
         Assert.assertFalse(pomAsAstring.contains("<artifactId>takari-lifecycle-plugin</artifactId>"));
         UberfireWorkspaceCompilationInfo info = new UberfireWorkspaceCompilationInfo(tmp, UberfireMavenCompilerFactory.getCompiler(mavenRepo, Decorator.NONE));
-        UberfireCompilationRequest req = new UberfireDefaultCompilationRequest(info, new String[]{MavenArgs.COMPILE});
+
+        UberfireCompilationRequest req = new UberfireDefaultCompilationRequest(info, new String[]{MavenArgs.COMPILE}, new HashMap<>(), UUID.randomUUID().toString());
         UberfireDefaultIncrementalCompilerEnabler enabler = new UberfireDefaultIncrementalCompilerEnabler(Compilers.JAVAC);
         Assert.assertTrue(enabler.process(req).getResult());
 
@@ -90,7 +93,7 @@ public class UberfireDefaultIncrementalCompilerEnablerTest {
         Assert.assertFalse(pomAsAstring.contains("<artifactId>takari-lifecycle-plugin</artifactId>"));
 
         UberfireWorkspaceCompilationInfo info = new UberfireWorkspaceCompilationInfo(tmp, UberfireMavenCompilerFactory.getCompiler(mavenRepo, Decorator.NONE));
-        UberfireCompilationRequest req = new UberfireDefaultCompilationRequest(info, new String[]{MavenArgs.COMPILE});
+        UberfireCompilationRequest req = new UberfireDefaultCompilationRequest(info, new String[]{MavenArgs.COMPILE}, new HashMap<>(), UUID.randomUUID().toString());
         UberfireDefaultIncrementalCompilerEnabler enabler = new UberfireDefaultIncrementalCompilerEnabler(Compilers.JAVAC);
         Assert.assertTrue(enabler.process(req).getResult());
 

@@ -27,6 +27,7 @@ import java.net.URLClassLoader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -34,35 +35,71 @@ public class NIOClassLoaderProviderImpl implements KieClassLoaderProvider {
 
     protected static final Logger logger = LoggerFactory.getLogger(NIOClassLoaderProviderImpl.class);
 
+    @Override
+    public Optional<ClassLoader> loadDependenciesClassloaderFromProject(String prjPath, String localRepo, ClassLoader parent) {
+        List<String> poms = new ArrayList<>();
+        NIOMavenUtils.searchPoms(Paths.get(prjPath), poms);
+        List<URL> urls = getDependenciesURL(poms, localRepo);
+        return buildResult(urls, parent);
+    }
+
 
     @Override
     public Optional<ClassLoader> loadDependenciesClassloaderFromProject(String prjPath, String localRepo) {
         List<String> poms = new ArrayList<>();
         NIOMavenUtils.searchPoms(Paths.get(prjPath), poms);
-        List<Artifact> artifacts = NIOMavenUtils.resolveDependenciesFromMultimodulePrj(poms);
-        List<URL> urls = new ArrayList();
-        try {
-            buildUrlsFromArtifacts(localRepo, urls, artifacts);
-        } catch (MalformedURLException ex) {
-            logger.error(ex.getMessage());
-        }
+        List<URL> urls = getDependenciesURL(poms, localRepo);
         return buildResult(urls);
-
     }
+
 
     @Override
     public Optional<ClassLoader> loadDependenciesClassloaderFromProject(List<String> poms, String localRepo) {
-        List<URL> urls = new ArrayList();
-        List<Artifact> artifacts = NIOMavenUtils.resolveDependenciesFromMultimodulePrj(poms);
-        try {
-            buildUrlsFromArtifacts(localRepo, urls, artifacts);
-        } catch (MalformedURLException ex) {
-            logger.error(ex.getMessage());
-        }
+        List<URL> urls = loadCompilationOutputFiles(poms);
         return buildResult(urls);
     }
 
-    private void buildUrlsFromArtifacts(String localRepo, List<URL> urls, List<Artifact> artifacts) throws MalformedURLException {
+    @Override
+    public Optional<ClassLoader> loadDependenciesClassloaderFromProject(List<String> poms, String localRepo, ClassLoader parent) {
+        List<URL> urls = loadCompilationOutputFiles(poms);
+        return buildResult(urls, parent);
+    }
+
+
+    @Override
+    public Optional<ClassLoader> getClassloaderFromProjectTargets(List<String> targets, Boolean loadIntoClassloader) {
+        List<URL> urls = loadIntoClassloader ? loadCompilationOutputFiles(targets) : loadCompilationFolders(targets);
+        return buildResult(urls);
+    }
+
+    @Override
+    public Optional<ClassLoader> getClassloaderFromProjectTargets(List<String> targets, Boolean loadIntoClassloader, ClassLoader parent) {
+        List<URL> urls = loadIntoClassloader ? loadCompilationOutputFiles(targets) : loadCompilationFolders(targets);
+        return buildResult(urls, parent);
+    }
+
+
+
+    /*private List<URL> getURLDependenciesFromProject(String prjPath, String localRepo){
+        List<String> poms = new ArrayList<>();
+        NIOMavenUtils.searchPoms(Paths.get(prjPath), poms);
+        return getDependenciesURL(poms,localRepo);
+    }*/
+
+    private List<URL> getDependenciesURL(List<String> poms, String localRepo) {
+        List<Artifact> artifacts = NIOMavenUtils.resolveDependenciesFromMultimodulePrj(poms);
+        List<URL> urls = Collections.emptyList();
+        try {
+            urls = buildUrlsFromArtifacts(localRepo, artifacts);
+        } catch (MalformedURLException ex) {
+            logger.error(ex.getMessage());
+        }
+        return urls;
+    }
+
+
+    private List<URL> buildUrlsFromArtifacts(String localRepo, List<Artifact> artifacts) throws MalformedURLException {
+        List<URL> urls = new ArrayList<>(artifacts.size());
         for (Artifact artifact : artifacts) {
             StringBuilder sb = new StringBuilder("file://");
             sb.append(localRepo).append("/").append(artifact.getGroupId()).
@@ -71,10 +108,11 @@ public class NIOClassLoaderProviderImpl implements KieClassLoaderProvider {
             URL url = new URL(sb.toString());
             urls.add(url);
         }
+        return urls;
     }
 
-    @Override
-    public Optional<ClassLoader> loadClassesClassloaderFromProjectTargets(List<String> pomsPaths) {
+
+    private Optional<ClassLoader> loadOnlyFolderNames(List<String> pomsPaths) {
         List<URL> urls = new ArrayList();
         try {
             for (String pomPath : pomsPaths) {
@@ -90,11 +128,71 @@ public class NIOClassLoaderProviderImpl implements KieClassLoaderProvider {
         return buildResult(urls);
     }
 
+
+    private Optional<ClassLoader> loadFiles(List<String> pomsPaths) {
+        List<URL> urls = new ArrayList();
+        try {
+            for (String pomPath : pomsPaths) {
+                Path path = Paths.get(pomPath);
+                StringBuilder sb = new StringBuilder("file://")
+                        .append(path.getParent().toAbsolutePath().toString())
+                        .append("/target/classes/");
+                urls.add(new URL(sb.toString()));
+            }
+        } catch (MalformedURLException ex) {
+            logger.error(ex.getMessage());
+        }
+        return buildResult(urls);
+    }
+
+
+    private List<URL> loadCompilationFolders(List<String> pomsPaths) {
+        List<URL> urls = new ArrayList();
+        try {
+            for (String pomPath : pomsPaths) {
+                Path path = Paths.get(pomPath);
+                StringBuilder sb = new StringBuilder("file://")
+                        .append(path.getParent().toAbsolutePath().toString())
+                        .append("/target/classes/");
+                urls.add(new URL(sb.toString()));
+            }
+        } catch (MalformedURLException ex) {
+            logger.error(ex.getMessage());
+        }
+        return urls;
+    }
+
+    private List<URL> loadCompilationOutputFiles(List<String> pomsPaths) {
+        List<URL> urls = new ArrayList();
+        try {
+            for (String pomPath : pomsPaths) {
+                Path path = Paths.get(pomPath);
+                StringBuilder sb = new StringBuilder("file://")
+                        .append(path.getParent().toAbsolutePath().toString())
+                        .append("/target/classes/");
+                urls.add(new URL(sb.toString()));
+            }
+        } catch (MalformedURLException ex) {
+            logger.error(ex.getMessage());
+        }
+        return urls;
+    }
+
+
     private Optional<ClassLoader> buildResult(List<URL> urls) {
         if (urls.isEmpty()) {
             return Optional.empty();
         } else {
             URLClassLoader urlClassLoader = new URLClassLoader(urls.toArray(new URL[urls.size()]));
+            return Optional.of(urlClassLoader);
+        }
+    }
+
+    private Optional<ClassLoader> buildResult(List<URL> urls, ClassLoader parent) {
+        if (urls.isEmpty()) {
+            return Optional.empty();
+        } else {
+            URLClassLoader urlClassLoader = new URLClassLoader(urls.toArray(new URL[urls.size()]), parent);
             return Optional.of(urlClassLoader);
         }
     }

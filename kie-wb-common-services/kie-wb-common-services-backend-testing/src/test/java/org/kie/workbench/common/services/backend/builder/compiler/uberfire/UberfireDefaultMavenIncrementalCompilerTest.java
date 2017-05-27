@@ -29,6 +29,9 @@ import org.uberfire.java.nio.file.Files;
 import org.uberfire.java.nio.file.Path;
 import org.uberfire.java.nio.file.Paths;
 
+import java.util.HashMap;
+import java.util.UUID;
+
 
 public class UberfireDefaultMavenIncrementalCompilerTest {
 
@@ -57,7 +60,7 @@ public class UberfireDefaultMavenIncrementalCompilerTest {
         Assert.assertTrue(compiler.isValid());
 
         UberfireWorkspaceCompilationInfo info = new UberfireWorkspaceCompilationInfo(tmp, compiler);
-        UberfireCompilationRequest req = new UberfireDefaultCompilationRequest(info, new String[]{MavenArgs.VERSION, MavenArgs.DEBUG});
+        UberfireCompilationRequest req = new UberfireDefaultCompilationRequest(info, new String[]{MavenArgs.VERSION, MavenArgs.DEBUG}, new HashMap<>(), UUID.randomUUID().toString());
         CompilationResponse res = compiler.compileSync(req);
         Assert.assertTrue(res.isSuccessful());
 
@@ -83,7 +86,7 @@ public class UberfireDefaultMavenIncrementalCompilerTest {
         UberfireMavenCompiler compiler = UberfireMavenCompilerFactory.getCompiler(mavenRepo, Decorator.NONE);
 
         UberfireWorkspaceCompilationInfo info = new UberfireWorkspaceCompilationInfo(tmp, compiler);
-        UberfireCompilationRequest req = new UberfireDefaultCompilationRequest(info, new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE, MavenArgs.DEBUG});
+        UberfireCompilationRequest req = new UberfireDefaultCompilationRequest(info, new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE, MavenArgs.DEBUG}, new HashMap<>(), UUID.randomUUID().toString());
         CompilationResponse res = compiler.compileSync(req);
         Assert.assertTrue(res.isSuccessful());
 

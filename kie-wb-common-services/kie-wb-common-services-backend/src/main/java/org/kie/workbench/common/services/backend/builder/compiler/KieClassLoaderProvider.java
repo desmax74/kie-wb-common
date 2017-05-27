@@ -28,6 +28,12 @@ public interface KieClassLoaderProvider {
 
     Optional<ClassLoader> loadDependenciesClassloaderFromProject(List<String> deps, String localRepo);
 
-    Optional<ClassLoader> loadClassesClassloaderFromProjectTargets(List<String> targets);
+    Optional<ClassLoader> getClassloaderFromProjectTargets(List<String> targets, Boolean loadIntoClassloader);
+
+    Optional<ClassLoader> loadDependenciesClassloaderFromProject(String prjPath, String localRepo, ClassLoader parentClassloader);
+
+    Optional<ClassLoader> loadDependenciesClassloaderFromProject(List<String> deps, String localRepo, ClassLoader parentClassloader);
+
+    Optional<ClassLoader> getClassloaderFromProjectTargets(List<String> targets, Boolean loadIntoClassloader, ClassLoader parentClassloader);
 }
 

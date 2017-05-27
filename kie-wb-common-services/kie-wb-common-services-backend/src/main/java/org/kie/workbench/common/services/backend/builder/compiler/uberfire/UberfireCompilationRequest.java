@@ -16,7 +16,7 @@
 
 package org.kie.workbench.common.services.backend.builder.compiler.uberfire;
 
-import org.kie.workbench.common.services.backend.builder.compiler.external.KieCliRequest;
+import org.kie.workbench.common.services.backend.builder.compiler.external339.KieCliRequest;
 import org.kie.workbench.common.services.backend.builder.compiler.uberfire.impl.UberfireWorkspaceCompilationInfo;
 import org.uberfire.java.nio.file.Path;
 

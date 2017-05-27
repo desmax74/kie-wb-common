@@ -17,12 +17,10 @@ package org.kie.workbench.common.services.backend.builder.compiler.nio.impl;
 
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.Compilers;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.ConfigurationContextProvider;
-
 import org.kie.workbench.common.services.backend.builder.compiler.impl.PomPlaceHolder;
 import org.kie.workbench.common.services.backend.builder.compiler.impl.ProcessedPoms;
 import org.kie.workbench.common.services.backend.builder.compiler.nio.NIOCompilationRequest;
 import org.kie.workbench.common.services.backend.builder.compiler.nio.NIOIncrementalCompilerEnabler;
-import org.kie.workbench.common.services.backend.builder.compiler.uberfire.impl.UberfireMavenUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

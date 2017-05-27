@@ -16,6 +16,9 @@
 package org.kie.workbench.common.services.backend.builder.compiler.impl;
 
 
+import org.drools.core.rule.KieModuleMetaInfo;
+import org.kie.api.builder.KieModule;
+import org.kie.scanner.KieModuleMetaData;
 import org.kie.workbench.common.services.backend.builder.compiler.CompilationResponse;
 
 import java.util.Optional;
@@ -24,24 +27,48 @@ public class DefaultCompilationResponse implements CompilationResponse {
 
     private Boolean successful;
     private Optional<String> errorMessage;
+    private Optional<KieModule> kieModule;
+
+    public DefaultCompilationResponse(DefaultCompilationResponse res, KieModule kieModule) {
+        this.successful = res.isSuccessful();
+        this.errorMessage = res.getErrorMessage();
+        this.kieModule= Optional.of(kieModule);
+    }
 
     public DefaultCompilationResponse(Boolean successful) {
         this.successful = successful;
         this.errorMessage = Optional.empty();
+        this.kieModule = Optional.empty();
+    }
+
+    public DefaultCompilationResponse(Boolean successful, KieModule kieModule) {
+        this.successful = successful;
+        this.errorMessage = Optional.empty();
+        this.kieModule = Optional.of(kieModule);
     }
 
     public DefaultCompilationResponse(Boolean successful, Optional<String> errorMessage) {
         this.successful = successful;
         this.errorMessage = errorMessage;
+        this.kieModule = Optional.empty();
+    }
+
+    public DefaultCompilationResponse(Boolean successful, Optional<String> errorMessage, KieModule kieModule) {
+        this.successful = successful;
+        this.errorMessage = errorMessage;
+        this.kieModule = Optional.of(kieModule);
     }
 
     public Boolean isSuccessful() {
         return successful;
     }
 
-
     @Override
     public Optional<String> getErrorMessage() {
         return errorMessage;
+    }
+
+    public Optional<KieModule> getKieModule() {
+        return kieModule;
     }
 }

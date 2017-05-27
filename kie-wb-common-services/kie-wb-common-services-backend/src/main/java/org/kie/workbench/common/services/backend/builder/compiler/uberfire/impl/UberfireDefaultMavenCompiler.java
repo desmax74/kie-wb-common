@@ -17,7 +17,7 @@ package org.kie.workbench.common.services.backend.builder.compiler.uberfire.impl
 
 import org.kie.workbench.common.services.backend.builder.compiler.CompilationResponse;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.Compilers;
-import org.kie.workbench.common.services.backend.builder.compiler.external.KieMavenCli;
+import org.kie.workbench.common.services.backend.builder.compiler.external339.KieMavenCli;
 import org.kie.workbench.common.services.backend.builder.compiler.impl.DefaultCompilationResponse;
 import org.kie.workbench.common.services.backend.builder.compiler.impl.ProcessedPoms;
 import org.kie.workbench.common.services.backend.builder.compiler.uberfire.UberfireCompilationRequest;

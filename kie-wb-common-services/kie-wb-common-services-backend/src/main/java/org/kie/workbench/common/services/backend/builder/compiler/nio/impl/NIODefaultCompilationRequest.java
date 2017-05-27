@@ -15,21 +15,24 @@
  */
 package org.kie.workbench.common.services.backend.builder.compiler.nio.impl;
 
-import org.kie.workbench.common.services.backend.builder.compiler.external.KieCliRequest;
+import org.kie.workbench.common.services.backend.builder.compiler.external339.KieCliRequest;
 import org.kie.workbench.common.services.backend.builder.compiler.nio.NIOCompilationRequest;
 
 import java.net.URI;
 import java.nio.file.Path;
+import java.util.Map;
 import java.util.Optional;
 
 public class NIODefaultCompilationRequest implements NIOCompilationRequest {
 
     private KieCliRequest req;
     private NIOWorkspaceCompilationInfo info;
+    private String requestUUID;
 
-    public NIODefaultCompilationRequest(NIOWorkspaceCompilationInfo info, String[] args) {
+    public NIODefaultCompilationRequest(NIOWorkspaceCompilationInfo info, String[] args, Map<String, Object> map, String requestUUID) {
         this.info = info;
-        this.req = new KieCliRequest(info.getPrjPath().toAbsolutePath().toString(), args);
+        this.requestUUID = requestUUID;
+        this.req = new KieCliRequest(info.getPrjPath().toAbsolutePath().toString(), args, map, this.requestUUID);
     }
 
 

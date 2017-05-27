@@ -14,13 +14,15 @@
  * limitations under the License.
  */
 
-package org.kie.workbench.common.services.backend.builder.compiler.external;
+package org.kie.workbench.common.services.backend.builder.compiler.external339;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.maven.execution.DefaultMavenExecutionRequest;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.codehaus.plexus.classworlds.ClassWorld;
+import org.drools.core.rule.KieModuleMetaInfo;
 
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -29,6 +31,7 @@ import java.util.Properties;
 public class KieCliRequest {
 
     private String[] args;
+    private KieModuleMetaInfo kieModuleMetaInfo;
     private CommandLine commandLine;
     private ClassWorld classWorld;
     private String workingDirectory;
@@ -39,12 +42,32 @@ public class KieCliRequest {
     private Properties userProperties = new Properties();
     private Properties systemProperties = new Properties();
     private MavenExecutionRequest request;
+    private Map<String, Object> map;
+    private String requestUUID;
 
-    public KieCliRequest(String multiModuleProjectDirectory, String[] args) {
+    public KieCliRequest(String multiModuleProjectDirectory, String[] args, Map<String, Object> map, String requestUUID) {
         this.multiModuleProjectDirectory = multiModuleProjectDirectory;
         this.workingDirectory = multiModuleProjectDirectory.toString();
         this.request = new DefaultMavenExecutionRequest();
         this.args = args;
+        this.map = map;
+        this.requestUUID = requestUUID;
+    }
+
+    public String getRequestUUID() {
+        return requestUUID;
+    }
+
+    public Map getMap(){
+        return map;
+    }
+
+    public KieModuleMetaInfo getKieModuleMetaInfo() {
+        return kieModuleMetaInfo;
+    }
+
+    public void setKieModuleMetaInfo(KieModuleMetaInfo kieModuleMetaInfo) {
+        this.kieModuleMetaInfo = kieModuleMetaInfo;
     }
 
     public String[] getArgs() {

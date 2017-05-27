@@ -15,9 +15,12 @@
  */
 package org.kie.workbench.common.services.backend.builder.compiler.nio.impl;
 
+import org.kie.api.builder.KieModule;
+import org.kie.maven.plugin.GlobalMap;
 import org.kie.workbench.common.services.backend.builder.compiler.CompilationResponse;
+//import org.kie.workbench.common.services.backend.builder.compiler.GlobalMap;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.Compilers;
-import org.kie.workbench.common.services.backend.builder.compiler.external.KieMavenCli;
+import org.kie.workbench.common.services.backend.builder.compiler.external339.KieMavenCli;
 import org.kie.workbench.common.services.backend.builder.compiler.impl.DefaultCompilationResponse;
 import org.kie.workbench.common.services.backend.builder.compiler.impl.ProcessedPoms;
 import org.kie.workbench.common.services.backend.builder.compiler.nio.NIOCompilationRequest;
@@ -29,6 +32,7 @@ import org.slf4j.LoggerFactory;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * Run maven with https://maven.apache.org/ref/3.5.0/maven-embedder/xref/index.html
@@ -99,9 +103,24 @@ public class NIODefaultMavenCompiler implements NIOMavenCompiler {
             }
         }
         req.getKieCliRequest().getRequest().setLocalRepositoryPath(mavenRepo.toAbsolutePath().toString());
+        //org.kie.maven.plugin.GlobalMap.put(req.getKieCliRequest().toString(),new Object());
         int exitCode = cli.doMain(req.getKieCliRequest());
         if (exitCode == 0) {
-            return new DefaultCompilationResponse(Boolean.TRUE);
+            KieModule kModule = null;
+            Object o =  req.getKieCliRequest().getMap().get(req.getKieCliRequest().getRequestUUID());
+            if(o != null){
+                kModule = (KieModule) o;
+            }
+            /*Set<String> keys = org.kie.maven.plugin.GlobalMap.getKeys();
+            KieModule kModule = null;
+            for (String key: keys){
+               kModule = GlobalMap.get(key);
+            }*/
+            if(kModule != null){
+                return new DefaultCompilationResponse(Boolean.TRUE,kModule);
+            }else{
+                return new DefaultCompilationResponse(Boolean.TRUE);
+            }
         } else {
             return new DefaultCompilationResponse(Boolean.FALSE);
         }

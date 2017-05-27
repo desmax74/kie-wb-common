@@ -32,10 +32,12 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.UUID;
 
 public class DefaultIncrementalCompilerEnablerTest {
 
-    private final Path prj = Paths.get("src/test/projects/dummy_multimodule");
+    //private final Path prj = Paths.get("src/test/projects/dummy_multimodule");
 
     private final Path mavenRepo = Paths.get("src/test/resources/.ignore/m2_repo/");
 
@@ -61,7 +63,7 @@ public class DefaultIncrementalCompilerEnablerTest {
         Assert.assertFalse(pomAsAstring.contains("<artifactId>takari-lifecycle-plugin</artifactId>"));
 
         NIOWorkspaceCompilationInfo info = new NIOWorkspaceCompilationInfo(tmp, NIOMavenCompilerFactory.getCompiler(mavenRepo, Decorator.NONE));
-        NIOCompilationRequest req = new NIODefaultCompilationRequest(info, new String[]{MavenArgs.COMPILE});
+        NIOCompilationRequest req = new NIODefaultCompilationRequest(info, new String[]{MavenArgs.COMPILE},new HashMap<>(), UUID.randomUUID().toString());
         NIODefaultIncrementalCompilerEnabler enabler = new NIODefaultIncrementalCompilerEnabler(Compilers.JAVAC);
         Assert.assertTrue(enabler.process(req).getResult());
 
@@ -85,7 +87,8 @@ public class DefaultIncrementalCompilerEnablerTest {
         Assert.assertFalse(pomAsAstring.contains("<artifactId>takari-lifecycle-plugin</artifactId>"));
 
         NIOWorkspaceCompilationInfo info = new NIOWorkspaceCompilationInfo(tmp, NIOMavenCompilerFactory.getCompiler(mavenRepo, Decorator.NONE));
-        NIOCompilationRequest req = new NIODefaultCompilationRequest(info, new String[]{MavenArgs.COMPILE});
+        StringBuilder sb = new StringBuilder().append("-Dcompilation.ID=").append(UUID.randomUUID().toString());
+        NIOCompilationRequest req = new NIODefaultCompilationRequest(info, new String[]{MavenArgs.COMPILE, sb.toString()},new HashMap<>(), UUID.randomUUID().toString());
         NIODefaultIncrementalCompilerEnabler enabler = new NIODefaultIncrementalCompilerEnabler(Compilers.JAVAC);
         Assert.assertTrue(enabler.process(req).getResult());
 
