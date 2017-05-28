@@ -400,7 +400,10 @@ public class KieMavenCli {
         });
 
         //@TODO @MAX
+        System.out.println("context in cli:"+container.toString());
         container.addComponent(cliRequest.getMap(), HashMap.class,"kieMap");
+        Object item =  container.lookup(Map.class,"java.util.HashMap","kieMap");
+        System.out.println("item:"+item.toString());
 
         // NOTE: To avoid inconsistencies, we'll use the TCCL exclusively for lookups
         container.setLookupRealm(null);
@@ -478,7 +481,10 @@ public class KieMavenCli {
                 }
             });
 
-            container.addComponent(cliRequest.getMap(), HashMap.class,"kieMap");
+            /*container.addComponent(cliRequest.getMap(), HashMap.class,"kieMap");
+            Object item =  container.lookup(Map.class,"java.util.HashMap","kieMap");
+            System.out.println("item:"+item.toString());
+            System.out.println("Container in cli 3:"+container.toString());*/
 
             try {
                 container.setLookupRealm(null);

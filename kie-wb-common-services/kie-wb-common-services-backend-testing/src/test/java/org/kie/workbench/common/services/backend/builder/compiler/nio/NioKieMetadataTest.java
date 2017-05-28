@@ -122,7 +122,7 @@ public class NioKieMetadataTest {
         Assert.assertTrue(compiler.isValid());
 
         NIOWorkspaceCompilationInfo info = new NIOWorkspaceCompilationInfo(tmp, compiler);
-        NIOCompilationRequest req = new NIODefaultCompilationRequest(info, new String[]{MavenArgs.COMPILE, MavenArgs.INSTALL, "-Dcompilation.ID=101", MavenArgs.DEBUG,},new HashMap<>(), UUID.randomUUID().toString());
+        NIOCompilationRequest req = new NIODefaultCompilationRequest(info, new String[]{MavenArgs.COMPILE, MavenArgs.INSTALL, "-Dcompilation.ID=101", },new HashMap<>(), UUID.randomUUID().toString());
         CompilationResponse res = compiler.compileSync(req);
         Assert.assertTrue(res.isSuccessful());
         TestUtil.rm(tmpRoot.toFile());

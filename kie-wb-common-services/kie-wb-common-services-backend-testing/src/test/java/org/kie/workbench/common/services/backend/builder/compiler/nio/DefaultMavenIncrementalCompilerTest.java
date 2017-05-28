@@ -57,7 +57,7 @@ public class DefaultMavenIncrementalCompilerTest {
         Assert.assertTrue(compiler.isValid());
 
         NIOWorkspaceCompilationInfo info = new NIOWorkspaceCompilationInfo(tmp, compiler);
-        NIOCompilationRequest req = new NIODefaultCompilationRequest(info, new String[]{MavenArgs.VERSION, MavenArgs.DEBUG},new HashMap<>(), UUID.randomUUID().toString());
+        NIOCompilationRequest req = new NIODefaultCompilationRequest(info, new String[]{MavenArgs.VERSION},new HashMap<>(), UUID.randomUUID().toString());
         CompilationResponse res = compiler.compileSync(req);
         Assert.assertTrue(res.isSuccessful());
 
@@ -80,7 +80,7 @@ public class DefaultMavenIncrementalCompilerTest {
         NIOMavenCompiler compiler = NIOMavenCompilerFactory.getCompiler(mavenRepo, Decorator.NONE);
 
         NIOWorkspaceCompilationInfo info = new NIOWorkspaceCompilationInfo(tmp, compiler);
-        NIOCompilationRequest req = new NIODefaultCompilationRequest(info, new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE, MavenArgs.DEBUG},new HashMap<>(), UUID.randomUUID().toString());
+        NIOCompilationRequest req = new NIODefaultCompilationRequest(info, new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE},new HashMap<>(), UUID.randomUUID().toString());
         CompilationResponse res = compiler.compileSync(req);
         Assert.assertTrue(res.isSuccessful());
 

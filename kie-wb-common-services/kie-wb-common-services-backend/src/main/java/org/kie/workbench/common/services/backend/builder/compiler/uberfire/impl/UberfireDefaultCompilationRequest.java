@@ -16,9 +16,11 @@
 package org.kie.workbench.common.services.backend.builder.compiler.uberfire.impl;
 
 import org.kie.workbench.common.services.backend.builder.compiler.external339.KieCliRequest;
+import org.kie.workbench.common.services.backend.builder.compiler.impl.KieMap;
 import org.kie.workbench.common.services.backend.builder.compiler.uberfire.UberfireCompilationRequest;
 import org.uberfire.java.nio.file.Path;
 
+import javax.inject.Inject;
 import java.net.URI;
 import java.util.Map;
 import java.util.Optional;
@@ -28,11 +30,13 @@ public class UberfireDefaultCompilationRequest implements UberfireCompilationReq
     private KieCliRequest req;
     private UberfireWorkspaceCompilationInfo info;
     private String requestUUID;
+    private Map map;
 
     public UberfireDefaultCompilationRequest(UberfireWorkspaceCompilationInfo info, String[] args, Map<String, Object> map, String requestUUID) {
         this.info = info;
         this.requestUUID = requestUUID;
-        this.req = new KieCliRequest(info.getPrjPath().toAbsolutePath().toString(), args, map, this.requestUUID);
+        this.map = map;
+        this.req = new KieCliRequest(this.info.getPrjPath().toAbsolutePath().toString(), args, this.map, this.requestUUID);
     }
 
 

@@ -21,6 +21,7 @@ import org.apache.maven.execution.DefaultMavenExecutionRequest;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.codehaus.plexus.classworlds.ClassWorld;
 import org.drools.core.rule.KieModuleMetaInfo;
+import org.kie.workbench.common.services.backend.builder.compiler.impl.KieMap;
 
 import java.util.Map;
 import java.util.Properties;
