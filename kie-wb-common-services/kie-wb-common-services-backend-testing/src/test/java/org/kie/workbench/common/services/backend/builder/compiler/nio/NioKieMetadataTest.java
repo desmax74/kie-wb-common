@@ -22,6 +22,7 @@ import org.drools.core.rule.KieModuleMetaInfo;
 import org.drools.core.rule.TypeMetaInfo;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.kie.api.builder.KieModule;
 import org.kie.internal.utils.KieMeta;
@@ -60,7 +61,7 @@ public class NioKieMetadataTest {
         }
     }
 
-    @Test
+    @Ignore//@Test
     public void compileAndloadKieMetadata() throws Exception {
         //compile and install
         Path tmpRoot = Files.createTempDirectory("repo");
@@ -111,7 +112,7 @@ public class NioKieMetadataTest {
     }
 
 
-    @Test
+    @Ignore//@Test
     public void compileAndloadKieJarMetadata() throws Exception {
         //compile and install
         Path tmpRoot = Files.createTempDirectory("repo");
