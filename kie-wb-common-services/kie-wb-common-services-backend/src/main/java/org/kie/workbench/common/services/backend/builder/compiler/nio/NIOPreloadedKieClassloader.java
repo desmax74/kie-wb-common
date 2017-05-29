@@ -28,64 +28,67 @@ import java.util.Vector;
 
 public class NIOPreloadedKieClassloader extends ClassLoader {
 
-    private Map<String, byte[]> map ;
     private static boolean isIBM_JVM = System.getProperty("java.vendor").toLowerCase().contains("ibm");
+    private Map<String, byte[]> map;
 
-    public NIOPreloadedKieClassloader(){
+    public NIOPreloadedKieClassloader() {
         map = new HashMap<>();
     }
 
-    public NIOPreloadedKieClassloader(ClassLoader parent){
+    public NIOPreloadedKieClassloader(ClassLoader parent) {
         super(parent);
         map = new HashMap<>();
     }
 
-    public NIOPreloadedKieClassloader(Map<String, byte[]> files, ClassLoader parent){
+    public NIOPreloadedKieClassloader(Map<String, byte[]> files, ClassLoader parent) {
         super(parent);
         map = files;
     }
 
+    private static NIOPreloadedKieClassloader internalCreate(ClassLoader parent) {
+        return isIBM_JVM ? new IBMClassLoader(parent) : new NIOPreloadedKieClassloader(parent);
+    }
 
     @Override
     protected Class<?> findClass(String name) throws ClassNotFoundException {
-        try{
+        try {
             byte[] classBytes = null;
             classBytes = loadClassBytesFromMap(name);
-            if(classBytes == null){
+            if (classBytes == null) {
                 classBytes = loadClassBytesFromFS(name);
             }
 
             Class<?> cl = defineClass(name, classBytes, 0, classBytes.length);
-            if(cl == null) throw  new ClassNotFoundException(name);
+            if (cl == null) throw new ClassNotFoundException(name);
             return cl;
 
-        }catch (IOException e){
+        } catch (IOException e) {
             throw new ClassNotFoundException();
         }
     }
 
-    private byte[] loadClassBytesFromMap(String name) throws IOException{
+    private byte[] loadClassBytesFromMap(String name) throws IOException {
         String className = name.replace('.', '/');
         return map.get(className);
     }
 
-    private byte[] loadClassBytesFromFS(String name) throws IOException{
+    private byte[] loadClassBytesFromFS(String name) throws IOException {
         String className = name.replace('.', '/');
         byte[] bytes = Files.readAllBytes(Paths.get(className));
         return bytes;
     }
 
     public static class IBMClassLoader extends NIOPreloadedKieClassloader {
-        private final boolean parentImplementsFindResources;
-
         private static final Enumeration<URL> EMPTY_RESOURCE_ENUM = new Vector<URL>().elements();
+        private final boolean parentImplementsFindResources;
 
         private IBMClassLoader(ClassLoader parent) {
             super(parent);
             Method m = null;
             try {
                 m = parent.getClass().getMethod("findResources", String.class);
-            } catch (NoSuchMethodException e) { }
+            } catch (NoSuchMethodException e) {
+            }
             parentImplementsFindResources = m != null && m.getDeclaringClass() == parent.getClass();
         }
 
@@ -93,9 +96,5 @@ public class NIOPreloadedKieClassloader extends ClassLoader {
         protected Enumeration<URL> findResources(String name) throws IOException {
             return parentImplementsFindResources ? EMPTY_RESOURCE_ENUM : getParent().getResources(name);
         }
-    }
-
-    private static NIOPreloadedKieClassloader internalCreate(ClassLoader parent) {
-        return isIBM_JVM ? new IBMClassLoader(parent) : new NIOPreloadedKieClassloader(parent);
     }
 }

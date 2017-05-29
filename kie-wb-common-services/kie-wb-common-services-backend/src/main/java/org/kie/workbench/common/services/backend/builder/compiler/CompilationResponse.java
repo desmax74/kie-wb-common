@@ -16,10 +16,7 @@
 
 package org.kie.workbench.common.services.backend.builder.compiler;
 
-import org.drools.compiler.kie.builder.impl.InternalKieModule;
-import org.drools.core.rule.KieModuleMetaInfo;
 import org.kie.api.builder.KieModule;
-import org.kie.scanner.KieModuleMetaData;
 
 import java.util.Optional;
 

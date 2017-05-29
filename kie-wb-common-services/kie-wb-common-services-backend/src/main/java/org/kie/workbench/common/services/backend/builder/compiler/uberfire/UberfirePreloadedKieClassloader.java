@@ -17,7 +17,6 @@
 package org.kie.workbench.common.services.backend.builder.compiler.uberfire;
 
 
-import org.kie.workbench.common.services.backend.builder.compiler.nio.NIOPreloadedKieClassloader;
 import org.uberfire.java.nio.file.Files;
 import org.uberfire.java.nio.file.Paths;
 
@@ -31,8 +30,8 @@ import java.util.Vector;
 
 public class UberfirePreloadedKieClassloader extends ClassLoader {
 
-    private Map<String, byte[]> map;
     private static boolean isIBM_JVM = System.getProperty("java.vendor").toLowerCase().contains("ibm");
+    private Map<String, byte[]> map;
 
 
     public UberfirePreloadedKieClassloader() {
@@ -53,6 +52,9 @@ public class UberfirePreloadedKieClassloader extends ClassLoader {
         map = files;
     }
 
+    private static UberfirePreloadedKieClassloader internalCreate(ClassLoader parent) {
+        return isIBM_JVM ? new IBMClassLoader(parent) : new UberfirePreloadedKieClassloader(parent);
+    }
 
     @Override
     protected Class<?> findClass(String name) throws ClassNotFoundException {
@@ -84,16 +86,16 @@ public class UberfirePreloadedKieClassloader extends ClassLoader {
     }
 
     public static class IBMClassLoader extends UberfirePreloadedKieClassloader {
-        private final boolean parentImplementsFindResources;
-
         private static final Enumeration<URL> EMPTY_RESOURCE_ENUM = new Vector<URL>().elements();
+        private final boolean parentImplementsFindResources;
 
         private IBMClassLoader(ClassLoader parent) {
             super(parent);
             Method m = null;
             try {
                 m = parent.getClass().getMethod("findResources", String.class);
-            } catch (NoSuchMethodException e) { }
+            } catch (NoSuchMethodException e) {
+            }
             parentImplementsFindResources = m != null && m.getDeclaringClass() == parent.getClass();
         }
 
@@ -101,9 +103,5 @@ public class UberfirePreloadedKieClassloader extends ClassLoader {
         protected Enumeration<URL> findResources(String name) throws IOException {
             return parentImplementsFindResources ? EMPTY_RESOURCE_ENUM : getParent().getResources(name);
         }
-    }
-
-    private static UberfirePreloadedKieClassloader internalCreate(ClassLoader parent) {
-        return isIBM_JVM ? new IBMClassLoader(parent) : new UberfirePreloadedKieClassloader(parent);
     }
 }

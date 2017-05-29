@@ -16,9 +16,7 @@
 package org.kie.workbench.common.services.backend.builder.compiler.impl;
 
 
-import org.drools.core.rule.KieModuleMetaInfo;
 import org.kie.api.builder.KieModule;
-import org.kie.scanner.KieModuleMetaData;
 import org.kie.workbench.common.services.backend.builder.compiler.CompilationResponse;
 
 import java.util.Optional;
@@ -32,7 +30,7 @@ public class DefaultCompilationResponse implements CompilationResponse {
     public DefaultCompilationResponse(DefaultCompilationResponse res, KieModule kieModule) {
         this.successful = res.isSuccessful();
         this.errorMessage = res.getErrorMessage();
-        this.kieModule= Optional.of(kieModule);
+        this.kieModule = Optional.of(kieModule);
     }
 
     public DefaultCompilationResponse(Boolean successful) {

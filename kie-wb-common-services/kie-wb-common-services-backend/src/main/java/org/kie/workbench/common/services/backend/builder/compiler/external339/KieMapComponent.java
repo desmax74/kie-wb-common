@@ -21,6 +21,6 @@ import org.codehaus.plexus.component.annotations.Component;
 import java.util.HashMap;
 import java.util.Map;
 
-@Component(role= Map.class, hint="kieMap")
+@Component(role = Map.class, hint = "kieMap")
 public class KieMapComponent extends HashMap {
 }

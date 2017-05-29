@@ -16,11 +16,9 @@
 package org.kie.workbench.common.services.backend.builder.compiler.uberfire.impl;
 
 import org.kie.workbench.common.services.backend.builder.compiler.external339.KieCliRequest;
-import org.kie.workbench.common.services.backend.builder.compiler.impl.KieMap;
 import org.kie.workbench.common.services.backend.builder.compiler.uberfire.UberfireCompilationRequest;
 import org.uberfire.java.nio.file.Path;
 
-import javax.inject.Inject;
 import java.net.URI;
 import java.util.Map;
 import java.util.Optional;

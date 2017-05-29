@@ -66,7 +66,6 @@ import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.eclipse.aether.transfer.TransferListener;
-import org.kie.workbench.common.services.backend.builder.compiler.configuration.ConfigurationKey;
 import org.slf4j.ILoggerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -400,10 +399,10 @@ public class KieMavenCli {
         });
 
         //@TODO @MAX
-        System.out.println("context in cli:"+container.toString());
-        container.addComponent(cliRequest.getMap(), HashMap.class,"kieMap");
-        Object item =  container.lookup(Map.class,"java.util.HashMap","kieMap");
-        System.out.println("item:"+item.toString());
+        System.out.println("context in cli:" + container.toString());
+        container.addComponent(cliRequest.getMap(), HashMap.class, "kieMap");
+        Object item = container.lookup(Map.class, "java.util.HashMap", "kieMap");
+        System.out.println("item:" + item.toString());
 
         // NOTE: To avoid inconsistencies, we'll use the TCCL exclusively for lookups
         container.setLookupRealm(null);

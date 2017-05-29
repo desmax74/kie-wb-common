@@ -16,9 +16,7 @@
 package org.kie.workbench.common.services.backend.builder.compiler.nio.impl;
 
 import org.kie.api.builder.KieModule;
-
 import org.kie.workbench.common.services.backend.builder.compiler.CompilationResponse;
-
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.Compilers;
 import org.kie.workbench.common.services.backend.builder.compiler.external339.KieMavenCli;
 import org.kie.workbench.common.services.backend.builder.compiler.impl.DefaultCompilationResponse;
@@ -107,14 +105,14 @@ public class NIODefaultMavenCompiler implements NIOMavenCompiler {
         int exitCode = cli.doMain(req.getKieCliRequest());
         if (exitCode == 0) {
             KieModule kModule = null;
-            Object o =  req.getKieCliRequest().getMap().get(req.getKieCliRequest().getRequestUUID());
-            if(o != null){
+            Object o = req.getKieCliRequest().getMap().get(req.getKieCliRequest().getRequestUUID());
+            if (o != null) {
                 kModule = (KieModule) o;
             }
 
-            if(kModule != null){
-                return new DefaultCompilationResponse(Boolean.TRUE,kModule);
-            }else{
+            if (kModule != null) {
+                return new DefaultCompilationResponse(Boolean.TRUE, kModule);
+            } else {
                 return new DefaultCompilationResponse(Boolean.TRUE);
             }
         } else {
