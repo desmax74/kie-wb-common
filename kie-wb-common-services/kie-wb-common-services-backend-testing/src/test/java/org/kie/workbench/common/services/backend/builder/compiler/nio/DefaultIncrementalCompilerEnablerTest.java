@@ -63,7 +63,7 @@ public class DefaultIncrementalCompilerEnablerTest {
         Assert.assertFalse(pomAsAstring.contains("<artifactId>takari-lifecycle-plugin</artifactId>"));
 
         NIOWorkspaceCompilationInfo info = new NIOWorkspaceCompilationInfo(tmp, NIOMavenCompilerFactory.getCompiler(mavenRepo, Decorator.NONE));
-        NIOCompilationRequest req = new NIODefaultCompilationRequest(info, new String[]{MavenArgs.COMPILE},new HashMap<>(), UUID.randomUUID().toString());
+        NIOCompilationRequest req = new NIODefaultCompilationRequest(info, new String[]{MavenArgs.COMPILE},new HashMap<>());
         NIODefaultIncrementalCompilerEnabler enabler = new NIODefaultIncrementalCompilerEnabler(Compilers.JAVAC);
         Assert.assertTrue(enabler.process(req).getResult());
 
@@ -87,8 +87,7 @@ public class DefaultIncrementalCompilerEnablerTest {
         Assert.assertFalse(pomAsAstring.contains("<artifactId>takari-lifecycle-plugin</artifactId>"));
 
         NIOWorkspaceCompilationInfo info = new NIOWorkspaceCompilationInfo(tmp, NIOMavenCompilerFactory.getCompiler(mavenRepo, Decorator.NONE));
-        StringBuilder sb = new StringBuilder().append("-Dcompilation.ID=").append(UUID.randomUUID().toString());
-        NIOCompilationRequest req = new NIODefaultCompilationRequest(info, new String[]{MavenArgs.COMPILE, sb.toString()},new HashMap<>(), UUID.randomUUID().toString());
+        NIOCompilationRequest req = new NIODefaultCompilationRequest(info, new String[]{MavenArgs.COMPILE},new HashMap<>());
         NIODefaultIncrementalCompilerEnabler enabler = new NIODefaultIncrementalCompilerEnabler(Compilers.JAVAC);
         Assert.assertTrue(enabler.process(req).getResult());
 

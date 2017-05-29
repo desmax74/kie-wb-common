@@ -72,7 +72,7 @@ public class NioKieMetadataTest {
         Assert.assertTrue(compiler.isValid());
 
         NIOWorkspaceCompilationInfo info = new NIOWorkspaceCompilationInfo(tmp, compiler);
-        NIOCompilationRequest req = new NIODefaultCompilationRequest(info, new String[]{MavenArgs.COMPILE, MavenArgs.INSTALL},new HashMap<>(), UUID.randomUUID().toString());
+        NIOCompilationRequest req = new NIODefaultCompilationRequest(info, new String[]{MavenArgs.COMPILE, MavenArgs.INSTALL},new HashMap<>());
         CompilationResponse res = compiler.compileSync(req);
         Assert.assertTrue(res.isSuccessful());
         TestUtil.rm(tmpRoot.toFile());
@@ -112,7 +112,7 @@ public class NioKieMetadataTest {
     }
 
 
-    @Ignore//@Test
+    @Ignore //@Test
     public void compileAndloadKieJarMetadata() throws Exception {
         //compile and install
         Path tmpRoot = Files.createTempDirectory("repo");
@@ -123,7 +123,7 @@ public class NioKieMetadataTest {
         Assert.assertTrue(compiler.isValid());
 
         NIOWorkspaceCompilationInfo info = new NIOWorkspaceCompilationInfo(tmp, compiler);
-        NIOCompilationRequest req = new NIODefaultCompilationRequest(info, new String[]{MavenArgs.COMPILE, MavenArgs.INSTALL, "-Dcompilation.ID=101", },new HashMap<>(), UUID.randomUUID().toString());
+        NIOCompilationRequest req = new NIODefaultCompilationRequest(info, new String[]{MavenArgs.COMPILE, MavenArgs.INSTALL, MavenArgs.DEBUG},new HashMap<>());
         CompilationResponse res = compiler.compileSync(req);
         Assert.assertTrue(res.isSuccessful());
         TestUtil.rm(tmpRoot.toFile());

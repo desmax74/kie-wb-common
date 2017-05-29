@@ -158,7 +158,7 @@ public class DefaultMavenCompilerOnInMemoryFSTest {
 
         //KieCliRequest kcr = new KieCliRequest(prjFolder, new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE});
         NIOWorkspaceCompilationInfo info = new NIOWorkspaceCompilationInfo(prjFolder, compiler);
-        NIOCompilationRequest req = new NIODefaultCompilationRequest(info, new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE}, new HashMap<>(), UUID.randomUUID().toString());
+        NIOCompilationRequest req = new NIODefaultCompilationRequest(info, new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE}, new HashMap<>());
 
         CompilationResponse res = compiler.compileSync(req);
         Assert.assertTrue(res.isSuccessful());
@@ -245,7 +245,7 @@ public class DefaultMavenCompilerOnInMemoryFSTest {
         Path prjFolder = Paths.get(tmpCloned + "/dummy/");
 
         NIOWorkspaceCompilationInfo info = new NIOWorkspaceCompilationInfo(prjFolder, compiler);
-        NIOCompilationRequest req = new NIODefaultCompilationRequest(info, new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE, MavenArgs.DEBUG}, new HashMap<>(), UUID.randomUUID().toString());
+        NIOCompilationRequest req = new NIODefaultCompilationRequest(info, new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE, MavenArgs.DEBUG}, new HashMap<>());
 
         CompilationResponse res = compiler.compileSync(req);
         Assert.assertTrue(res.isSuccessful());
@@ -313,7 +313,7 @@ public class DefaultMavenCompilerOnInMemoryFSTest {
         //@TODO refactor and use only one between the URI or Git
         //@TODO find a way to resolve the problem of the prjname inside .git folder
         NIOWorkspaceCompilationInfo info = new NIOWorkspaceCompilationInfo(Paths.get(tmpCloned + "/dummy"), URI.create("git://localhost:9418/repo"), compiler, cloned);
-        NIOCompilationRequest req = new NIODefaultCompilationRequest(info, new String[]{MavenArgs.COMPILE}, new HashMap<>(), UUID.randomUUID().toString());
+        NIOCompilationRequest req = new NIODefaultCompilationRequest(info, new String[]{MavenArgs.COMPILE}, new HashMap<>());
         CompilationResponse res = compiler.compileSync(req);
         Assert.assertTrue(res.isSuccessful());
 

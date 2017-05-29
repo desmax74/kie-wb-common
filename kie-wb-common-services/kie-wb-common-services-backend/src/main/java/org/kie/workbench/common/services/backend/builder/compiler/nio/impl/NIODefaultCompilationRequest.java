@@ -20,8 +20,11 @@ import org.kie.workbench.common.services.backend.builder.compiler.nio.NIOCompila
 
 import java.net.URI;
 import java.nio.file.Path;
+
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 public class NIODefaultCompilationRequest implements NIOCompilationRequest {
 
@@ -30,11 +33,15 @@ public class NIODefaultCompilationRequest implements NIOCompilationRequest {
     private String requestUUID;
     private Map map;
 
-    public NIODefaultCompilationRequest(NIOWorkspaceCompilationInfo info, String[] args, Map<String, Object> map, String requestUUID) {
+    public NIODefaultCompilationRequest(NIOWorkspaceCompilationInfo info, String[] args, Map<String, Object> map) {
         this.info = info;
-        this.requestUUID = requestUUID;
+        this.requestUUID = UUID.randomUUID().toString();;
         this.map = map;
-        this.req = new KieCliRequest(info.getPrjPath().toAbsolutePath().toString(), args, this.map, this.requestUUID);
+
+        StringBuilder sb = new StringBuilder().append("-Dcompilation.ID=").append(requestUUID);
+        String[] internalArgs = Arrays.copyOf(args,args.length+1);
+        internalArgs[args.length] = sb.toString();
+        this.req = new KieCliRequest(info.getPrjPath().toAbsolutePath().toString(), internalArgs, this.map, this.requestUUID);
     }
 
 
@@ -60,4 +67,6 @@ public class NIODefaultCompilationRequest implements NIOCompilationRequest {
     public KieCliRequest getKieCliRequest() {
         return req;
     }
+
+    public String getRequestUUID() {return requestUUID;}
 }
