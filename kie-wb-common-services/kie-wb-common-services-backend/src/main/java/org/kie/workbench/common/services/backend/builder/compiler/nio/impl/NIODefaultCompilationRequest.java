@@ -35,7 +35,7 @@ public class NIODefaultCompilationRequest implements NIOCompilationRequest {
 
     public NIODefaultCompilationRequest(NIOWorkspaceCompilationInfo info, String[] args, Map<String, Object> map) {
         this.info = info;
-        this.requestUUID = UUID.randomUUID().toString();;
+        this.requestUUID = UUID.randomUUID().toString();
         this.map = map;
 
         StringBuilder sb = new StringBuilder().append("-Dcompilation.ID=").append(requestUUID);

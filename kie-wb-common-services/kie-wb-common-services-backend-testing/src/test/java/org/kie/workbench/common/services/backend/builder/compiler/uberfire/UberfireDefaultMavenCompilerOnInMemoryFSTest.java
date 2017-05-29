@@ -153,7 +153,7 @@ public class UberfireDefaultMavenCompilerOnInMemoryFSTest {
 
         //KieCliRequest kcr = new KieCliRequest(prjFolder, new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE});
         UberfireWorkspaceCompilationInfo info = new UberfireWorkspaceCompilationInfo(prjFolder, compiler);
-        UberfireCompilationRequest req = new UberfireDefaultCompilationRequest(info, new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE}, new HashMap<>(), UUID.randomUUID().toString());
+        UberfireCompilationRequest req = new UberfireDefaultCompilationRequest(info, new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE}, new HashMap<>());
 
         CompilationResponse res = compiler.compileSync(req);
         Assert.assertTrue(res.isSuccessful());
@@ -243,7 +243,7 @@ public class UberfireDefaultMavenCompilerOnInMemoryFSTest {
         Path prjFolder = Paths.get(tmpCloned + "/dummy/");
 
         UberfireWorkspaceCompilationInfo info = new UberfireWorkspaceCompilationInfo(prjFolder, compiler);
-        UberfireCompilationRequest req = new UberfireDefaultCompilationRequest(info, new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE, MavenArgs.DEBUG}, new HashMap<>(), UUID.randomUUID().toString());
+        UberfireCompilationRequest req = new UberfireDefaultCompilationRequest(info, new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE, MavenArgs.DEBUG}, new HashMap<>());
 
         CompilationResponse res = compiler.compileSync(req);
         Assert.assertTrue(res.isSuccessful());
@@ -314,7 +314,7 @@ public class UberfireDefaultMavenCompilerOnInMemoryFSTest {
         //@TODO refactor and use only one between the URI or Git
         //@TODO find a way to resolve the problem of the prjname inside .git folder
         UberfireWorkspaceCompilationInfo info = new UberfireWorkspaceCompilationInfo(Paths.get(tmpCloned + "/dummy"), URI.create("git://localhost:9418/repo"), compiler, cloned);
-        UberfireCompilationRequest req = new UberfireDefaultCompilationRequest(info, new String[]{MavenArgs.COMPILE}, new HashMap<>(), UUID.randomUUID().toString());
+        UberfireCompilationRequest req = new UberfireDefaultCompilationRequest(info, new String[]{MavenArgs.COMPILE}, new HashMap<>());
         CompilationResponse res = compiler.compileSync(req);
         Assert.assertTrue(res.isSuccessful());
 

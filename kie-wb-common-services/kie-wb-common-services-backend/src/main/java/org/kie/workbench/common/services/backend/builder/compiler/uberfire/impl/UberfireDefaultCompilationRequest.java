@@ -20,8 +20,10 @@ import org.kie.workbench.common.services.backend.builder.compiler.uberfire.Uberf
 import org.uberfire.java.nio.file.Path;
 
 import java.net.URI;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 public class UberfireDefaultCompilationRequest implements UberfireCompilationRequest {
 
@@ -30,13 +32,20 @@ public class UberfireDefaultCompilationRequest implements UberfireCompilationReq
     private String requestUUID;
     private Map map;
 
-    public UberfireDefaultCompilationRequest(UberfireWorkspaceCompilationInfo info, String[] args, Map<String, Object> map, String requestUUID) {
+    public UberfireDefaultCompilationRequest(UberfireWorkspaceCompilationInfo info, String[] args, Map<String, Object> map) {
         this.info = info;
-        this.requestUUID = requestUUID;
+        this.requestUUID = UUID.randomUUID().toString();
         this.map = map;
+
+        StringBuilder sb = new StringBuilder().append("-Dcompilation.ID=").append(requestUUID);
+        String[] internalArgs = Arrays.copyOf(args,args.length+1);
+        internalArgs[args.length] = sb.toString();
         this.req = new KieCliRequest(this.info.getPrjPath().toAbsolutePath().toString(), args, this.map, this.requestUUID);
     }
 
+    public String getRequestUUID() {
+        return requestUUID;
+    }
 
     @Override
     public UberfireWorkspaceCompilationInfo getInfo() {

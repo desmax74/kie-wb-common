@@ -63,7 +63,7 @@ public class UberfireClassLoaderProviderTest {
 
         Path uberfireTmp = Paths.get(tmp.toAbsolutePath().toString());
         UberfireWorkspaceCompilationInfo info = new UberfireWorkspaceCompilationInfo(uberfireTmp, compiler);
-        UberfireCompilationRequest req = new UberfireDefaultCompilationRequest(info, new String[]{MavenArgs.COMPILE, MavenArgs.INSTALL, MavenArgs.DEBUG}, new HashMap<>(), UUID.randomUUID().toString());
+        UberfireCompilationRequest req = new UberfireDefaultCompilationRequest(info, new String[]{MavenArgs.COMPILE, MavenArgs.INSTALL, MavenArgs.DEBUG}, new HashMap<>());
         CompilationResponse res = compiler.compileSync(req);
         Assert.assertTrue(res.isSuccessful());
 
@@ -106,7 +106,7 @@ public class UberfireClassLoaderProviderTest {
 
         Path uberfireTmp = Paths.get(tmp.toAbsolutePath().toString());
         UberfireWorkspaceCompilationInfo info = new UberfireWorkspaceCompilationInfo(uberfireTmp, compiler);
-        UberfireCompilationRequest req = new UberfireDefaultCompilationRequest(info, new String[]{MavenArgs.COMPILE, MavenArgs.INSTALL, MavenArgs.DEBUG},new HashMap<>(), UUID.randomUUID().toString());
+        UberfireCompilationRequest req = new UberfireDefaultCompilationRequest(info, new String[]{MavenArgs.COMPILE, MavenArgs.INSTALL, MavenArgs.DEBUG},new HashMap<>());
         CompilationResponse res = compiler.compileSync(req);
         Assert.assertTrue(res.isSuccessful());
 
@@ -149,7 +149,7 @@ public class UberfireClassLoaderProviderTest {
 
         Path uberfireTmp = Paths.get(tmp.toAbsolutePath().toString());
         UberfireWorkspaceCompilationInfo info = new UberfireWorkspaceCompilationInfo(uberfireTmp, compiler);
-        UberfireCompilationRequest req = new UberfireDefaultCompilationRequest(info, new String[]{MavenArgs.COMPILE, MavenArgs.DEBUG},new HashMap<>(), UUID.randomUUID().toString());
+        UberfireCompilationRequest req = new UberfireDefaultCompilationRequest(info, new String[]{MavenArgs.COMPILE, MavenArgs.DEBUG},new HashMap<>());
         CompilationResponse res = compiler.compileSync(req);
         Assert.assertTrue(res.isSuccessful());
 
