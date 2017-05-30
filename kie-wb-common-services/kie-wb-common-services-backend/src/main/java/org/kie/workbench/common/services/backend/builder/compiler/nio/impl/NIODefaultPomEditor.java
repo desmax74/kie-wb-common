@@ -68,14 +68,16 @@ public class NIODefaultPomEditor extends DefaultPomEditor {
 
                 PluginPresents plugs = updatePom(model);
                 request.getInfo().lateAdditionKiePluginPresent(plugs.isKiePluginPresent());
-
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                writer.write(baos, model);
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Pom changed:{}", new String(baos.toByteArray(), StandardCharsets.UTF_8));
+                if(plugs.getOverwritePOM()) {
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    writer.write(baos, model);
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("Pom changed:{}", new String(baos.toByteArray(), StandardCharsets.UTF_8));
+                    }
+                    Files.delete(Paths.get(pom.getParent().toAbsolutePath().toString(), POM_NAME));
+                    Files.write(Paths.get(pom.getParent().toAbsolutePath().toString(), POM_NAME),
+                            baos.toByteArray(), StandardOpenOption.CREATE_NEW);//enhanced pom
                 }
-                Files.write(Paths.get(pom.getParent().toAbsolutePath().toString(), POM_NAME),
-                        baos.toByteArray(), StandardOpenOption.WRITE);//enhanced pom
                 history.add(pomPH);
             }
 

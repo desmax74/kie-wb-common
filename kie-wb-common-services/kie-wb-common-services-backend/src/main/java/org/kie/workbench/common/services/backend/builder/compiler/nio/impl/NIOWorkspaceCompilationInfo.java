@@ -32,13 +32,6 @@ public class NIOWorkspaceCompilationInfo {
     private Git gitRepo;
     private Boolean kiePluginPresent = Boolean.FALSE;
 
-    /*public WorkspaceCompilationInfo(Path prjPath, Path enhancedPomFile, URI remoteRepo, MavenCompiler compiler) {
-        this.prjPath = prjPath;
-        this.enhancedMainPomFile = enhancedPomFile;
-        this.remoteRepo = remoteRepo;
-        this.compiler = compiler;
-    }*/
-
     public NIOWorkspaceCompilationInfo(Path prjPath, URI remoteRepo, NIOMavenCompiler compiler, Git gitRepo) {
         this.prjPath = prjPath;
         this.remoteRepo = remoteRepo;

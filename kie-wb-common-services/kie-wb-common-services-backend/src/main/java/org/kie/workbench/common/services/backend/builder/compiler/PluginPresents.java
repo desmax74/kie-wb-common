@@ -23,4 +23,6 @@ public interface PluginPresents {
     Boolean isAlternativeCompilerPresent();
 
     Boolean isKiePluginPresent();
+
+    Boolean getOverwritePOM();
 }
