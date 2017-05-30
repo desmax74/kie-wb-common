@@ -15,7 +15,7 @@
  */
 package org.kie.workbench.common.services.backend.builder.compiler.nio.impl;
 
-import org.kie.api.builder.KieModule;
+import org.drools.core.rule.KieModuleMetaInfo;
 import org.kie.workbench.common.services.backend.builder.compiler.CompilationResponse;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.Compilers;
 import org.kie.workbench.common.services.backend.builder.compiler.external339.KieMavenCli;
@@ -27,6 +27,7 @@ import org.kie.workbench.common.services.backend.builder.compiler.nio.NIOMavenCo
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
@@ -104,10 +105,14 @@ public class NIODefaultMavenCompiler implements NIOMavenCompiler {
 
         int exitCode = cli.doMain(req.getKieCliRequest());
         if (exitCode == 0) {
-            KieModule kModule = null;
-            Object o = req.getKieCliRequest().getMap().get(req.getKieCliRequest().getRequestUUID());
-            if (o != null) {
-                kModule = (KieModule) o;
+            KieModuleMetaInfo kModule = null;
+            try {
+                Object o = req.getKieCliRequest().getMap().get(req.getKieCliRequest().getRequestUUID());
+                if (o != null) {
+                    kModule = readAKieModuleFromaDifferentClassloader(o);
+                }
+            } catch (Exception e) {
+                logger.error(e.getMessage());
             }
 
             if (kModule != null) {
@@ -118,6 +123,39 @@ public class NIODefaultMavenCompiler implements NIOMavenCompiler {
         } else {
             return new DefaultCompilationResponse(Boolean.FALSE);
         }
+    }
+
+    private KieModuleMetaInfo readAKieModuleFromaDifferentClassloader(Object o) {
+
+
+        ObjectInput in = null;
+        ByteArrayInputStream bis = null;
+        ByteArrayOutputStream bos = null;
+        ObjectOutput out = null;
+        try {
+            bos = new ByteArrayOutputStream();
+            out = new ObjectOutputStream(bos);
+            out.writeObject(o);
+            out.flush();
+            byte[] objBytes = bos.toByteArray();
+            bis = new ByteArrayInputStream(objBytes);
+            in = new ObjectInputStream(bis);
+            Object newObj = in.readObject();
+            return (KieModuleMetaInfo) newObj;
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+        } finally {
+            try {
+                bos.close();
+
+                if (in != null) {
+                    in.close();
+                }
+            } catch (IOException ex) {
+                logger.error(ex.getMessage());
+            }
+        }
+        return null;
     }
 
 }

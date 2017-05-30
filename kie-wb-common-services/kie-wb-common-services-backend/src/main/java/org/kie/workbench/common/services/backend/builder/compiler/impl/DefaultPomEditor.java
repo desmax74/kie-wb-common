@@ -124,13 +124,13 @@ public class DefaultPomEditor implements PomEditor {
             overwritePOM = Boolean.TRUE;
         }
 
-        if(kiePluginPresent && alternativeCompilerPluginPresent){
+        if (kiePluginPresent && alternativeCompilerPluginPresent) {
             //if kieplugin is present must be after the alternative compiler
-            if(kieMavenPluginPosition <= alternativeCompilerPosition){
+            if (kieMavenPluginPosition <= alternativeCompilerPosition) {
                 //swap the positions
                 Plugin kieMaven = build.getPlugins().get(kieMavenPluginPosition);
                 Plugin alternativeCompiler = build.getPlugins().get(alternativeCompilerPosition);
-                build.getPlugins().set(kieMavenPluginPosition,alternativeCompiler);
+                build.getPlugins().set(kieMavenPluginPosition, alternativeCompiler);
                 build.getPlugins().set(alternativeCompilerPosition, kieMaven);
                 overwritePOM = Boolean.TRUE;
             }

@@ -38,7 +38,7 @@ public class UberfireDefaultCompilationRequest implements UberfireCompilationReq
         this.map = map;
 
         StringBuilder sb = new StringBuilder().append("-Dcompilation.ID=").append(requestUUID);
-        String[] internalArgs = Arrays.copyOf(args,args.length+1);
+        String[] internalArgs = Arrays.copyOf(args, args.length + 1);
         internalArgs[args.length] = sb.toString();
         this.req = new KieCliRequest(this.info.getPrjPath().toAbsolutePath().toString(), args, this.map, this.requestUUID);
     }

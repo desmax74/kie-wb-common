@@ -58,7 +58,7 @@ public class KieCliRequest {
         return requestUUID;
     }
 
-    public Map getMap() {
+    public Map<String, Object> getMap() {
         return map;
     }
 

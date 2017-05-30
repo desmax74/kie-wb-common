@@ -68,7 +68,7 @@ public class NIODefaultPomEditor extends DefaultPomEditor {
 
                 PluginPresents plugs = updatePom(model);
                 request.getInfo().lateAdditionKiePluginPresent(plugs.isKiePluginPresent());
-                if(plugs.getOverwritePOM()) {
+                if (plugs.getOverwritePOM()) {
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
                     writer.write(baos, model);
                     if (logger.isDebugEnabled()) {

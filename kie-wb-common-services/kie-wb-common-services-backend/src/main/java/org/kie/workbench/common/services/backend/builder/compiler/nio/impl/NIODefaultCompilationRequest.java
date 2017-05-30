@@ -20,7 +20,6 @@ import org.kie.workbench.common.services.backend.builder.compiler.nio.NIOCompila
 
 import java.net.URI;
 import java.nio.file.Path;
-
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
@@ -39,7 +38,7 @@ public class NIODefaultCompilationRequest implements NIOCompilationRequest {
         this.map = map;
 
         StringBuilder sb = new StringBuilder().append("-Dcompilation.ID=").append(requestUUID);
-        String[] internalArgs = Arrays.copyOf(args,args.length+1);
+        String[] internalArgs = Arrays.copyOf(args, args.length + 1);
         internalArgs[args.length] = sb.toString();
         this.req = new KieCliRequest(info.getPrjPath().toAbsolutePath().toString(), internalArgs, this.map, this.requestUUID);
     }
@@ -68,5 +67,7 @@ public class NIODefaultCompilationRequest implements NIOCompilationRequest {
         return req;
     }
 
-    public String getRequestUUID() {return requestUUID;}
+    public String getRequestUUID() {
+        return requestUUID;
+    }
 }

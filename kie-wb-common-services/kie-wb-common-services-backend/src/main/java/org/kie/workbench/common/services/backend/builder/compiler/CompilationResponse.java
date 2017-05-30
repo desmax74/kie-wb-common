@@ -16,7 +16,7 @@
 
 package org.kie.workbench.common.services.backend.builder.compiler;
 
-import org.kie.api.builder.KieModule;
+import org.drools.core.rule.KieModuleMetaInfo;
 
 import java.util.Optional;
 
@@ -29,5 +29,5 @@ public interface CompilationResponse {
 
     Optional<String> getErrorMessage();
 
-    Optional<KieModule> getKieModule();
+    Optional<KieModuleMetaInfo> getKieModuleMetaInfo();
 }

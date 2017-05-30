@@ -16,7 +16,7 @@
 package org.kie.workbench.common.services.backend.builder.compiler.impl;
 
 
-import org.kie.api.builder.KieModule;
+import org.drools.core.rule.KieModuleMetaInfo;
 import org.kie.workbench.common.services.backend.builder.compiler.CompilationResponse;
 
 import java.util.Optional;
@@ -25,36 +25,36 @@ public class DefaultCompilationResponse implements CompilationResponse {
 
     private Boolean successful;
     private Optional<String> errorMessage;
-    private Optional<KieModule> kieModule;
+    private Optional<KieModuleMetaInfo> kieModuleMetaInfo;
 
-    public DefaultCompilationResponse(DefaultCompilationResponse res, KieModule kieModule) {
+    public DefaultCompilationResponse(DefaultCompilationResponse res, KieModuleMetaInfo kieModuleMetaInfo) {
         this.successful = res.isSuccessful();
         this.errorMessage = res.getErrorMessage();
-        this.kieModule = Optional.of(kieModule);
+        this.kieModuleMetaInfo = Optional.of(kieModuleMetaInfo);
     }
 
     public DefaultCompilationResponse(Boolean successful) {
         this.successful = successful;
         this.errorMessage = Optional.empty();
-        this.kieModule = Optional.empty();
+        this.kieModuleMetaInfo = Optional.empty();
     }
 
-    public DefaultCompilationResponse(Boolean successful, KieModule kieModule) {
+    public DefaultCompilationResponse(Boolean successful, KieModuleMetaInfo kieModuleMetaInfo) {
         this.successful = successful;
         this.errorMessage = Optional.empty();
-        this.kieModule = Optional.of(kieModule);
+        this.kieModuleMetaInfo = Optional.of(kieModuleMetaInfo);
     }
 
     public DefaultCompilationResponse(Boolean successful, Optional<String> errorMessage) {
         this.successful = successful;
         this.errorMessage = errorMessage;
-        this.kieModule = Optional.empty();
+        this.kieModuleMetaInfo = Optional.empty();
     }
 
-    public DefaultCompilationResponse(Boolean successful, Optional<String> errorMessage, KieModule kieModule) {
+    public DefaultCompilationResponse(Boolean successful, Optional<String> errorMessage, KieModuleMetaInfo kieModuleMetaInfo) {
         this.successful = successful;
         this.errorMessage = errorMessage;
-        this.kieModule = Optional.of(kieModule);
+        this.kieModuleMetaInfo = Optional.of(kieModuleMetaInfo);
     }
 
     public Boolean isSuccessful() {
@@ -66,7 +66,7 @@ public class DefaultCompilationResponse implements CompilationResponse {
         return errorMessage;
     }
 
-    public Optional<KieModule> getKieModule() {
-        return kieModule;
+    public Optional<KieModuleMetaInfo> getKieModuleMetaInfo() {
+        return kieModuleMetaInfo;
     }
 }
