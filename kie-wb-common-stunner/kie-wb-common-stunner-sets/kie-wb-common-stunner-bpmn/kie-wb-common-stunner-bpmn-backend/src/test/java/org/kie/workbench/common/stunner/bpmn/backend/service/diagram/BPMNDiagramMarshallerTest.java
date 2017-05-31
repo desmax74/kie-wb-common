@@ -16,6 +16,7 @@
 
 package org.kie.workbench.common.stunner.bpmn.backend.service.diagram;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -25,7 +26,6 @@ import java.util.List;
 import javax.enterprise.inject.spi.BeanManager;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.kie.workbench.common.stunner.backend.ApplicationFactoryManager;
@@ -102,6 +102,7 @@ import org.kie.workbench.common.stunner.core.graph.command.impl.GraphCommandFact
 import org.kie.workbench.common.stunner.core.graph.content.Bounds;
 import org.kie.workbench.common.stunner.core.graph.content.definition.Definition;
 import org.kie.workbench.common.stunner.core.graph.content.relationship.Dock;
+import org.kie.workbench.common.stunner.core.graph.content.view.Magnet;
 import org.kie.workbench.common.stunner.core.graph.content.view.View;
 import org.kie.workbench.common.stunner.core.graph.content.view.ViewConnector;
 import org.kie.workbench.common.stunner.core.graph.content.view.ViewConnectorImpl;
@@ -153,6 +154,8 @@ public class BPMNDiagramMarshallerTest {
     private static final String BPMN_XORGATEWAY = "org/kie/workbench/common/stunner/bpmn/backend/service/diagram/xorGateway.bpmn";
     private static final String BPMN_TIMER_EVENT = "org/kie/workbench/common/stunner/bpmn/backend/service/diagram/timerEvent.bpmn";
     private static final String BPMN_SIMULATIONPROPERTIES = "org/kie/workbench/common/stunner/bpmn/backend/service/diagram/simulationProperties.bpmn";
+    private static final String BPMN_MAGNETDOCKERS = "org/kie/workbench/common/stunner/bpmn/backend/service/diagram/magnetDockers.bpmn";
+    private static final String BPMN_MAGNETSINLANE = "org/kie/workbench/common/stunner/bpmn/backend/service/diagram/magnetsInLane.bpmn";
 
     @Mock
     DefinitionManager definitionManager;
@@ -706,8 +709,7 @@ public class BPMNDiagramMarshallerTest {
                      simulationSet.getMean().getValue());
     }
 
-    // TODO: Disabled @Test - As intermediate events has been disabled for M1
-    @Ignore
+    @Test
     @SuppressWarnings("unchecked")
     public void testUnmarshallNotBoundaryEvents() throws Exception {
         Diagram<Graph, Metadata> diagram = unmarshall(BPMN_NOT_BOUNDARY_EVENTS);
@@ -744,8 +746,7 @@ public class BPMNDiagramMarshallerTest {
                      0);
     }
 
-    // TODO: Disabled @Test - As intermediate events has been disabled for M1
-    @Ignore
+    @Test
     @SuppressWarnings("unchecked")
     public void testUnmarshallBoundaryEvents() throws Exception {
         Diagram<Graph, Metadata> diagram = unmarshall(BPMN_BOUNDARY_EVENTS);
@@ -1030,6 +1031,303 @@ public class BPMNDiagramMarshallerTest {
     }
 
     @Test
+    public void testUnmarshallMagnetDockers() throws Exception {
+        Diagram<Graph, Metadata> diagram = unmarshall(BPMN_MAGNETDOCKERS);
+
+        testMagnetDockers(diagram);
+    }
+
+    private void testMagnetDockers(Diagram<Graph, Metadata> diagram) throws Exception {
+        Node userTaskNode = (Node) findElementByContentType(diagram,
+                                                            UserTask.class);
+        Node businessRuleTaskNode = (Node) findElementByContentType(diagram,
+                                                                    BusinessRuleTask.class);
+        Node scriptTaskNode = (Node) findElementByContentType(diagram,
+                                                              ScriptTask.class);
+        assertNotNull(userTaskNode);
+        assertNotNull(businessRuleTaskNode);
+        assertNotNull(scriptTaskNode);
+
+        ViewConnector userTaskInEdgeConnector = getInEdgeViewConnector(userTaskNode);
+        ViewConnector businessRuleTaskInEdgeConnector = getInEdgeViewConnector(businessRuleTaskNode);
+        ViewConnector scriptTaskInEdgeConnector = getInEdgeViewConnector(scriptTaskNode);
+        assertNotNull(userTaskInEdgeConnector);
+        assertNotNull(businessRuleTaskInEdgeConnector);
+        assertNotNull(scriptTaskInEdgeConnector);
+
+        ViewConnector userTaskOutEdgeConnector = getOutEdgeViewConnector(userTaskNode);
+        ViewConnector businessRuleTaskOutEdgeConnector = getOutEdgeViewConnector(businessRuleTaskNode);
+        ViewConnector scriptTaskOutEdgeConnector = getOutEdgeViewConnector(scriptTaskNode);
+        assertNotNull(userTaskOutEdgeConnector);
+        assertNotNull(businessRuleTaskOutEdgeConnector);
+        assertNotNull(scriptTaskOutEdgeConnector);
+
+        // userTaskInEdgeConnector is from magnet top-middle to left-middle
+        assertTrue(userTaskInEdgeConnector.getSourceMagnet().isPresent());
+        assertTrue(userTaskInEdgeConnector.getTargetMagnet().isPresent());
+
+        Magnet sourceMagnet = (Magnet) userTaskInEdgeConnector.getSourceMagnet().get();
+        Magnet targetMagnet = (Magnet) userTaskInEdgeConnector.getTargetMagnet().get();
+        assertEquals(20d,
+                     sourceMagnet.getLocation().getX(),
+                     0.1d);
+        assertEquals(0d,
+                     sourceMagnet.getLocation().getY(),
+                     0.1d);
+        assertEquals(0d,
+                     targetMagnet.getLocation().getX(),
+                     0.1d);
+        assertEquals(24d,
+                     targetMagnet.getLocation().getY(),
+                     0.1d);
+
+        // businessRuleTaskInEdgeConnector is from magnet right-middle to top-left
+        assertTrue(businessRuleTaskInEdgeConnector.getSourceMagnet().isPresent());
+        assertTrue(businessRuleTaskInEdgeConnector.getTargetMagnet().isPresent());
+
+        sourceMagnet = (Magnet) businessRuleTaskInEdgeConnector.getSourceMagnet().get();
+        targetMagnet = (Magnet) businessRuleTaskInEdgeConnector.getTargetMagnet().get();
+        assertEquals(40d,
+                     sourceMagnet.getLocation().getX(),
+                     0.1d);
+        assertEquals(20d,
+                     sourceMagnet.getLocation().getY(),
+                     0.1d);
+
+        assertEquals(0d,
+                     targetMagnet.getLocation().getX(),
+                     0.1d);
+        assertEquals(0d,
+                     targetMagnet.getLocation().getY(),
+                     0.1d);
+
+        // scriptTaskInEdgeConnector is from magnet left-bottom to left-bottom
+        assertTrue(scriptTaskInEdgeConnector.getSourceMagnet().isPresent());
+        assertTrue(scriptTaskInEdgeConnector.getTargetMagnet().isPresent());
+
+        sourceMagnet = (Magnet) scriptTaskInEdgeConnector.getSourceMagnet().get();
+        targetMagnet = (Magnet) scriptTaskInEdgeConnector.getTargetMagnet().get();
+
+        assertEquals(0d,
+                     sourceMagnet.getLocation().getX(),
+                     0.1d);
+        assertEquals(40d,
+                     sourceMagnet.getLocation().getY(),
+                     0.1d);
+        assertEquals(0d,
+                     targetMagnet.getLocation().getX(),
+                     0.1d);
+        assertEquals(48d,
+                     targetMagnet.getLocation().getY(),
+                     0.1d);
+
+        // userTaskOutEdgeConnector is from magnet right-middle to left-middle
+        assertTrue(userTaskOutEdgeConnector.getSourceMagnet().isPresent());
+        assertTrue(userTaskOutEdgeConnector.getTargetMagnet().isPresent());
+
+        sourceMagnet = (Magnet) userTaskOutEdgeConnector.getSourceMagnet().get();
+        targetMagnet = (Magnet) userTaskOutEdgeConnector.getTargetMagnet().get();
+
+        assertEquals(136d,
+                     sourceMagnet.getLocation().getX(),
+                     0.1d);
+        assertEquals(24d,
+                     sourceMagnet.getLocation().getY(),
+                     0.1d);
+        assertEquals(0d,
+                     targetMagnet.getLocation().getX(),
+                     0.1d);
+        assertEquals(14d,
+                     targetMagnet.getLocation().getY(),
+                     0.1d);
+
+        // businessRuleTaskOutEdgeConnector is from magnet middle-bottom to middle-bottom
+        assertTrue(businessRuleTaskOutEdgeConnector.getSourceMagnet().isPresent());
+        assertTrue(businessRuleTaskOutEdgeConnector.getTargetMagnet().isPresent());
+
+        sourceMagnet = (Magnet) businessRuleTaskOutEdgeConnector.getSourceMagnet().get();
+        targetMagnet = (Magnet) businessRuleTaskOutEdgeConnector.getTargetMagnet().get();
+
+        assertEquals(68d,
+                     sourceMagnet.getLocation().getX(),
+                     0.1d);
+        assertEquals(48d,
+                     sourceMagnet.getLocation().getY(),
+                     0.1d);
+        assertEquals(14d,
+                     targetMagnet.getLocation().getX(),
+                     0.1d);
+        assertEquals(28d,
+                     targetMagnet.getLocation().getY(),
+                     0.1d);
+
+        // scriptTaskOutEdgeConnector is from magnet left-top to left-top
+        assertTrue(scriptTaskOutEdgeConnector.getSourceMagnet().isPresent());
+        assertTrue(scriptTaskOutEdgeConnector.getTargetMagnet().isPresent());
+
+        sourceMagnet = (Magnet) scriptTaskOutEdgeConnector.getSourceMagnet().get();
+        targetMagnet = (Magnet) scriptTaskOutEdgeConnector.getTargetMagnet().get();
+
+        assertEquals(0d,
+                     sourceMagnet.getLocation().getX(),
+                     0.1d);
+        assertEquals(0d,
+                     sourceMagnet.getLocation().getY(),
+                     0.1d);
+        assertEquals(0d,
+                     targetMagnet.getLocation().getX(),
+                     0.1d);
+        assertEquals(0d,
+                     targetMagnet.getLocation().getY(),
+                     0.1d);
+    }
+
+    @Test
+    public void testUnmarshallMagnetsInLane() throws Exception {
+        Diagram<Graph, Metadata> diagram = unmarshall(BPMN_MAGNETSINLANE);
+
+        testMagnetsInLane(diagram);
+    }
+
+    private void testMagnetsInLane(Diagram<Graph, Metadata> diagram) throws Exception {
+        Node userTaskNode = (Node) findElementByContentType(diagram,
+                                                            UserTask.class);
+        Node scriptTaskNode = (Node) findElementByContentType(diagram,
+                                                              ScriptTask.class);
+        assertNotNull(userTaskNode);
+        assertNotNull(scriptTaskNode);
+
+        ViewConnector userTaskInEdgeConnector = getInEdgeViewConnector(userTaskNode);
+        ViewConnector scriptTaskInEdgeConnector = getInEdgeViewConnector(scriptTaskNode);
+        assertNotNull(userTaskInEdgeConnector);
+        assertNotNull(scriptTaskInEdgeConnector);
+
+        ViewConnector userTaskOutEdgeConnector = getOutEdgeViewConnector(userTaskNode);
+        ViewConnector scriptTaskOutEdgeConnector = getOutEdgeViewConnector(scriptTaskNode);
+        assertNotNull(userTaskOutEdgeConnector);
+        assertNotNull(scriptTaskOutEdgeConnector);
+
+        // userTaskInEdgeConnector is from magnet right-middle to middle-top
+        assertTrue(userTaskInEdgeConnector.getSourceMagnet().isPresent());
+        assertTrue(userTaskInEdgeConnector.getTargetMagnet().isPresent());
+
+        Magnet sourceMagnet = (Magnet) userTaskInEdgeConnector.getSourceMagnet().get();
+        Magnet targetMagnet = (Magnet) userTaskInEdgeConnector.getTargetMagnet().get();
+        assertEquals(136d,
+                     sourceMagnet.getLocation().getX(),
+                     0.1d);
+        assertEquals(24d,
+                     sourceMagnet.getLocation().getY(),
+                     0.1d);
+        assertEquals(68d,
+                     targetMagnet.getLocation().getX(),
+                     0.1d);
+        assertEquals(0d,
+                     targetMagnet.getLocation().getY(),
+                     0.1d);
+
+        // scriptTaskInEdgeConnector is from magnet right-bottom to left-top
+        assertTrue(scriptTaskInEdgeConnector.getSourceMagnet().isPresent());
+        assertTrue(scriptTaskInEdgeConnector.getTargetMagnet().isPresent());
+
+        sourceMagnet = (Magnet) scriptTaskInEdgeConnector.getSourceMagnet().get();
+        targetMagnet = (Magnet) scriptTaskInEdgeConnector.getTargetMagnet().get();
+
+        assertEquals(136d,
+                     sourceMagnet.getLocation().getX(),
+                     0.1d);
+        assertEquals(48d,
+                     sourceMagnet.getLocation().getY(),
+                     0.1d);
+        assertEquals(0d,
+                     targetMagnet.getLocation().getX(),
+                     0.1d);
+        assertEquals(0d,
+                     targetMagnet.getLocation().getY(),
+                     0.1d);
+
+        // userTaskOutEdgeConnector is from magnet right-bottom to left-top
+        assertTrue(userTaskOutEdgeConnector.getSourceMagnet().isPresent());
+        assertTrue(userTaskOutEdgeConnector.getTargetMagnet().isPresent());
+
+        sourceMagnet = (Magnet) userTaskOutEdgeConnector.getSourceMagnet().get();
+        targetMagnet = (Magnet) userTaskOutEdgeConnector.getTargetMagnet().get();
+
+        assertEquals(136d,
+                     sourceMagnet.getLocation().getX(),
+                     0.1d);
+        assertEquals(48d,
+                     sourceMagnet.getLocation().getY(),
+                     0.1d);
+        assertEquals(0d,
+                     targetMagnet.getLocation().getX(),
+                     0.1d);
+        assertEquals(0d,
+                     targetMagnet.getLocation().getY(),
+                     0.1d);
+
+        // scriptTaskOutEdgeConnector is from magnet right-top to left-middle
+        assertTrue(scriptTaskOutEdgeConnector.getSourceMagnet().isPresent());
+        assertTrue(scriptTaskOutEdgeConnector.getTargetMagnet().isPresent());
+
+        sourceMagnet = (Magnet) scriptTaskOutEdgeConnector.getSourceMagnet().get();
+        targetMagnet = (Magnet) scriptTaskOutEdgeConnector.getTargetMagnet().get();
+
+        assertEquals(136d,
+                     sourceMagnet.getLocation().getX(),
+                     0.1d);
+        assertEquals(0d,
+                     sourceMagnet.getLocation().getY(),
+                     0.1d);
+        assertEquals(0d,
+                     targetMagnet.getLocation().getX(),
+                     0.1d);
+        assertEquals(14d,
+                     targetMagnet.getLocation().getY(),
+                     0.1d);
+    }
+
+
+    private ViewConnector getInEdgeViewConnector(Node node) {
+        List<Edge> edges = node.getInEdges();
+        if (edges != null) {
+            for (Edge edge : edges) {
+                if (edge.getContent() instanceof ViewConnector) {
+                    return (ViewConnector) edge.getContent();
+                }
+            }
+        }
+        return null;
+    }
+
+    private ViewConnector getOutEdgeViewConnector(Node node) {
+        List<Edge> edges = node.getOutEdges();
+        if (edges != null) {
+            for (Edge edge : edges) {
+                if (edge.getContent() instanceof ViewConnector) {
+                    return (ViewConnector) edge.getContent();
+                }
+            }
+        }
+        return null;
+    }
+
+    private Element findElementByContentType(Diagram<Graph, Metadata> diagram,
+                                             Class contentClass) {
+        Iterator<Element> it = nodesIterator(diagram);
+        while (it.hasNext()) {
+            Element element = it.next();
+            if (element.getContent() instanceof View) {
+                Object oDefinition = ((View) element.getContent()).getDefinition();
+                if (contentClass.isInstance(oDefinition)) {
+                    return element;
+                }
+            }
+        }
+        return null;
+    }
+
+    @Test
     public void testUnmarshallSeveralDiagrams() throws Exception {
         Diagram<Graph, Metadata> diagram1 = unmarshall(BPMN_EVALUATION);
         assertDiagram(diagram1,
@@ -1063,8 +1361,7 @@ public class BPMNDiagramMarshallerTest {
                       7);
     }
 
-    // TODO: Disabled @Test - As intermediate events has been disabled for M1
-    @Ignore
+    @Test
     public void testMarshallNotBoundaryEvents() throws Exception {
         Diagram<Graph, Metadata> diagram = unmarshall(BPMN_NOT_BOUNDARY_EVENTS);
         String result = tested.marshall(diagram);
@@ -1074,8 +1371,7 @@ public class BPMNDiagramMarshallerTest {
                       4);
     }
 
-    // TODO: Disabled @Test - As intermediate events has been disabled for M1
-    @Ignore
+    @Test
     public void testMarshallBoundaryEvents() throws Exception {
         Diagram<Graph, Metadata> diagram = unmarshall(BPMN_BOUNDARY_EVENTS);
         String result = tested.marshall(diagram);
@@ -1083,6 +1379,8 @@ public class BPMNDiagramMarshallerTest {
                       1,
                       5,
                       3);
+        // Assert that the boundary event location and size are the expected ones.
+        assertTrue(result.contains("Bounds height=\"30.0\" width=\"30.0\" x=\"312.0\" y=\"195.0\""));
     }
 
     @Test
@@ -1409,8 +1707,7 @@ public class BPMNDiagramMarshallerTest {
         assertTrue(result.contains("<bpmn2:exclusiveGateway id=\"_877EA035-1A14-42E9-8CAA-43E9BF908C70\" drools:dg=\"under 10 : _5110D608-BDAD-47BF-A3F9-E1DBE43ED7CD\" name=\"AgeSplit\" gatewayDirection=\"Diverging\" default=\"_5110D608-BDAD-47BF-A3F9-E1DBE43ED7CD\">"));
     }
 
-    // TODO: Disabled @Test - As intermediate events has been disabled for M1
-    @Ignore
+    @Test
     public void testMarshallIntermediateTimerEvent() throws Exception {
         Diagram<Graph, Metadata> diagram = unmarshall(BPMN_TIMER_EVENT);
         IntermediateTimerEvent timerEvent = null;
@@ -1437,6 +1734,45 @@ public class BPMNDiagramMarshallerTest {
                      timerEvent.getExecutionSet().getTimeCycle().getValue());
         assertEquals("cron",
                      timerEvent.getExecutionSet().getTimeCycleLanguage().getValue());
+    }
+
+    @Test
+    public void testMarshallMagnetDockers() throws Exception {
+        Diagram<Graph, Metadata> diagram1 = unmarshall(BPMN_MAGNETDOCKERS);
+        String result = tested.marshall(diagram1);
+        assertDiagram(result,
+                      1,
+                      8,
+                      7);
+        Diagram<Graph, Metadata> diagram2 = unmarshall(new ByteArrayInputStream(result.getBytes()));
+        testMagnetDockers(diagram2);
+    }
+
+    @Test
+    public void testMarshallMagnetsInlane() throws Exception {
+        Diagram<Graph, Metadata> diagram1 = unmarshall(BPMN_MAGNETSINLANE);
+        String result = tested.marshall(diagram1);
+        assertDiagram(result,
+                      1,
+                      6,
+                      4);
+
+        // Check the waypoints are as in the original process
+        assertTrue(result.contains("<di:waypoint xsi:type=\"dc:Point\" x=\"371.0\" y=\"86.0\"/>"));
+        assertTrue(result.contains("<di:waypoint xsi:type=\"dc:Point\" x=\"406.0\" y=\"324.0\"/>"));
+
+        assertTrue(result.contains("<di:waypoint xsi:type=\"dc:Point\" x=\"692.0\" y=\"276.0\"/>"));
+        assertTrue(result.contains("<di:waypoint xsi:type=\"dc:Point\" x=\"805.0\" y=\"76.0\"/>"));
+
+        assertTrue(result.contains("<di:waypoint xsi:type=\"dc:Point\" x=\"81.0\" y=\"86.0\"/>"));
+        assertTrue(result.contains("<di:waypoint xsi:type=\"dc:Point\" x=\"235.0\" y=\"86.0\"/>"));
+
+        assertTrue(result.contains("<di:waypoint xsi:type=\"dc:Point\" x=\"474.0\" y=\"372.0\"/>"));
+        assertTrue(result.contains("<di:waypoint xsi:type=\"dc:Point\" x=\"556.0\" y=\"276.0\"/>"));
+
+        // Test unmarshall
+        Diagram<Graph, Metadata> diagram2 = unmarshall(new ByteArrayInputStream(result.getBytes()));
+        testMagnetsInLane(diagram2);
     }
 
     private void assertDiagram(String result,
@@ -1470,6 +1806,10 @@ public class BPMNDiagramMarshallerTest {
 
     private Diagram<Graph, Metadata> unmarshall(String fileName) throws Exception {
         InputStream is = loadStream(fileName);
+        return unmarshall(is);
+    }
+
+    private Diagram<Graph, Metadata> unmarshall(InputStream is) throws Exception {
         Metadata metadata =
                 new MetadataImpl.MetadataImplBuilder(BindableAdapterUtils.getDefinitionSetId(BPMNDefinitionSet.class)).build();
         DiagramImpl result = new DiagramImpl(org.kie.workbench.common.stunner.core.util.UUID.uuid(),

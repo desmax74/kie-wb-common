@@ -23,7 +23,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.kie.workbench.common.stunner.core.api.DefinitionManager;
-import org.kie.workbench.common.stunner.core.client.canvas.Point2D;
 import org.kie.workbench.common.stunner.core.graph.Edge;
 import org.kie.workbench.common.stunner.core.graph.Element;
 import org.kie.workbench.common.stunner.core.graph.Graph;
@@ -32,6 +31,7 @@ import org.kie.workbench.common.stunner.core.graph.content.Bounds;
 import org.kie.workbench.common.stunner.core.graph.content.definition.Definition;
 import org.kie.workbench.common.stunner.core.graph.content.definition.DefinitionSet;
 import org.kie.workbench.common.stunner.core.graph.content.relationship.Child;
+import org.kie.workbench.common.stunner.core.graph.content.view.Point2D;
 import org.kie.workbench.common.stunner.core.graph.content.view.View;
 
 public class GraphUtils {
@@ -148,18 +148,11 @@ public class GraphUtils {
 
     @SuppressWarnings("unchecked")
     public static Element<?> getParent(final Node<?, ? extends Edge> element) {
-        final List<? extends Edge> inEdges = element.getInEdges();
-        if (null != inEdges) {
-            final Edge<Child, ?> childEdge =
-                    inEdges.stream()
-                            .filter(edge -> (edge.getContent() instanceof Child))
-                            .findFirst()
-                            .orElse(null);
-            if (null != childEdge) {
-                return childEdge.getSourceNode();
-            }
-        }
-        return null;
+        return element.getInEdges().stream()
+                .filter(e -> e.getContent() instanceof Child)
+                .findAny()
+                .map(Edge::getSourceNode)
+                .orElse(null);
     }
 
     public static Point2D getPosition(final View element) {
@@ -224,6 +217,19 @@ public class GraphUtils {
             }
         }
         return null;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static boolean hasChildren(final Node<?, ? extends Edge> element) {
+        final List<? extends Edge> outEdges = element.getOutEdges();
+        if (null != outEdges) {
+            return
+                    outEdges.stream()
+                            .filter(edge -> (edge.getContent() instanceof Child))
+                            .findAny()
+                            .isPresent();
+        }
+        return false;
     }
 
     private static String getElementDefinitionId(final DefinitionManager definitionManager,
