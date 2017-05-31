@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.kie.workbench.common.services.backend.builder.compiler.uberfire;
+package org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -22,18 +22,17 @@ import org.kie.workbench.common.services.backend.builder.compiler.CompilationRes
 import org.kie.workbench.common.services.backend.builder.compiler.TestUtil;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.Decorator;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.MavenArgs;
-import org.kie.workbench.common.services.backend.builder.compiler.uberfire.impl.UberfireDefaultCompilationRequest;
-import org.kie.workbench.common.services.backend.builder.compiler.uberfire.impl.UberfireMavenCompilerFactory;
-import org.kie.workbench.common.services.backend.builder.compiler.uberfire.impl.UberfireWorkspaceCompilationInfo;
+import org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.impl.InternalNioImplDefaultCompilationRequest;
+import org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.impl.InternalNioImplMavenCompilerFactory;
+import org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.impl.InternalNioImplWorkspaceCompilationInfo;
 import org.uberfire.java.nio.file.Files;
 import org.uberfire.java.nio.file.Path;
 import org.uberfire.java.nio.file.Paths;
 
 import java.util.HashMap;
-import java.util.UUID;
 
 
-public class UberfireDefaultMavenIncrementalCompilerTest {
+public class InternalNioImplDefaultMavenIncrementalCompilerTest {
 
     private final Path mavenRepo = Paths.get("src/test/resources/.ignore/m2_repo/");
 
@@ -56,20 +55,20 @@ public class UberfireDefaultMavenIncrementalCompilerTest {
         TestUtil.copyTree(java.nio.file.Paths.get("src/test/projects/dummy"), temp);
         //end NIO
 
-        UberfireMavenCompiler compiler = UberfireMavenCompilerFactory.getCompiler(mavenRepo, Decorator.NONE);
+        InternalNioImplMavenCompiler compiler = InternalNioImplMavenCompilerFactory.getCompiler(mavenRepo, Decorator.NONE);
         Assert.assertTrue(compiler.isValid());
 
-        UberfireWorkspaceCompilationInfo info = new UberfireWorkspaceCompilationInfo(tmp, compiler);
-        UberfireCompilationRequest req = new UberfireDefaultCompilationRequest(info, new String[]{MavenArgs.VERSION, MavenArgs.DEBUG}, new HashMap<>());
+        InternalNioImplWorkspaceCompilationInfo info = new InternalNioImplWorkspaceCompilationInfo(tmp, compiler);
+        InternalNioImplCompilationRequest req = new InternalNioImplDefaultCompilationRequest(info, new String[]{MavenArgs.VERSION}, new HashMap<>());
         CompilationResponse res = compiler.compileSync(req);
         Assert.assertTrue(res.isSuccessful());
 
-        UberfireTestUtil.rm(tmpRoot.toFile());
+        InternalNioImplTestUtil.rm(tmpRoot.toFile());
     }
 
     @Test()
     public void testIncompleteArguments() {
-        UberfireMavenCompiler compiler = UberfireMavenCompilerFactory.getCompiler(Paths.get(""), Decorator.NONE);
+        InternalNioImplMavenCompiler compiler = InternalNioImplMavenCompilerFactory.getCompiler(Paths.get(""), Decorator.NONE);
         Assert.assertFalse(compiler.isValid());
     }
 
@@ -83,17 +82,17 @@ public class UberfireDefaultMavenIncrementalCompilerTest {
         TestUtil.copyTree(java.nio.file.Paths.get("src/test/projects/dummy"), temp);
         //end NIO
 
-        UberfireMavenCompiler compiler = UberfireMavenCompilerFactory.getCompiler(mavenRepo, Decorator.NONE);
+        InternalNioImplMavenCompiler compiler = InternalNioImplMavenCompilerFactory.getCompiler(mavenRepo, Decorator.NONE);
 
-        UberfireWorkspaceCompilationInfo info = new UberfireWorkspaceCompilationInfo(tmp, compiler);
-        UberfireCompilationRequest req = new UberfireDefaultCompilationRequest(info, new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE, MavenArgs.DEBUG}, new HashMap<>());
+        InternalNioImplWorkspaceCompilationInfo info = new InternalNioImplWorkspaceCompilationInfo(tmp, compiler);
+        InternalNioImplCompilationRequest req = new InternalNioImplDefaultCompilationRequest(info, new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE}, new HashMap<>());
         CompilationResponse res = compiler.compileSync(req);
         Assert.assertTrue(res.isSuccessful());
 
         Path incrementalConfiguration = Paths.get(tmp.toAbsolutePath().toString(), "/target/incremental/io.takari.maven.plugins_takari-lifecycle-plugin_compile_compile");
         Assert.assertTrue(incrementalConfiguration.toFile().exists());
 
-        UberfireTestUtil.rm(tmpRoot.toFile());
+        InternalNioImplTestUtil.rm(tmpRoot.toFile());
     }
 
 }

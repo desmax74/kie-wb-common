@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.kie.workbench.common.services.backend.builder.compiler.uberfire;
+package org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl;
 
 
 import org.uberfire.java.nio.file.Files;
@@ -28,32 +28,32 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
 
-public class UberfirePreloadedKieClassloader extends ClassLoader {
+public class InternalNioImplPreloadedKieClassloader extends ClassLoader {
 
     private static boolean isIBM_JVM = System.getProperty("java.vendor").toLowerCase().contains("ibm");
     private Map<String, byte[]> map;
 
 
-    public UberfirePreloadedKieClassloader() {
+    public InternalNioImplPreloadedKieClassloader() {
         map = new HashMap<>();
     }
 
-    public UberfirePreloadedKieClassloader(Map<String, byte[]> files) {
+    public InternalNioImplPreloadedKieClassloader(Map<String, byte[]> files) {
         map = files;
     }
 
-    public UberfirePreloadedKieClassloader(ClassLoader parent) {
+    public InternalNioImplPreloadedKieClassloader(ClassLoader parent) {
         super(parent);
         map = new HashMap<>();
     }
 
-    public UberfirePreloadedKieClassloader(Map<String, byte[]> files, ClassLoader parent) {
+    public InternalNioImplPreloadedKieClassloader(Map<String, byte[]> files, ClassLoader parent) {
         super(parent);
         map = files;
     }
 
-    private static UberfirePreloadedKieClassloader internalCreate(ClassLoader parent) {
-        return isIBM_JVM ? new IBMClassLoader(parent) : new UberfirePreloadedKieClassloader(parent);
+    private static InternalNioImplPreloadedKieClassloader internalCreate(ClassLoader parent) {
+        return isIBM_JVM ? new IBMClassLoader(parent) : new InternalNioImplPreloadedKieClassloader(parent);
     }
 
     @Override
@@ -85,7 +85,7 @@ public class UberfirePreloadedKieClassloader extends ClassLoader {
         return bytes;
     }
 
-    public static class IBMClassLoader extends UberfirePreloadedKieClassloader {
+    public static class IBMClassLoader extends InternalNioImplPreloadedKieClassloader {
         private static final Enumeration<URL> EMPTY_RESOURCE_ENUM = new Vector<URL>().elements();
         private final boolean parentImplementsFindResources;
 

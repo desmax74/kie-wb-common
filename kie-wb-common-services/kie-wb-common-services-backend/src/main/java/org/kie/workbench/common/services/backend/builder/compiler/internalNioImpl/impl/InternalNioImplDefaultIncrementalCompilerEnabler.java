@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.kie.workbench.common.services.backend.builder.compiler.uberfire.impl;
+package org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.impl;
 
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.Compilers;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.ConfigurationContextProvider;
 import org.kie.workbench.common.services.backend.builder.compiler.impl.PomPlaceHolder;
 import org.kie.workbench.common.services.backend.builder.compiler.impl.ProcessedPoms;
-import org.kie.workbench.common.services.backend.builder.compiler.uberfire.UberfireCompilationRequest;
-import org.kie.workbench.common.services.backend.builder.compiler.uberfire.UberfireIncrementalCompilerEnabler;
+import org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.InternalNioImplCompilationRequest;
+import org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.InternalNioImplIncrementalCompilerEnabler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.uberfire.java.nio.file.Files;
@@ -29,20 +29,20 @@ import org.uberfire.java.nio.file.Paths;
 
 import java.util.*;
 
-public class UberfireDefaultIncrementalCompilerEnabler implements UberfireIncrementalCompilerEnabler {
+public class InternalNioImplDefaultIncrementalCompilerEnabler implements InternalNioImplIncrementalCompilerEnabler {
 
-    private static final Logger logger = LoggerFactory.getLogger(UberfireDefaultIncrementalCompilerEnabler.class);
+    private static final Logger logger = LoggerFactory.getLogger(InternalNioImplDefaultIncrementalCompilerEnabler.class);
 
     private final String POM_NAME = "pom.xml";
 
-    private UberfireDefaultPomEditor editor;
+    private InternalNioImplDefaultPomEditor editor;
 
-    public UberfireDefaultIncrementalCompilerEnabler(Compilers compiler) {
-        editor = new UberfireDefaultPomEditor(new HashSet<PomPlaceHolder>(), new ConfigurationContextProvider(), compiler);
+    public InternalNioImplDefaultIncrementalCompilerEnabler(Compilers compiler) {
+        editor = new InternalNioImplDefaultPomEditor(new HashSet<PomPlaceHolder>(), new ConfigurationContextProvider(), compiler);
     }
 
     @Override
-    public ProcessedPoms process(final UberfireCompilationRequest req) {
+    public ProcessedPoms process(final InternalNioImplCompilationRequest req) {
         Path mainPom = Paths.get(req.getInfo().getPrjPath().toString(), POM_NAME);
         if (!Files.isReadable(mainPom)) {
             return new ProcessedPoms(Boolean.FALSE, Collections.emptyList());
@@ -52,7 +52,7 @@ public class UberfireDefaultIncrementalCompilerEnabler implements UberfireIncrem
         Boolean isPresent = isPresent(placeHolder);   // check if the main pom is already scanned and edited
         if (placeHolder.isValid() && !isPresent) {
             List<String> pomsList = new ArrayList();
-            UberfireMavenUtils.searchPoms(Paths.get(req.getInfo().getPrjPath().toString()), pomsList);// recursive NIO search in all subfolders
+            InternalNioImplMavenUtils.searchPoms(Paths.get(req.getInfo().getPrjPath().toString()), pomsList);// recursive NIO search in all subfolders
             if (pomsList.size() > 0) {
                 processFoundedPoms(pomsList, req);
             }
@@ -62,7 +62,7 @@ public class UberfireDefaultIncrementalCompilerEnabler implements UberfireIncrem
         }
     }
 
-    private void processFoundedPoms(List<String> poms, UberfireCompilationRequest request) {
+    private void processFoundedPoms(List<String> poms, InternalNioImplCompilationRequest request) {
 
         for (String pom : poms) {
             Path tmpPom = Paths.get(pom);

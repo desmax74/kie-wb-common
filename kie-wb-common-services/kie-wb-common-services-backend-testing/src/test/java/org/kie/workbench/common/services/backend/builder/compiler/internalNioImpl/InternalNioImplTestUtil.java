@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package org.kie.workbench.common.services.backend.builder.compiler.uberfire;
+package org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl;
 
 import java.io.File;
 
 
-public class UberfireTestUtil {
+public class InternalNioImplTestUtil {
 
 
     public static void rm(File f) {

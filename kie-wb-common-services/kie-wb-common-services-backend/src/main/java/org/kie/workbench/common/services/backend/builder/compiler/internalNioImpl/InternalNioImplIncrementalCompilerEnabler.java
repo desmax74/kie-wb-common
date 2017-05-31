@@ -14,22 +14,16 @@
  * limitations under the License.
  */
 
-package org.kie.workbench.common.services.backend.builder.compiler.uberfire;
+package org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl;
 
-import org.kie.workbench.common.services.backend.builder.compiler.external339.KieCliRequest;
-import org.kie.workbench.common.services.backend.builder.compiler.uberfire.impl.UberfireWorkspaceCompilationInfo;
-import org.uberfire.java.nio.file.Path;
 
-import java.util.Optional;
+import org.kie.workbench.common.services.backend.builder.compiler.impl.ProcessedPoms;
 
 /**
- * Wrap a compilation request
+ * Process the pom files before the compilation
  */
-public interface UberfireCompilationRequest {
+public interface InternalNioImplIncrementalCompilerEnabler {
 
-    Optional<Path> getPomFile();
+    ProcessedPoms process(InternalNioImplCompilationRequest req);
 
-    KieCliRequest getKieCliRequest();
-
-    UberfireWorkspaceCompilationInfo getInfo();
 }

@@ -105,33 +105,45 @@ public class NIODefaultMavenCompiler implements NIOMavenCompiler {
 
         int exitCode = cli.doMain(req.getKieCliRequest());
         if (exitCode == 0) {
-            KieModuleMetaInfo kModule = null;
-            try {
-                Object o = req.getKieCliRequest().getMap().get(req.getKieCliRequest().getRequestUUID());
-                if (o != null) {
-                    kModule = readAKieModuleFromaDifferentClassloader(o);
+
+            if (req.getInfo().isKiePluginPresent()) {
+                Optional<KieModuleMetaInfo> kieModuleMetaInfo = readKieModule(req);
+                if (kieModuleMetaInfo.isPresent()) {
+                    return new DefaultCompilationResponse(Boolean.TRUE, kieModuleMetaInfo.get());
                 }
-            } catch (Exception e) {
-                logger.error(e.getMessage());
             }
 
-            if (kModule != null) {
-                return new DefaultCompilationResponse(Boolean.TRUE, kModule);
-            } else {
-                return new DefaultCompilationResponse(Boolean.TRUE);
-            }
+            return new DefaultCompilationResponse(Boolean.TRUE);
+
         } else {
+
             return new DefaultCompilationResponse(Boolean.FALSE);
         }
     }
 
-    private KieModuleMetaInfo readAKieModuleFromaDifferentClassloader(Object o) {
+    private Optional<KieModuleMetaInfo> readKieModule(NIOCompilationRequest req) {
+        Optional<KieModuleMetaInfo> kModule = Optional.empty();
+        try {
+            /** This part is mandatory because the object loaded in the kie maven plugin is
+             * loaded in a different classloader and every accessing cause a ClassCastException
+             * */
+            Object o = req.getKieCliRequest().getMap().get(req.getKieCliRequest().getRequestUUID());
+            if (o != null) {
+                kModule = Optional.of((KieModuleMetaInfo) readObjectFromADifferentClassloader(o));
+            }
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+        }
+        return kModule;
+    }
 
+    private Object readObjectFromADifferentClassloader(Object o) {
 
         ObjectInput in = null;
+        ObjectOutput out = null;
         ByteArrayInputStream bis = null;
         ByteArrayOutputStream bos = null;
-        ObjectOutput out = null;
+
         try {
             bos = new ByteArrayOutputStream();
             out = new ObjectOutputStream(bos);
@@ -141,7 +153,7 @@ public class NIODefaultMavenCompiler implements NIOMavenCompiler {
             bis = new ByteArrayInputStream(objBytes);
             in = new ObjectInputStream(bis);
             Object newObj = in.readObject();
-            return (KieModuleMetaInfo) newObj;
+            return newObj;
         } catch (Exception e) {
             logger.error(e.getMessage());
         } finally {

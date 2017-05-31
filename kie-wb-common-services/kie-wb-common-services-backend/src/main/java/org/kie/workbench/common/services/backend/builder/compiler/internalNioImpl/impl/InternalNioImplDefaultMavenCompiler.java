@@ -13,21 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.kie.workbench.common.services.backend.builder.compiler.uberfire.impl;
+package org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.impl;
 
+import org.drools.core.rule.KieModuleMetaInfo;
 import org.kie.workbench.common.services.backend.builder.compiler.CompilationResponse;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.Compilers;
 import org.kie.workbench.common.services.backend.builder.compiler.external339.KieMavenCli;
 import org.kie.workbench.common.services.backend.builder.compiler.impl.DefaultCompilationResponse;
 import org.kie.workbench.common.services.backend.builder.compiler.impl.ProcessedPoms;
-import org.kie.workbench.common.services.backend.builder.compiler.uberfire.UberfireCompilationRequest;
-import org.kie.workbench.common.services.backend.builder.compiler.uberfire.UberfireIncrementalCompilerEnabler;
-import org.kie.workbench.common.services.backend.builder.compiler.uberfire.UberfireMavenCompiler;
+import org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.InternalNioImplCompilationRequest;
+import org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.InternalNioImplIncrementalCompilerEnabler;
+import org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.InternalNioImplMavenCompiler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.uberfire.java.nio.file.Files;
 import org.uberfire.java.nio.file.Path;
 
+import java.io.*;
 import java.util.Optional;
 
 /**
@@ -40,20 +42,20 @@ import java.util.Optional;
  * CompilationRequest req = new DefaultCompilationRequest(info, new String[]{MavenArgs.COMPILE});
  * CompilationResponse res = compiler.compileSync(req);
  */
-public class UberfireDefaultMavenCompiler implements UberfireMavenCompiler {
+public class InternalNioImplDefaultMavenCompiler implements InternalNioImplMavenCompiler {
 
-    private static final Logger logger = LoggerFactory.getLogger(UberfireDefaultMavenCompiler.class);
+    private static final Logger logger = LoggerFactory.getLogger(InternalNioImplDefaultMavenCompiler.class);
 
     private KieMavenCli cli;
 
     private Path mavenRepo;
 
-    private UberfireIncrementalCompilerEnabler enabler;
+    private InternalNioImplIncrementalCompilerEnabler enabler;
 
-    public UberfireDefaultMavenCompiler(Path mavenRepo) {
+    public InternalNioImplDefaultMavenCompiler(Path mavenRepo) {
         this.mavenRepo = mavenRepo;
         cli = new KieMavenCli();
-        enabler = new UberfireDefaultIncrementalCompilerEnabler(Compilers.JAVAC);
+        enabler = new InternalNioImplDefaultIncrementalCompilerEnabler(Compilers.JAVAC);
     }
 
 
@@ -87,7 +89,7 @@ public class UberfireDefaultMavenCompiler implements UberfireMavenCompiler {
 
 
     @Override
-    public CompilationResponse compileSync(UberfireCompilationRequest req) {
+    public CompilationResponse compileSync(InternalNioImplCompilationRequest req) {
         if (logger.isDebugEnabled()) {
             logger.debug("KieCompilationRequest:{}", req);
         }
@@ -101,10 +103,66 @@ public class UberfireDefaultMavenCompiler implements UberfireMavenCompiler {
         req.getKieCliRequest().getRequest().setLocalRepositoryPath(mavenRepo.toAbsolutePath().toString());
         int exitCode = cli.doMain(req.getKieCliRequest());
         if (exitCode == 0) {
+            if (req.getInfo().isKiePluginPresent()) {
+                Optional<KieModuleMetaInfo> kieModuleMetaInfo = readKieModule(req);
+                if (kieModuleMetaInfo.isPresent()) {
+                    return new DefaultCompilationResponse(Boolean.TRUE, kieModuleMetaInfo.get());
+                }
+            }
             return new DefaultCompilationResponse(Boolean.TRUE);
         } else {
             return new DefaultCompilationResponse(Boolean.FALSE);
         }
+    }
+
+    private Optional<KieModuleMetaInfo> readKieModule(InternalNioImplCompilationRequest req) {
+
+        Optional<KieModuleMetaInfo> kModule = Optional.empty();
+        try {
+            /** This part is mandatory because the object loaded in the kie maven plugin is
+             * loaded in a different classloader and every accessing cause a ClassCastException
+             * */
+            Object o = req.getKieCliRequest().getMap().get(req.getKieCliRequest().getRequestUUID());
+            if (o != null) {
+                kModule = Optional.of((KieModuleMetaInfo) readObjectFromADifferentClassloader(o));
+            }
+
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+        }
+        return kModule;
+    }
+
+    private Object readObjectFromADifferentClassloader(Object o) {
+        ObjectInput in = null;
+        ObjectOutput out = null;
+        ByteArrayInputStream bis = null;
+        ByteArrayOutputStream bos = null;
+
+        try {
+            bos = new ByteArrayOutputStream();
+            out = new ObjectOutputStream(bos);
+            out.writeObject(o);
+            out.flush();
+            byte[] objBytes = bos.toByteArray();
+            bis = new ByteArrayInputStream(objBytes);
+            in = new ObjectInputStream(bis);
+            Object newObj = in.readObject();
+            return newObj;
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+        } finally {
+            try {
+                bos.close();
+
+                if (in != null) {
+                    in.close();
+                }
+            } catch (IOException ex) {
+                logger.error(ex.getMessage());
+            }
+        }
+        return null;
     }
 
 }

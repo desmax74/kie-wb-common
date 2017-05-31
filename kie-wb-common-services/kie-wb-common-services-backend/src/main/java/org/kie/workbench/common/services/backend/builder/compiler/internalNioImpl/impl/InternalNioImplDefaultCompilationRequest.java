@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.kie.workbench.common.services.backend.builder.compiler.uberfire.impl;
+package org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.impl;
 
 import org.kie.workbench.common.services.backend.builder.compiler.external339.KieCliRequest;
-import org.kie.workbench.common.services.backend.builder.compiler.uberfire.UberfireCompilationRequest;
+import org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.InternalNioImplCompilationRequest;
 import org.uberfire.java.nio.file.Path;
 
 import java.net.URI;
@@ -25,14 +25,14 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-public class UberfireDefaultCompilationRequest implements UberfireCompilationRequest {
+public class InternalNioImplDefaultCompilationRequest implements InternalNioImplCompilationRequest {
 
     private KieCliRequest req;
-    private UberfireWorkspaceCompilationInfo info;
+    private InternalNioImplWorkspaceCompilationInfo info;
     private String requestUUID;
     private Map map;
 
-    public UberfireDefaultCompilationRequest(UberfireWorkspaceCompilationInfo info, String[] args, Map<String, Object> map) {
+    public InternalNioImplDefaultCompilationRequest(InternalNioImplWorkspaceCompilationInfo info, String[] args, Map<String, Object> map) {
         this.info = info;
         this.requestUUID = UUID.randomUUID().toString();
         this.map = map;
@@ -40,7 +40,7 @@ public class UberfireDefaultCompilationRequest implements UberfireCompilationReq
         StringBuilder sb = new StringBuilder().append("-Dcompilation.ID=").append(requestUUID);
         String[] internalArgs = Arrays.copyOf(args, args.length + 1);
         internalArgs[args.length] = sb.toString();
-        this.req = new KieCliRequest(this.info.getPrjPath().toAbsolutePath().toString(), args, this.map, this.requestUUID);
+        this.req = new KieCliRequest(this.info.getPrjPath().toAbsolutePath().toString(), internalArgs, this.map, this.requestUUID);
     }
 
     public String getRequestUUID() {
@@ -48,7 +48,7 @@ public class UberfireDefaultCompilationRequest implements UberfireCompilationReq
     }
 
     @Override
-    public UberfireWorkspaceCompilationInfo getInfo() {
+    public InternalNioImplWorkspaceCompilationInfo getInfo() {
         return info;
     }
 

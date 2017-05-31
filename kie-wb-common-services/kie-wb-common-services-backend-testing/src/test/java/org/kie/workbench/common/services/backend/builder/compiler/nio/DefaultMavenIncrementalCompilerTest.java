@@ -30,7 +30,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
-import java.util.UUID;
 
 
 public class DefaultMavenIncrementalCompilerTest {
@@ -57,7 +56,7 @@ public class DefaultMavenIncrementalCompilerTest {
         Assert.assertTrue(compiler.isValid());
 
         NIOWorkspaceCompilationInfo info = new NIOWorkspaceCompilationInfo(tmp, compiler);
-        NIOCompilationRequest req = new NIODefaultCompilationRequest(info, new String[]{MavenArgs.VERSION},new HashMap<>());
+        NIOCompilationRequest req = new NIODefaultCompilationRequest(info, new String[]{MavenArgs.VERSION}, new HashMap<>());
         CompilationResponse res = compiler.compileSync(req);
         Assert.assertTrue(res.isSuccessful());
 
@@ -80,7 +79,7 @@ public class DefaultMavenIncrementalCompilerTest {
         NIOMavenCompiler compiler = NIOMavenCompilerFactory.getCompiler(mavenRepo, Decorator.NONE);
 
         NIOWorkspaceCompilationInfo info = new NIOWorkspaceCompilationInfo(tmp, compiler);
-        NIOCompilationRequest req = new NIODefaultCompilationRequest(info, new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE},new HashMap<>());
+        NIOCompilationRequest req = new NIODefaultCompilationRequest(info, new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE}, new HashMap<>());
         CompilationResponse res = compiler.compileSync(req);
         Assert.assertTrue(res.isSuccessful());
 

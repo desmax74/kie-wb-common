@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.kie.workbench.common.services.backend.builder.compiler.uberfire.impl;
+package org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.impl;
 
 import org.uberfire.java.nio.file.*;
 import org.uberfire.java.nio.file.attribute.BasicFileAttributes;
@@ -26,12 +26,12 @@ import java.util.List;
 import static org.uberfire.java.nio.file.FileVisitResult.CONTINUE;
 
 
-public class UberfireFinder extends SimpleFileVisitor<Path> {
+public class InternalNioImplFinder extends SimpleFileVisitor<Path> {
 
     private final PathMatcher matcher;
     private List<Path> files;
 
-    public UberfireFinder(String pattern) {
+    public InternalNioImplFinder(String pattern) {
         matcher = FileSystems.getDefault().getPathMatcher("glob:" + pattern);
         files = new ArrayList<>();
     }

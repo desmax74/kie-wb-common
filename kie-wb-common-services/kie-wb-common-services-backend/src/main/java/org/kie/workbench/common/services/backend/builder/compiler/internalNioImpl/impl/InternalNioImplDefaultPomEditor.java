@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.kie.workbench.common.services.backend.builder.compiler.uberfire.impl;
+package org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.impl;
 
 import org.apache.maven.model.Model;
 import org.kie.workbench.common.services.backend.builder.compiler.PluginPresents;
@@ -22,7 +22,7 @@ import org.kie.workbench.common.services.backend.builder.compiler.configuration.
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.ConfigurationProvider;
 import org.kie.workbench.common.services.backend.builder.compiler.impl.DefaultPomEditor;
 import org.kie.workbench.common.services.backend.builder.compiler.impl.PomPlaceHolder;
-import org.kie.workbench.common.services.backend.builder.compiler.uberfire.UberfireCompilationRequest;
+import org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.InternalNioImplCompilationRequest;
 import org.uberfire.java.nio.file.Files;
 import org.uberfire.java.nio.file.Path;
 import org.uberfire.java.nio.file.Paths;
@@ -33,10 +33,10 @@ import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Set;
 
-public class UberfireDefaultPomEditor extends DefaultPomEditor {
+public class InternalNioImplDefaultPomEditor extends DefaultPomEditor {
 
 
-    public UberfireDefaultPomEditor(Set<PomPlaceHolder> history, ConfigurationProvider config, Compilers compiler) {
+    public InternalNioImplDefaultPomEditor(Set<PomPlaceHolder> history, ConfigurationProvider config, Compilers compiler) {
         super(history, config, compiler);
     }
 
@@ -52,7 +52,7 @@ public class UberfireDefaultPomEditor extends DefaultPomEditor {
     }
 
 
-    public void write(Path pom, UberfireCompilationRequest request) {
+    public void write(Path pom, InternalNioImplCompilationRequest request) {
 
         try {
             Model model = reader.read(new ByteArrayInputStream(Files.readAllBytes(pom)));

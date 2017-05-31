@@ -71,22 +71,22 @@ public class DefaultPomEditor implements PomEditor {
             model.setBuild(new Build());
             build = model.getBuild();
         }
+
         Boolean defaultCompilerPluginPresent = Boolean.FALSE;
-        int defaultCompilerPosition = 0;
+        //int defaultCompilerPosition = 0;
         Boolean alternativeCompilerPluginPresent = Boolean.FALSE;
         int alternativeCompilerPosition = 0;
         Boolean kiePluginPresent = Boolean.FALSE;
         int kieMavenPluginPosition = 0;
-        List<Plugin> buildPlugins = build.getPlugins();
-        int i = 0;
 
-        for (Plugin plugin : buildPlugins) {
+        int i = 0;
+        for (Plugin plugin : build.getPlugins()) {
 
             // Check if is present the default maven compiler
             if (plugin.getGroupId().equals(conf.get(ConfigurationKey.MAVEN_PLUGINS)) &&
                     plugin.getArtifactId().equals(conf.get(ConfigurationKey.MAVEN_COMPILER_PLUGIN))) {
                 defaultCompilerPluginPresent = Boolean.TRUE;
-                defaultCompilerPosition = i;
+                //defaultCompilerPosition = i;
                 disableMavenCompilerAlreadyPresent(plugin); // disable the maven compiler if present
             }
             //check if is present the alternative maven compiler
@@ -97,7 +97,7 @@ public class DefaultPomEditor implements PomEditor {
                 break; // alternative compiler plugin is present skip the pom
             }
 
-            //check if is present the kie plugin and move after takari @TODO is configured with kjar packaging ?
+            //check if is present the kie plugin and move after takari
             if (plugin.getGroupId().equals(conf.get(ConfigurationKey.KIE_MAVEN_PLUGINS)) &&
                     plugin.getArtifactId().equals(conf.get(ConfigurationKey.KIE_MAVEN_PLUGIN))) {
                 kiePluginPresent = Boolean.TRUE;
@@ -106,8 +106,13 @@ public class DefaultPomEditor implements PomEditor {
             i++;
         }
 
-        Boolean overwritePOM = Boolean.FALSE;
+        Boolean overwritePOM = updatePOMModel(build, defaultCompilerPluginPresent, alternativeCompilerPluginPresent, alternativeCompilerPosition, kiePluginPresent, kieMavenPluginPosition, i);
 
+        return new DefaultPluginPresents(defaultCompilerPluginPresent, alternativeCompilerPluginPresent, kiePluginPresent, overwritePOM);
+    }
+
+    private Boolean updatePOMModel(Build build, Boolean defaultCompilerPluginPresent, Boolean alternativeCompilerPluginPresent, int alternativeCompilerPosition, Boolean kiePluginPresent, int kieMavenPluginPosition, int i) {
+        Boolean overwritePOM = Boolean.FALSE;
 
         if (!alternativeCompilerPluginPresent && !kiePluginPresent) {
             build.addPlugin(getNewCompilerPlugin());
@@ -144,9 +149,7 @@ public class DefaultPomEditor implements PomEditor {
             build.addPlugin(disabledDefaultCompiler);
             overwritePOM = Boolean.TRUE;
         }
-
-
-        return new DefaultPluginPresents(defaultCompilerPluginPresent, alternativeCompilerPluginPresent, kiePluginPresent, overwritePOM);
+        return overwritePOM;
     }
 
     protected Plugin getNewCompilerPlugin() {

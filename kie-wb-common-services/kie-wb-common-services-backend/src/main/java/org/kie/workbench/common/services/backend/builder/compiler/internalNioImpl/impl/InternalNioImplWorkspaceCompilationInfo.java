@@ -14,32 +14,32 @@
  * limitations under the License.
  */
 
-package org.kie.workbench.common.services.backend.builder.compiler.uberfire.impl;
+package org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.impl;
 
 import org.eclipse.jgit.api.Git;
-import org.kie.workbench.common.services.backend.builder.compiler.uberfire.UberfireMavenCompiler;
+import org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.InternalNioImplMavenCompiler;
 import org.uberfire.java.nio.file.Path;
 
 import java.net.URI;
 import java.util.Optional;
 
-public class UberfireWorkspaceCompilationInfo {
+public class InternalNioImplWorkspaceCompilationInfo {
 
     private Path prjPath;
     private Path enhancedMainPomFile;
     private URI remoteRepo;
-    private UberfireMavenCompiler compiler;
+    private InternalNioImplMavenCompiler compiler;
     private Git gitRepo;
     private Boolean kiePluginPresent = Boolean.FALSE;
 
-    public UberfireWorkspaceCompilationInfo(Path prjPath, URI remoteRepo, UberfireMavenCompiler compiler, Git gitRepo) {
+    public InternalNioImplWorkspaceCompilationInfo(Path prjPath, URI remoteRepo, InternalNioImplMavenCompiler compiler, Git gitRepo) {
         this.prjPath = prjPath;
         this.remoteRepo = remoteRepo;
         this.compiler = compiler;
         this.gitRepo = gitRepo;
     }
 
-    public UberfireWorkspaceCompilationInfo(Path prjPath, UberfireMavenCompiler compiler) {
+    public InternalNioImplWorkspaceCompilationInfo(Path prjPath, InternalNioImplMavenCompiler compiler) {
         this.prjPath = prjPath;
         this.compiler = compiler;
     }
@@ -116,7 +116,7 @@ public class UberfireWorkspaceCompilationInfo {
         }
     }
 
-    public UberfireMavenCompiler getCompiler() {
+    public InternalNioImplMavenCompiler getCompiler() {
         return compiler;
     }
 

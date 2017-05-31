@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.kie.workbench.common.services.backend.builder.compiler.uberfire;
+package org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl;
 
 
 import org.kie.workbench.common.services.backend.builder.compiler.CompilationResponse;
@@ -23,12 +23,12 @@ import org.uberfire.java.nio.file.Path;
 /**
  * Created by Massimiliano Dessi @desmax74 on 18/04/17.
  */
-public interface UberfireMavenCompiler extends Valid {
+public interface InternalNioImplMavenCompiler extends Valid {
 
     /**
      * Compile a project starting from the main POM in a sync way
      */
-    CompilationResponse compileSync(UberfireCompilationRequest req);
+    CompilationResponse compileSync(InternalNioImplCompilationRequest req);
 
     /**
      * The local repo used by this compiler

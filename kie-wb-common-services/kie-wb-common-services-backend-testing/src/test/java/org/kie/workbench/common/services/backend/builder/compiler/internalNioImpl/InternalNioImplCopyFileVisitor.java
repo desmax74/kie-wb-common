@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-package org.kie.workbench.common.services.backend.builder.compiler.uberfire;
+package org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl;
 
 import org.uberfire.java.nio.file.*;
 import org.uberfire.java.nio.file.attribute.BasicFileAttributes;
 
-public class UberfireCopyFileVisitor extends SimpleFileVisitor<Path> {
+public class InternalNioImplCopyFileVisitor extends SimpleFileVisitor<Path> {
 
     private Path srcPath, dstPath;
 
-    public UberfireCopyFileVisitor(Path srcPath, Path dstPath) {
+    public InternalNioImplCopyFileVisitor(Path srcPath, Path dstPath) {
         this.srcPath = srcPath;
         this.dstPath = dstPath;
     }

@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package org.kie.workbench.common.services.backend.builder.compiler.uberfire;
+package org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl;
 
 import org.apache.maven.artifact.Artifact;
 import org.junit.Test;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.Compilers;
-import org.kie.workbench.common.services.backend.builder.compiler.uberfire.impl.UberfireDefaultIncrementalCompilerEnabler;
-import org.kie.workbench.common.services.backend.builder.compiler.uberfire.impl.UberfireMavenUtils;
+import org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.impl.InternalNioImplDefaultIncrementalCompilerEnabler;
+import org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.impl.InternalNioImplMavenUtils;
 import org.uberfire.java.nio.file.Paths;
 
 import java.util.ArrayList;
@@ -28,15 +28,15 @@ import java.util.List;
 
 import static org.junit.Assert.assertTrue;
 
-public class UberfireMavenUtilsTest {
+public class InternalNioImplMavenUtilsTest {
 
     @Test
     public void presenceOfDepInThePrj() throws Exception {
-        UberfireDefaultIncrementalCompilerEnabler compiler = new UberfireDefaultIncrementalCompilerEnabler(Compilers.JAVAC);
+        InternalNioImplDefaultIncrementalCompilerEnabler compiler = new InternalNioImplDefaultIncrementalCompilerEnabler(Compilers.JAVAC);
         List<String> pomList = new ArrayList<>();
-        UberfireMavenUtils.searchPoms(Paths.get("src/test/projects/dummy_kie_multimodule_untouched/"), pomList);
+        InternalNioImplMavenUtils.searchPoms(Paths.get("src/test/projects/dummy_kie_multimodule_untouched/"), pomList);
         assertTrue(pomList.size() == 3);
-        List<Artifact> deps = UberfireMavenUtils.resolveDependenciesFromMultimodulePrj(pomList);
+        List<Artifact> deps = InternalNioImplMavenUtils.resolveDependenciesFromMultimodulePrj(pomList);
         assertTrue(deps.size() == 1);
         Artifact artifact = deps.get(0);
         assertTrue(artifact.getArtifactId().equals("kie-api"));

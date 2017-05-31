@@ -31,7 +31,10 @@ import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
 
 import static org.junit.Assert.*;
 
@@ -61,7 +64,7 @@ public class NIOClassLoaderProviderTest {
         Assert.assertTrue(compiler.isValid());
 
         NIOWorkspaceCompilationInfo info = new NIOWorkspaceCompilationInfo(tmp, compiler);
-        NIOCompilationRequest req = new NIODefaultCompilationRequest(info, new String[]{MavenArgs.COMPILE, MavenArgs.INSTALL, MavenArgs.DEBUG}, new HashMap<>());
+        NIOCompilationRequest req = new NIODefaultCompilationRequest(info, new String[]{MavenArgs.COMPILE, MavenArgs.INSTALL}, new HashMap<>());
         CompilationResponse res = compiler.compileSync(req);
         Assert.assertTrue(res.isSuccessful());
 
@@ -103,7 +106,7 @@ public class NIOClassLoaderProviderTest {
         Assert.assertTrue(compiler.isValid());
 
         NIOWorkspaceCompilationInfo info = new NIOWorkspaceCompilationInfo(tmp, compiler);
-        NIOCompilationRequest req = new NIODefaultCompilationRequest(info, new String[]{MavenArgs.COMPILE, MavenArgs.INSTALL, MavenArgs.DEBUG}, new HashMap<>());
+        NIOCompilationRequest req = new NIODefaultCompilationRequest(info, new String[]{MavenArgs.COMPILE, MavenArgs.INSTALL}, new HashMap<>());
         CompilationResponse res = compiler.compileSync(req);
         Assert.assertTrue(res.isSuccessful());
 
@@ -142,7 +145,7 @@ public class NIOClassLoaderProviderTest {
         Assert.assertTrue(compiler.isValid());
 
         NIOWorkspaceCompilationInfo info = new NIOWorkspaceCompilationInfo(tmp, compiler);
-        NIOCompilationRequest req = new NIODefaultCompilationRequest(info, new String[]{MavenArgs.COMPILE, MavenArgs.DEBUG}, new HashMap<>());
+        NIOCompilationRequest req = new NIODefaultCompilationRequest(info, new String[]{MavenArgs.COMPILE}, new HashMap<>());
         CompilationResponse res = compiler.compileSync(req);
         Assert.assertTrue(res.isSuccessful());
 

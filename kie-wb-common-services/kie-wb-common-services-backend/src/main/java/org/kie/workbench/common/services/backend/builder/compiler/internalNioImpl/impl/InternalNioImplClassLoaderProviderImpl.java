@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.kie.workbench.common.services.backend.builder.compiler.uberfire.impl;
+package org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.impl;
 
 import org.apache.maven.artifact.Artifact;
 import org.guvnor.common.services.backend.file.DotFileFilter;
@@ -35,15 +35,15 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-public class UberfireClassLoaderProviderImpl implements KieClassLoaderProvider {
+public class InternalNioImplClassLoaderProviderImpl implements KieClassLoaderProvider {
 
-    protected static final Logger logger = LoggerFactory.getLogger(UberfireClassLoaderProviderImpl.class);
+    protected static final Logger logger = LoggerFactory.getLogger(InternalNioImplClassLoaderProviderImpl.class);
     private final DirectoryStream.Filter<Path> dotFileFilter = new DotFileFilter();
 
     @Override
     public Optional<ClassLoader> loadDependenciesClassloaderFromProject(String prjPath, String localRepo) {
         List<String> poms = new ArrayList<>();
-        UberfireMavenUtils.searchPoms(Paths.get(prjPath), poms);
+        InternalNioImplMavenUtils.searchPoms(Paths.get(prjPath), poms);
         List<URL> urls = getDependenciesURL(poms, localRepo);
         return buildResult(urls);
     }
@@ -51,7 +51,7 @@ public class UberfireClassLoaderProviderImpl implements KieClassLoaderProvider {
     @Override
     public Optional<ClassLoader> loadDependenciesClassloaderFromProject(String prjPath, String localRepo, ClassLoader parent) {
         List<String> poms = new ArrayList<>();
-        UberfireMavenUtils.searchPoms(Paths.get(prjPath), poms);
+        InternalNioImplMavenUtils.searchPoms(Paths.get(prjPath), poms);
         List<URL> urls = getDependenciesURL(poms, localRepo);
         return buildResult(urls, parent);
     }
@@ -96,7 +96,7 @@ public class UberfireClassLoaderProviderImpl implements KieClassLoaderProvider {
 
 
     private List<URL> getDependenciesURL(List<String> poms, String localRepo) {
-        List<Artifact> artifacts = UberfireMavenUtils.resolveDependenciesFromMultimodulePrj(poms);
+        List<Artifact> artifacts = InternalNioImplMavenUtils.resolveDependenciesFromMultimodulePrj(poms);
         List<URL> urls = Collections.emptyList();
         try {
             urls =

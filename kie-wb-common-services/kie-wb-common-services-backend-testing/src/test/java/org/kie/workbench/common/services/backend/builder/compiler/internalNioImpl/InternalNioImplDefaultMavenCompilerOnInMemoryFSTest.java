@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.kie.workbench.common.services.backend.builder.compiler.uberfire;
+package org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl;
 
 
 import org.eclipse.jgit.api.*;
@@ -30,9 +30,9 @@ import org.kie.workbench.common.services.backend.builder.compiler.CompilationRes
 import org.kie.workbench.common.services.backend.builder.compiler.TestUtil;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.Decorator;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.MavenArgs;
-import org.kie.workbench.common.services.backend.builder.compiler.uberfire.impl.UberfireDefaultCompilationRequest;
-import org.kie.workbench.common.services.backend.builder.compiler.uberfire.impl.UberfireMavenCompilerFactory;
-import org.kie.workbench.common.services.backend.builder.compiler.uberfire.impl.UberfireWorkspaceCompilationInfo;
+import org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.impl.InternalNioImplDefaultCompilationRequest;
+import org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.impl.InternalNioImplMavenCompilerFactory;
+import org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.impl.InternalNioImplWorkspaceCompilationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.uberfire.java.nio.file.Files;
@@ -51,14 +51,13 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 import static org.junit.Assert.*;
 
 
-public class UberfireDefaultMavenCompilerOnInMemoryFSTest {
+public class InternalNioImplDefaultMavenCompilerOnInMemoryFSTest {
 
-    private static final Logger logger = LoggerFactory.getLogger(UberfireDefaultMavenCompilerOnInMemoryFSTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(InternalNioImplDefaultMavenCompilerOnInMemoryFSTest.class);
 
     private final static Path mavenRepo = Paths.get("src/test/resources/.ignore/m2_repo/");
 
@@ -144,7 +143,7 @@ public class UberfireDefaultMavenCompilerOnInMemoryFSTest {
         assertNotNull(cloned);
 
         //Compile the repo
-        UberfireMavenCompiler compiler = UberfireMavenCompilerFactory.getCompiler(mavenRepo, Decorator.NONE);
+        InternalNioImplMavenCompiler compiler = InternalNioImplMavenCompilerFactory.getCompiler(mavenRepo, Decorator.NONE);
         Path prjFolder = Paths.get(gitClonedFolder + "/dummy/");
         byte[] encoded = Files.readAllBytes(Paths.get(prjFolder + "/pom.xml"));
         String pomAsAstring = new String(encoded, StandardCharsets.UTF_8);
@@ -152,8 +151,8 @@ public class UberfireDefaultMavenCompilerOnInMemoryFSTest {
 
 
         //KieCliRequest kcr = new KieCliRequest(prjFolder, new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE});
-        UberfireWorkspaceCompilationInfo info = new UberfireWorkspaceCompilationInfo(prjFolder, compiler);
-        UberfireCompilationRequest req = new UberfireDefaultCompilationRequest(info, new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE}, new HashMap<>());
+        InternalNioImplWorkspaceCompilationInfo info = new InternalNioImplWorkspaceCompilationInfo(prjFolder, compiler);
+        InternalNioImplCompilationRequest req = new InternalNioImplDefaultCompilationRequest(info, new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE}, new HashMap<>());
 
         CompilationResponse res = compiler.compileSync(req);
         Assert.assertTrue(res.isSuccessful());
@@ -168,8 +167,8 @@ public class UberfireDefaultMavenCompilerOnInMemoryFSTest {
         cloned.close();
         origin.close();
 
-        UberfireTestUtil.rm(tmpRootCloned.toFile());
-        UberfireTestUtil.rm(tmpRoot.toFile());
+        InternalNioImplTestUtil.rm(tmpRootCloned.toFile());
+        InternalNioImplTestUtil.rm(tmpRoot.toFile());
     }
 
     private Map<String, File> getFilesToCommit(File temp) {
@@ -234,7 +233,7 @@ public class UberfireDefaultMavenCompilerOnInMemoryFSTest {
         assertTrue(rbResult.getStatus().isSuccessful());
 
         //Compile the repo
-        UberfireMavenCompiler compiler = UberfireMavenCompilerFactory.getCompiler(mavenRepo, Decorator.NONE);
+        InternalNioImplMavenCompiler compiler = InternalNioImplMavenCompilerFactory.getCompiler(mavenRepo, Decorator.NONE);
 
         byte[] encoded = Files.readAllBytes(Paths.get(tmpCloned + "/dummy/pom.xml"));
         String pomAsAstring = new String(encoded, StandardCharsets.UTF_8);
@@ -242,8 +241,8 @@ public class UberfireDefaultMavenCompilerOnInMemoryFSTest {
 
         Path prjFolder = Paths.get(tmpCloned + "/dummy/");
 
-        UberfireWorkspaceCompilationInfo info = new UberfireWorkspaceCompilationInfo(prjFolder, compiler);
-        UberfireCompilationRequest req = new UberfireDefaultCompilationRequest(info, new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE, MavenArgs.DEBUG}, new HashMap<>());
+        InternalNioImplWorkspaceCompilationInfo info = new InternalNioImplWorkspaceCompilationInfo(prjFolder, compiler);
+        InternalNioImplCompilationRequest req = new InternalNioImplDefaultCompilationRequest(info, new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE}, new HashMap<>());
 
         CompilationResponse res = compiler.compileSync(req);
         Assert.assertTrue(res.isSuccessful());
@@ -255,14 +254,14 @@ public class UberfireDefaultMavenCompilerOnInMemoryFSTest {
         pomAsAstring = new String(encoded, StandardCharsets.UTF_8);
         Assert.assertTrue(pomAsAstring.contains("<artifactId>takari-lifecycle-plugin</artifactId>"));
 
-        UberfireTestUtil.rm(tmpRoot.toFile());
-        UberfireTestUtil.rm(tmpRootCloned.toFile());
+        InternalNioImplTestUtil.rm(tmpRoot.toFile());
+        InternalNioImplTestUtil.rm(tmpRootCloned.toFile());
 
     }
 
     @Test
     public void buildWithDecoratorsTest() throws Exception {
-        UberfireMavenCompiler compiler = UberfireMavenCompilerFactory.getCompiler(mavenRepo, Decorator.JGIT_BEFORE_AND_AFTER);
+        InternalNioImplMavenCompiler compiler = InternalNioImplMavenCompilerFactory.getCompiler(mavenRepo, Decorator.JGIT_BEFORE_AND_AFTER);
 
         String MASTER_BRANCH = "master";
 
@@ -313,8 +312,8 @@ public class UberfireDefaultMavenCompilerOnInMemoryFSTest {
 
         //@TODO refactor and use only one between the URI or Git
         //@TODO find a way to resolve the problem of the prjname inside .git folder
-        UberfireWorkspaceCompilationInfo info = new UberfireWorkspaceCompilationInfo(Paths.get(tmpCloned + "/dummy"), URI.create("git://localhost:9418/repo"), compiler, cloned);
-        UberfireCompilationRequest req = new UberfireDefaultCompilationRequest(info, new String[]{MavenArgs.COMPILE}, new HashMap<>());
+        InternalNioImplWorkspaceCompilationInfo info = new InternalNioImplWorkspaceCompilationInfo(Paths.get(tmpCloned + "/dummy"), URI.create("git://localhost:9418/repo"), compiler, cloned);
+        InternalNioImplCompilationRequest req = new InternalNioImplDefaultCompilationRequest(info, new String[]{MavenArgs.COMPILE}, new HashMap<>());
         CompilationResponse res = compiler.compileSync(req);
         Assert.assertTrue(res.isSuccessful());
 
@@ -344,8 +343,8 @@ public class UberfireDefaultMavenCompilerOnInMemoryFSTest {
         res = compiler.compileSync(req);
         Assert.assertTrue(res.isSuccessful());
 
-        UberfireTestUtil.rm(tmpRoot.toFile());
-        UberfireTestUtil.rm(tmpRootCloned.toFile());
+        InternalNioImplTestUtil.rm(tmpRoot.toFile());
+        InternalNioImplTestUtil.rm(tmpRootCloned.toFile());
     }
 
 

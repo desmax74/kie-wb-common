@@ -61,7 +61,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 import static org.junit.Assert.*;
 
@@ -245,7 +244,7 @@ public class DefaultMavenCompilerOnInMemoryFSTest {
         Path prjFolder = Paths.get(tmpCloned + "/dummy/");
 
         NIOWorkspaceCompilationInfo info = new NIOWorkspaceCompilationInfo(prjFolder, compiler);
-        NIOCompilationRequest req = new NIODefaultCompilationRequest(info, new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE, MavenArgs.DEBUG}, new HashMap<>());
+        NIOCompilationRequest req = new NIODefaultCompilationRequest(info, new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE}, new HashMap<>());
 
         CompilationResponse res = compiler.compileSync(req);
         Assert.assertTrue(res.isSuccessful());

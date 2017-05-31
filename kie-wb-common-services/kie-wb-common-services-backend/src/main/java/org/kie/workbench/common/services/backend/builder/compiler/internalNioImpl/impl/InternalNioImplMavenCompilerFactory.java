@@ -14,29 +14,29 @@
  * limitations under the License.
  */
 
-package org.kie.workbench.common.services.backend.builder.compiler.uberfire.impl;
+package org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.impl;
 
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.Decorator;
-import org.kie.workbench.common.services.backend.builder.compiler.uberfire.UberfireMavenCompiler;
-import org.kie.workbench.common.services.backend.builder.compiler.uberfire.decorators.UberfireJGITCompilerBeforeDecorator;
+import org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.InternalNioImplMavenCompiler;
+import org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.decorators.InternalNioImplJGITCompilerBeforeDecorator;
 import org.uberfire.java.nio.file.Path;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class UberfireMavenCompilerFactory {
+public class InternalNioImplMavenCompilerFactory {
 
-    private static Map<Path, UberfireMavenCompiler> compilers = new ConcurrentHashMap<>();
+    private static Map<Path, InternalNioImplMavenCompiler> compilers = new ConcurrentHashMap<>();
 
-    private UberfireMavenCompilerFactory() {
+    private InternalNioImplMavenCompilerFactory() {
     }
 
 
     /**
      * Provides a Maven compiler decorated with a Decorator Behaviour
      */
-    public static UberfireMavenCompiler getCompiler(Path mavenRepo, Decorator decorator) {
-        UberfireMavenCompiler compiler = compilers.get(mavenRepo);
+    public static InternalNioImplMavenCompiler getCompiler(Path mavenRepo, Decorator decorator) {
+        InternalNioImplMavenCompiler compiler = compilers.get(mavenRepo);
         if (compiler == null) {
             compiler = createAndAddNewCompiler(mavenRepo, decorator);
         }
@@ -44,18 +44,18 @@ public class UberfireMavenCompilerFactory {
     }
 
 
-    private static UberfireMavenCompiler createAndAddNewCompiler(Path mavenRepo, Decorator decorator) {
+    private static InternalNioImplMavenCompiler createAndAddNewCompiler(Path mavenRepo, Decorator decorator) {
         switch (decorator) {
             case NONE:
-                compilers.put(mavenRepo, new UberfireDefaultMavenCompiler(mavenRepo));
+                compilers.put(mavenRepo, new InternalNioImplDefaultMavenCompiler(mavenRepo));
                 break;
 
             case JGIT_BEFORE:
-                compilers.put(mavenRepo, new UberfireJGITCompilerBeforeDecorator(new UberfireDefaultMavenCompiler(mavenRepo)));
+                compilers.put(mavenRepo, new InternalNioImplJGITCompilerBeforeDecorator(new InternalNioImplDefaultMavenCompiler(mavenRepo)));
                 break;
 
             default:
-                compilers.put(mavenRepo, new UberfireDefaultMavenCompiler(mavenRepo));
+                compilers.put(mavenRepo, new InternalNioImplDefaultMavenCompiler(mavenRepo));
         }
         return compilers.get(mavenRepo);
     }
@@ -80,7 +80,7 @@ public class UberfireMavenCompilerFactory {
         compilers.remove(mavenRepo);
     }
 
-    public static void replaceCompiler(Path mavenRepo, UberfireMavenCompiler compiler) {
+    public static void replaceCompiler(Path mavenRepo, InternalNioImplMavenCompiler compiler) {
         compilers.replace(mavenRepo, compiler);
     }
 

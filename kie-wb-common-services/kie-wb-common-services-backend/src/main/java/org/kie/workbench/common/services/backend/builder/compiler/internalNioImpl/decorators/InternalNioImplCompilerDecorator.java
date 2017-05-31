@@ -14,16 +14,9 @@
  * limitations under the License.
  */
 
-package org.kie.workbench.common.services.backend.builder.compiler.uberfire;
+package org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.decorators;
 
+import org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.InternalNioImplMavenCompiler;
 
-import org.kie.workbench.common.services.backend.builder.compiler.impl.ProcessedPoms;
-
-/**
- * Process the pom files before the compilation
- */
-public interface UberfireIncrementalCompilerEnabler {
-
-    ProcessedPoms process(UberfireCompilationRequest req);
-
+public abstract class InternalNioImplCompilerDecorator implements InternalNioImplMavenCompiler {
 }

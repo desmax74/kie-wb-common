@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.kie.workbench.common.services.backend.builder.compiler.uberfire.impl;
+package org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.impl;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DefaultArtifact;
@@ -30,9 +30,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class UberfireMavenUtils {
+public class InternalNioImplMavenUtils {
 
-    private static final Logger logger = LoggerFactory.getLogger(UberfireMavenUtils.class);
+    private static final Logger logger = LoggerFactory.getLogger(InternalNioImplMavenUtils.class);
 
     private final static String POM_NAME = "pom.xml";
 

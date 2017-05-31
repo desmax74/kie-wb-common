@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.kie.workbench.common.services.backend.builder.compiler.uberfire.decorators;
+package org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.decorators;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.PullCommand;
@@ -22,22 +22,22 @@ import org.eclipse.jgit.api.PullResult;
 import org.eclipse.jgit.api.RebaseResult;
 import org.kie.workbench.common.services.backend.builder.compiler.CompilationResponse;
 import org.kie.workbench.common.services.backend.builder.compiler.impl.DefaultCompilationResponse;
-import org.kie.workbench.common.services.backend.builder.compiler.uberfire.UberfireCompilationRequest;
-import org.kie.workbench.common.services.backend.builder.compiler.uberfire.UberfireMavenCompiler;
+import org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.InternalNioImplCompilationRequest;
+import org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.InternalNioImplMavenCompiler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.uberfire.java.nio.file.Path;
 
 
-public class UberfireJGITCompilerBeforeDecorator extends UberfireCompilerDecorator {
+public class InternalNioImplJGITCompilerBeforeDecorator extends InternalNioImplCompilerDecorator {
 
-    private static final Logger logger = LoggerFactory.getLogger(UberfireJGITCompilerBeforeDecorator.class);
+    private static final Logger logger = LoggerFactory.getLogger(InternalNioImplJGITCompilerBeforeDecorator.class);
     private final String COMPILED_EXTENSION = ".class";
     private final String REMOTE = "origin";
     private final String REMOTE_BRANCH = "master";
-    private UberfireMavenCompiler compiler;
+    private InternalNioImplMavenCompiler compiler;
 
-    public UberfireJGITCompilerBeforeDecorator(UberfireMavenCompiler compiler) {
+    public InternalNioImplJGITCompilerBeforeDecorator(InternalNioImplMavenCompiler compiler) {
         this.compiler = compiler;
     }
 
@@ -52,7 +52,7 @@ public class UberfireJGITCompilerBeforeDecorator extends UberfireCompilerDecorat
     }
 
     @Override
-    public CompilationResponse compileSync(UberfireCompilationRequest req) {
+    public CompilationResponse compileSync(InternalNioImplCompilationRequest req) {
         if (applyBefore(req)) {
             CompilationResponse res = compiler.compileSync(req);
             return res;
@@ -61,7 +61,7 @@ public class UberfireJGITCompilerBeforeDecorator extends UberfireCompilerDecorat
         }
     }
 
-    private Boolean applyBefore(UberfireCompilationRequest req) {
+    private Boolean applyBefore(InternalNioImplCompilationRequest req) {
         Boolean result = Boolean.FALSE;
         if (req.getInfo().getGitRepo().isPresent()) {
             try {
