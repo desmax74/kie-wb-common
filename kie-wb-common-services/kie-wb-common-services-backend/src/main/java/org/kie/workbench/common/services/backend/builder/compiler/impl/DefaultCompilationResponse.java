@@ -27,11 +27,6 @@ public class DefaultCompilationResponse implements CompilationResponse {
     private Optional<String> errorMessage;
     private Optional<KieModuleMetaInfo> kieModuleMetaInfo;
 
-    public DefaultCompilationResponse(DefaultCompilationResponse res, KieModuleMetaInfo kieModuleMetaInfo) {
-        this.successful = res.isSuccessful();
-        this.errorMessage = res.getErrorMessage();
-        this.kieModuleMetaInfo = Optional.of(kieModuleMetaInfo);
-    }
 
     public DefaultCompilationResponse(Boolean successful) {
         this.successful = successful;

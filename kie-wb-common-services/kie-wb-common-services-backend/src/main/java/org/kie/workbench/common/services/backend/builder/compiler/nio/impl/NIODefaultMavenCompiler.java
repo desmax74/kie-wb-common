@@ -123,21 +123,29 @@ public class NIODefaultMavenCompiler implements NIOMavenCompiler {
 
     private Optional<KieModuleMetaInfo> readKieModule(NIOCompilationRequest req) {
         Optional<KieModuleMetaInfo> kModule = Optional.empty();
+        KieModuleMetaInfo info = null;
         try {
             /** This part is mandatory because the object loaded in the kie maven plugin is
              * loaded in a different classloader and every accessing cause a ClassCastException
              * */
             Object o = req.getKieCliRequest().getMap().get(req.getKieCliRequest().getRequestUUID());
+
             if (o != null) {
-                kModule = Optional.of((KieModuleMetaInfo) readObjectFromADifferentClassloader(o));
+                info = (KieModuleMetaInfo) readObjectFromADifferentClassloader(o);
             }
-        } catch (Exception e) {
+        } catch (java.io.NotSerializableException se) {
+            System.out.println(se.getMessage());
+            logger.error("Some part of the object are not Serializable\n");
+            logger.error(se.getMessage());
+            return Optional.empty();
+        }catch (Exception e) {
             logger.error(e.getMessage());
+            return Optional.empty();
         }
-        return kModule;
+        return kModule = Optional.of(info);
     }
 
-    private Object readObjectFromADifferentClassloader(Object o) {
+    private Object readObjectFromADifferentClassloader(Object o) throws Exception {
 
         ObjectInput in = null;
         ObjectOutput out = null;
@@ -154,9 +162,7 @@ public class NIODefaultMavenCompiler implements NIOMavenCompiler {
             in = new ObjectInputStream(bis);
             Object newObj = in.readObject();
             return newObj;
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-        } finally {
+        }finally {
             try {
                 bos.close();
 
@@ -167,7 +173,6 @@ public class NIODefaultMavenCompiler implements NIOMavenCompiler {
                 logger.error(ex.getMessage());
             }
         }
-        return null;
     }
 
 }

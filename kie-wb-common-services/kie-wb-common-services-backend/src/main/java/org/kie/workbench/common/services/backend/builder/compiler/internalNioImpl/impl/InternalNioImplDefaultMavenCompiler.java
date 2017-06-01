@@ -24,6 +24,7 @@ import org.kie.workbench.common.services.backend.builder.compiler.impl.Processed
 import org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.InternalNioImplCompilationRequest;
 import org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.InternalNioImplIncrementalCompilerEnabler;
 import org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.InternalNioImplMavenCompiler;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.uberfire.java.nio.file.Files;
@@ -116,24 +117,31 @@ public class InternalNioImplDefaultMavenCompiler implements InternalNioImplMaven
     }
 
     private Optional<KieModuleMetaInfo> readKieModule(InternalNioImplCompilationRequest req) {
-
         Optional<KieModuleMetaInfo> kModule = Optional.empty();
+        KieModuleMetaInfo info = null;
         try {
             /** This part is mandatory because the object loaded in the kie maven plugin is
              * loaded in a different classloader and every accessing cause a ClassCastException
              * */
             Object o = req.getKieCliRequest().getMap().get(req.getKieCliRequest().getRequestUUID());
-            if (o != null) {
-                kModule = Optional.of((KieModuleMetaInfo) readObjectFromADifferentClassloader(o));
-            }
 
-        } catch (Exception e) {
+            if (o != null) {
+                info = (KieModuleMetaInfo) readObjectFromADifferentClassloader(o);
+            }
+        } catch (java.io.NotSerializableException se) {
+            System.out.println(se.getMessage());
+            logger.error("Some part of the object are not Serializable\n");
+            logger.error(se.getMessage());
+            return Optional.empty();
+        }catch (Exception e) {
             logger.error(e.getMessage());
+            return Optional.empty();
         }
-        return kModule;
+        return kModule = Optional.of(info);
     }
 
-    private Object readObjectFromADifferentClassloader(Object o) {
+    private Object readObjectFromADifferentClassloader(Object o) throws Exception {
+
         ObjectInput in = null;
         ObjectOutput out = null;
         ByteArrayInputStream bis = null;
@@ -149,9 +157,7 @@ public class InternalNioImplDefaultMavenCompiler implements InternalNioImplMaven
             in = new ObjectInputStream(bis);
             Object newObj = in.readObject();
             return newObj;
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-        } finally {
+        }finally {
             try {
                 bos.close();
 
@@ -162,7 +168,6 @@ public class InternalNioImplDefaultMavenCompiler implements InternalNioImplMaven
                 logger.error(ex.getMessage());
             }
         }
-        return null;
     }
 
 }
