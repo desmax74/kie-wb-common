@@ -44,24 +44,23 @@ public class NIOMavenCompilerFactory {
         return compiler;
     }
 
-
     private static NIOMavenCompiler createAndAddNewCompiler(Path mavenRepo, Decorator decorator) {
         switch (decorator) {
             case NONE:
-                compilers.put(mavenRepo, new NIODefaultMavenCompiler(mavenRepo));
+                    compilers.put(mavenRepo, new NIODefaultMavenCompiler(mavenRepo));
                 break;
 
             case JGIT_BEFORE:
                 compilers.put(mavenRepo, new JGITCompilerBeforeDecorator(new NIODefaultMavenCompiler(mavenRepo)));
                 break;
 
-            case JGIT_AFTER:
+            /*case JGIT_AFTER:
                 compilers.put(mavenRepo, new JGitCompilerAfterDecorator(new NIODefaultMavenCompiler(mavenRepo)));
                 break;
 
             case JGIT_BEFORE_AND_AFTER:
                 compilers.put(mavenRepo, new JGITCompilerBeforeDecorator(new JGitCompilerAfterDecorator(new NIODefaultMavenCompiler(mavenRepo))));
-                break;
+                break;*/
 
             default:
                 compilers.put(mavenRepo, new NIODefaultMavenCompiler(mavenRepo));

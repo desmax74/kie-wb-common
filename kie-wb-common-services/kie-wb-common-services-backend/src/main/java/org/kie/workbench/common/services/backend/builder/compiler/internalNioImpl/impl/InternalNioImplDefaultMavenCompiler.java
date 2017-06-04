@@ -59,6 +59,12 @@ public class InternalNioImplDefaultMavenCompiler implements InternalNioImplMaven
         enabler = new InternalNioImplDefaultIncrementalCompilerEnabler(Compilers.JAVAC);
     }
 
+    public InternalNioImplDefaultMavenCompiler(Path mavenRepo, PrintStream output) {
+        this.mavenRepo = mavenRepo;
+        cli = new KieMavenCli(output);
+        enabler = new InternalNioImplDefaultIncrementalCompilerEnabler(Compilers.JAVAC);
+    }
+
 
     /**
      * Check if the folder exists and if it's writable and readable

@@ -18,7 +18,13 @@ package org.kie.workbench.common.services.backend.builder.compiler.internalNioIm
 
 import org.apache.maven.artifact.Artifact;
 import org.guvnor.common.services.backend.file.DotFileFilter;
+import org.kie.workbench.common.services.backend.builder.compiler.CompilationResponse;
 import org.kie.workbench.common.services.backend.builder.compiler.KieClassLoaderProvider;
+import org.kie.workbench.common.services.backend.builder.compiler.configuration.Decorator;
+import org.kie.workbench.common.services.backend.builder.compiler.configuration.MavenArgs;
+import org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.InternalNioImplCompilationRequest;
+import org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.InternalNioImplMavenCompiler;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.uberfire.java.nio.file.DirectoryStream;
@@ -26,14 +32,14 @@ import org.uberfire.java.nio.file.Files;
 import org.uberfire.java.nio.file.Path;
 import org.uberfire.java.nio.file.Paths;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public class InternalNioImplClassLoaderProviderImpl implements KieClassLoaderProvider {
 
@@ -201,5 +207,62 @@ public class InternalNioImplClassLoaderProviderImpl implements KieClassLoaderPro
             URLClassLoader urlClassLoader = new URLClassLoader(urls.toArray(new URL[urls.size()]), parent);
             return Optional.of(urlClassLoader);
         }
+    }
+
+    public Optional<ClassLoader> getClassloaderFromAllDependencies(String prjPath, String localRepo) {
+        InternalNioImplMavenCompiler compiler = InternalNioImplMavenCompilerFactory.getCompiler(Paths.get(localRepo), Decorator.NONE);
+        InternalNioImplWorkspaceCompilationInfo info = new InternalNioImplWorkspaceCompilationInfo(Paths.get(prjPath), compiler);
+        String randomUUI = UUID.randomUUID().toString();
+        Path tmpFolder = Files.createTempDirectory("classpath");
+        StringBuilder cpFile =new StringBuilder(tmpFolder.toAbsolutePath().toString()).append("/").append(randomUUI).append(".cp");
+        InternalNioImplCompilationRequest req = new InternalNioImplDefaultCompilationRequest(info, new String[]{MavenArgs.DEPS_BUILD_CLASSPATH, new StringBuilder("-Dmdep.outputFile=").append(cpFile.toString()).toString()}, new HashMap<>());
+        CompilationResponse res = compiler.compileSync(req);
+        if (res.isSuccessful()) {
+            List<URL> urls = readFile(cpFile.toString(), tmpFolder);
+            if (!urls.isEmpty()) {
+                URLClassLoader urlClassLoader = new URLClassLoader(urls.toArray(new URL[urls.size()]));
+                return Optional.of(urlClassLoader);
+            }
+        }
+        return Optional.empty();
+
+    }
+
+    private List<URL> readFile(String filePath, Path tmpFolder) {
+
+        BufferedReader br = null;
+        FileReader fr = null;
+        List<URL> urls = new ArrayList<>();
+        try {
+
+            fr = new FileReader(filePath);
+            br = new BufferedReader(fr);
+            String sCurrentLine;
+            br = new BufferedReader(fr);
+
+            while ((sCurrentLine = br.readLine()) != null) {
+                StringTokenizer token = new StringTokenizer(sCurrentLine, ":");
+                while (token.hasMoreTokens()) {
+                    StringBuilder sb = new StringBuilder("file://").append(token.nextToken());
+                    urls.add(new URL(sb.toString()));
+                }
+            }
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+        } finally {
+            try {
+                if (br != null)
+                    br.close();
+
+                if (fr != null)
+                    fr.close();
+                Files.delete(Paths.get(filePath));
+                Files.delete(tmpFolder);
+            } catch (IOException ex) {
+                logger.error(ex.getMessage());
+            }
+
+        }
+        return urls;
     }
 }

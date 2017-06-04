@@ -16,6 +16,7 @@
 
 package org.kie.workbench.common.services.backend.builder.compiler;
 
+import java.net.URL;
 import java.util.List;
 import java.util.Optional;
 
@@ -35,5 +36,7 @@ public interface KieClassLoaderProvider {
     Optional<ClassLoader> loadDependenciesClassloaderFromProject(List<String> deps, String localRepo, ClassLoader parentClassloader);
 
     Optional<ClassLoader> getClassloaderFromProjectTargets(List<String> targets, Boolean loadIntoClassloader, ClassLoader parentClassloader);
+
+    Optional<ClassLoader> getClassloaderFromAllDependencies(String prjPath, String localRepo);
 }
 

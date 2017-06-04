@@ -18,6 +18,7 @@ package org.kie.workbench.common.services.backend.builder.compiler.internalNioIm
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.kie.workbench.common.services.backend.builder.compiler.CompilationResponse;
 import org.kie.workbench.common.services.backend.builder.compiler.KieClassLoaderProvider;
@@ -25,12 +26,14 @@ import org.kie.workbench.common.services.backend.builder.compiler.TestUtil;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.Decorator;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.MavenArgs;
 import org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.impl.*;
+import org.kie.workbench.common.services.backend.builder.compiler.nio.impl.NIOClassLoaderProviderImpl;
 import org.slf4j.Logger;
 import org.uberfire.java.nio.file.Files;
 import org.uberfire.java.nio.file.Path;
 import org.uberfire.java.nio.file.Paths;
 
 import java.lang.reflect.Method;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -183,5 +186,27 @@ public class InternalNioImplClassLoaderProviderTest {
         }
 
         TestUtil.rm(tmpRoot.toFile());
+    }
+
+    @Test
+    public void getClassloaderFromAllDependenciesTestSimple(){
+        KieClassLoaderProvider kieClazzLoaderProvider = new NIOClassLoaderProviderImpl();
+        Path mavenRepo = Paths.get("src/test/resources/.ignore/m2_repo/");
+        Optional<ClassLoader> classloaderOptional = kieClazzLoaderProvider.getClassloaderFromAllDependencies("src/test/projects/dummy_deps_simple", mavenRepo.toAbsolutePath().toString());
+        assertTrue(classloaderOptional.isPresent());
+        ClassLoader classloader =classloaderOptional.get();
+        URLClassLoader urlsc = (URLClassLoader) classloader;
+        assertTrue(urlsc.getURLs().length== 4);
+    }
+
+    @Ignore
+    public void getClassloaderFromAllDependenciesTestComplex(){
+        KieClassLoaderProvider kieClazzLoaderProvider = new NIOClassLoaderProviderImpl();
+        Path mavenRepo = Paths.get("src/test/resources/.ignore/m2_repo/");
+        Optional<ClassLoader> classloaderOptional = kieClazzLoaderProvider.getClassloaderFromAllDependencies("src/test/projects/dummy_deps_complex", mavenRepo.toAbsolutePath().toString());
+        assertTrue(classloaderOptional.isPresent());
+        ClassLoader classloader =classloaderOptional.get();
+        URLClassLoader urlsc = (URLClassLoader) classloader;
+        assertTrue(urlsc.getURLs().length== 4);
     }
 }

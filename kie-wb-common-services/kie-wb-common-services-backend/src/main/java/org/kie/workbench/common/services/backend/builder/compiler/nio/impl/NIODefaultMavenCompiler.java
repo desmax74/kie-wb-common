@@ -59,6 +59,12 @@ public class NIODefaultMavenCompiler implements NIOMavenCompiler {
         enabler = new NIODefaultIncrementalCompilerEnabler(Compilers.JAVAC);
     }
 
+    public NIODefaultMavenCompiler(Path mavenRepo, PrintStream output) {
+        this.mavenRepo = mavenRepo;
+        cli = new KieMavenCli(output);
+        enabler = new NIODefaultIncrementalCompilerEnabler(Compilers.JAVAC);
+    }
+
 
     /**
      * Check if the folder exists and if it's writable and readable
@@ -133,16 +139,17 @@ public class NIODefaultMavenCompiler implements NIOMavenCompiler {
             if (o != null) {
                 info = (KieModuleMetaInfo) readObjectFromADifferentClassloader(o);
             }
+            kModule = Optional.of(info);
         } catch (java.io.NotSerializableException se) {
             System.out.println(se.getMessage());
             logger.error("Some part of the object are not Serializable\n");
             logger.error(se.getMessage());
-            return Optional.empty();
+            //return Optional.empty();
         }catch (Exception e) {
             logger.error(e.getMessage());
-            return Optional.empty();
+            //return Optional.empty();
         }
-        return kModule = Optional.of(info);
+        return kModule;
     }
 
     private Object readObjectFromADifferentClassloader(Object o) throws Exception {

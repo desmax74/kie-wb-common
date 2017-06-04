@@ -111,7 +111,14 @@ public class KieMavenCli {
 
     private Map<String, KieConfigurationProcessor> configurationProcessors;
 
+    private PrintStream output;
+
     public KieMavenCli() {
+        this.output = System.out;
+    }
+
+    public KieMavenCli(PrintStream output) {
+        this.output = output;
     }
 
     private static <T> List<T> reverse(List<T> list) {
@@ -274,7 +281,7 @@ public class KieMavenCli {
             }
         } catch (ParseException e) {
             System.err.println("Unable to parse maven.config: " + e.getMessage());
-            cliManager.displayHelp(System.out);
+            cliManager.displayHelp(output);
             throw e;
         }
 
@@ -283,12 +290,12 @@ public class KieMavenCli {
             cliRequest.setCommandLine(cliManager.parse(args.toArray(new String[args.size()])));
         } catch (ParseException e) {
             System.err.println("Unable to parse command line options: " + e.getMessage());
-            cliManager.displayHelp(System.out);
+            cliManager.displayHelp(output);
             throw e;
         }
 
         if (cliRequest.getCommandLine().hasOption(CLIManager.HELP)) {
-            cliManager.displayHelp(System.out);
+            cliManager.displayHelp(output);
             throw new ExitException(0);
         }
 
@@ -479,9 +486,7 @@ public class KieMavenCli {
             });
 
             /*container.addComponent(cliRequest.getMap(), HashMap.class,"kieMap");
-            Object item =  container.lookup(Map.class,"java.util.HashMap","kieMap");
-            System.out.println("item:"+item.toString());
-            System.out.println("Container in cli 3:"+container.toString());*/
+            Object item =  container.lookup(Map.class,"java.util.HashMap","kieMap");*/
 
             try {
                 container.setLookupRealm(null);
@@ -1077,8 +1082,7 @@ public class KieMavenCli {
     }
 
     protected TransferListener getConsoleTransferListener() {
-        return new ConsoleMavenTransferListener(System.out);
-        //return new ConsoleMavenTransferListener(System.out);
+        return new ConsoleMavenTransferListener(output);
     }
 
     //

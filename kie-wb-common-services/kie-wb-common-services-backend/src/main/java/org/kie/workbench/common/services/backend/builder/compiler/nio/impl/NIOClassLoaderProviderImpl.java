@@ -17,19 +17,25 @@
 package org.kie.workbench.common.services.backend.builder.compiler.nio.impl;
 
 import org.apache.maven.artifact.Artifact;
+import org.kie.workbench.common.services.backend.builder.compiler.CompilationResponse;
 import org.kie.workbench.common.services.backend.builder.compiler.KieClassLoaderProvider;
+import org.kie.workbench.common.services.backend.builder.compiler.configuration.Decorator;
+import org.kie.workbench.common.services.backend.builder.compiler.configuration.MavenArgs;
+import org.kie.workbench.common.services.backend.builder.compiler.nio.NIOCompilationRequest;
+import org.kie.workbench.common.services.backend.builder.compiler.nio.NIOMavenCompiler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public class NIOClassLoaderProviderImpl implements KieClassLoaderProvider {
 
@@ -77,14 +83,6 @@ public class NIOClassLoaderProviderImpl implements KieClassLoaderProvider {
         List<URL> urls = loadIntoClassloader ? loadCompilationOutputFiles(targets) : loadCompilationFolders(targets);
         return buildResult(urls, parent);
     }
-
-
-
-    /*private List<URL> getURLDependenciesFromProject(String prjPath, String localRepo){
-        List<String> poms = new ArrayList<>();
-        NIOMavenUtils.searchPoms(Paths.get(prjPath), poms);
-        return getDependenciesURL(poms,localRepo);
-    }*/
 
     private List<URL> getDependenciesURL(List<String> poms, String localRepo) {
         List<Artifact> artifacts = NIOMavenUtils.resolveDependenciesFromMultimodulePrj(poms);
@@ -195,5 +193,69 @@ public class NIOClassLoaderProviderImpl implements KieClassLoaderProvider {
             URLClassLoader urlClassLoader = new URLClassLoader(urls.toArray(new URL[urls.size()]), parent);
             return Optional.of(urlClassLoader);
         }
+    }
+
+
+    public Optional<ClassLoader> getClassloaderFromAllDependencies(String prjPath, String localRepo) {
+        NIOMavenCompiler compiler = NIOMavenCompilerFactory.getCompiler(Paths.get(localRepo), Decorator.NONE);
+        NIOWorkspaceCompilationInfo info = new NIOWorkspaceCompilationInfo(Paths.get(prjPath), compiler);
+        String randomUUI = UUID.randomUUID().toString();
+        Path tmpFolder;
+        try {
+            tmpFolder = Files.createTempDirectory("classpath");
+        } catch (java.io.IOException ioe) {
+            logger.error(ioe.getMessage());
+            return Optional.empty();
+        }
+        StringBuilder cpFile =new StringBuilder(tmpFolder.toAbsolutePath().toString()).append("/").append(randomUUI).append(".cp");
+        NIOCompilationRequest req = new NIODefaultCompilationRequest(info, new String[]{MavenArgs.DEPS_BUILD_CLASSPATH, new StringBuilder("-Dmdep.outputFile=").append(cpFile.toString()).toString()}, new HashMap<>());
+        CompilationResponse res = compiler.compileSync(req);
+        if (res.isSuccessful()) {
+            List<URL> urls = readFile(cpFile.toString(), tmpFolder);
+            if (!urls.isEmpty()) {
+                URLClassLoader urlClassLoader = new URLClassLoader(urls.toArray(new URL[urls.size()]));
+                return Optional.of(urlClassLoader);
+            }
+        }
+        return Optional.empty();
+
+    }
+
+    private List<URL> readFile(String filePath, Path tmpFolder) {
+
+        BufferedReader br = null;
+        FileReader fr = null;
+        List<URL> urls = new ArrayList<>();
+        try {
+
+            fr = new FileReader(filePath);
+            br = new BufferedReader(fr);
+            String sCurrentLine;
+            br = new BufferedReader(fr);
+
+            while ((sCurrentLine = br.readLine()) != null) {
+                StringTokenizer token = new StringTokenizer(sCurrentLine, ":");
+                while (token.hasMoreTokens()) {
+                    StringBuilder sb = new StringBuilder("file://").append(token.nextToken());
+                    urls.add(new URL(sb.toString()));
+                }
+            }
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+        } finally {
+            try {
+                if (br != null)
+                    br.close();
+
+                if (fr != null)
+                    fr.close();
+                Files.delete(Paths.get(filePath));
+                Files.delete(tmpFolder);
+            } catch (IOException ex) {
+                logger.error(ex.getMessage());
+            }
+
+        }
+        return urls;
     }
 }
