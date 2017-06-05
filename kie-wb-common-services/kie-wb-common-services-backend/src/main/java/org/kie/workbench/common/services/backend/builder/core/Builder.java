@@ -61,6 +61,14 @@ import org.kie.api.runtime.KieContainer;
 import org.kie.internal.builder.IncrementalResults;
 import org.kie.internal.builder.InternalKieBuilder;
 import org.kie.scanner.KieModuleMetaData;
+import org.kie.workbench.common.services.backend.builder.compiler.CompilationResponse;
+import org.kie.workbench.common.services.backend.builder.compiler.configuration.MavenArgs;
+import org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.InternalNioImplCompilationRequest;
+import org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.impl.InternalNioImplDefaultCompilationRequest;
+import org.kie.workbench.common.services.backend.builder.compiler.nio.NIOCompilationRequest;
+import org.kie.workbench.common.services.backend.builder.compiler.nio.NIOMavenCompiler;
+import org.kie.workbench.common.services.backend.builder.compiler.nio.impl.NIODefaultCompilationRequest;
+import org.kie.workbench.common.services.backend.builder.compiler.nio.impl.NIOWorkspaceCompilationInfo;
 import org.kie.workbench.common.services.shared.project.KieProject;
 import org.kie.workbench.common.services.shared.project.KieProjectService;
 import org.kie.workbench.common.services.shared.project.ProjectImportsService;
@@ -116,6 +124,9 @@ public class Builder implements Serializable {
     private PackageNameWhiteListService packageNameWhiteListService;
 
     private final Predicate<String> classFilter;
+
+    private NIOMavenCompiler compiler;
+    private NIOWorkspaceCompilationInfo workspaceCompilationInfo;
 
     public Builder( final Project project,
                     final IOService ioService,
@@ -205,7 +216,18 @@ public class Builder implements Serializable {
     }
 
     public BuildResults build() {
+
+        //@TODO max in this place we run the maven compiler
+        NIOCompilationRequest req = new NIODefaultCompilationRequest(workspaceCompilationInfo, new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE}, new HashMap<>());
+        CompilationResponse res = compiler.compileSync(req);
+        res.isSuccessful();
+
+        return oldBEhaviour();
+    }
+
+    private BuildResults oldBEhaviour(){
         synchronized ( kieFileSystem ) {
+
             //KieBuilder is not re-usable for successive "full" builds
             kieBuilder = createKieBuilder( kieFileSystem );
 
@@ -214,18 +236,18 @@ public class Builder implements Serializable {
             try {
                 final Results kieResults = ( (InternalKieBuilder) kieBuilder ).buildAll( classFilter ).getResults();
                 results.addAllBuildMessages( convertMessages( kieResults.getMessages(),
-                                                              handles ) );
+                        handles ) );
 
             } catch ( LinkageError e ) {
                 final String msg = MessageFormat.format( ERROR_CLASS_NOT_FOUND,
-                                                         e.getLocalizedMessage() );
+                        e.getLocalizedMessage() );
                 logger.warn( msg );
                 results.addBuildMessage( makeWarningMessage( msg ) );
 
             } catch ( Throwable e ) {
                 final String msg = e.getLocalizedMessage();
                 logger.error( msg,
-                              e );
+                        e );
                 results.addBuildMessage( makeErrorMessage( msg ) );
 
             } finally {
@@ -240,7 +262,7 @@ public class Builder implements Serializable {
                 final org.uberfire.backend.vfs.Path vfsPath = Paths.convert( e.getKey() );
                 final List<ValidationMessage> validationMessages = e.getValue().validate( vfsPath );
                 nonKieResourceValidationHelperMessages.put( e.getKey(),
-                                                            validationMessages );
+                        validationMessages );
                 results.addAllBuildMessages( convertValidationMessages( validationMessages ) );
             }
 
@@ -258,7 +280,7 @@ public class Builder implements Serializable {
                     } catch ( ClassNotFoundException cnfe ) {
                         logger.warn( cnfe.getMessage() );
                         final String msg = MessageFormat.format( ERROR_CLASS_NOT_FOUND,
-                                                                 fullyQualifiedClassName );
+                                fullyQualifiedClassName );
                         results.addBuildMessage( makeWarningMessage( msg ) );
                     }
                 }
@@ -271,7 +293,7 @@ public class Builder implements Serializable {
 
             //store the project dependencies ClassLoader for optimization purposes.
             updateDependenciesClassLoader( project,
-                                           kieModuleMetaData );
+                    kieModuleMetaData );
 
             results.addAllBuildMessages( verifyClasses( kieModuleMetaData ) );
 

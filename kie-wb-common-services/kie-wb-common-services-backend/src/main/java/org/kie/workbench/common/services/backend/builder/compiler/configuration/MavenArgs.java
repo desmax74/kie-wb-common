@@ -40,10 +40,6 @@ public class MavenArgs {
 
     public static final String DEBUG = "-X";
 
-    public static final String DEPS_GO_OFFILE = "dependency:go-offline";
-
-    public static final String DEPS_COPY = "dependency:copy-dependencies";
-
     public static final String DEPS_BUILD_CLASSPATH = "dependency:build-classpath";
 
 }
