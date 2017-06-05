@@ -20,14 +20,11 @@ import org.drools.core.rule.KieModuleMetaInfo;
 import org.drools.core.rule.TypeMetaInfo;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.kie.workbench.common.services.backend.builder.compiler.CompilationResponse;
 import org.kie.workbench.common.services.backend.builder.compiler.TestUtil;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.Decorator;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.MavenArgs;
-import org.kie.workbench.common.services.backend.builder.compiler.nio.NIOCompilationRequest;
-import org.kie.workbench.common.services.backend.builder.compiler.nio.NIOMavenCompiler;
 import org.kie.workbench.common.services.backend.builder.compiler.nio.impl.NIODefaultCompilationRequest;
 import org.kie.workbench.common.services.backend.builder.compiler.nio.impl.NIOMavenCompilerFactory;
 import org.kie.workbench.common.services.backend.builder.compiler.nio.impl.NIOWorkspaceCompilationInfo;
@@ -79,10 +76,10 @@ public class NioKieMetadataTest {
         KieModuleMetaInfo kieModuleMetaInfo = metaDataOptional.get();
         Assert.assertNotNull(kieModuleMetaInfo);
 
-        Map<String,Set<String>> rulesBP = kieModuleMetaInfo.getRulesByPackage();
-        Assert.assertEquals(rulesBP.size(),8);
-        Map<String,TypeMetaInfo> typesMI = kieModuleMetaInfo.getTypeMetaInfos();
-        Assert.assertEquals(typesMI.size(),35);
+        Map<String, Set<String>> rulesBP = kieModuleMetaInfo.getRulesByPackage();
+        Assert.assertEquals(rulesBP.size(), 8);
+        Map<String, TypeMetaInfo> typesMI = kieModuleMetaInfo.getTypeMetaInfos();
+        Assert.assertEquals(typesMI.size(), 35);
 
         TestUtil.rm(tmpRoot.toFile());
     }

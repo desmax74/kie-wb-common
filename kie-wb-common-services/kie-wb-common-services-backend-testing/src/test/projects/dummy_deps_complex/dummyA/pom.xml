@@ -2,11 +2,12 @@
 <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>org.acme</groupId>
-  <artifactId>deps-services-backend</artifactId>
-  <version>1.0.0.Final</version>
-  <name>Dummy Deps</name>
-  <description>Dummy Deps</description>
+  <groupId>org.dummy.workbench</groupId>
+  <artifactId>dummyA</artifactId>
+  <version>1.0</version>
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
   <dependencies>
     <dependency>
       <groupId>org.springframework</groupId>
@@ -15,15 +16,6 @@
     </dependency>
   </dependencies>
   <build>
-    <resources>
-      <resource>
-        <directory>src/main/resources</directory>
-      </resource>
-      <resource>
-        <filtering>true</filtering>
-        <directory>src/main/filtered-resources</directory>
-      </resource>
-    </resources>
     <plugins>
       <plugin>
         <groupId>io.takari.maven.plugins</groupId>

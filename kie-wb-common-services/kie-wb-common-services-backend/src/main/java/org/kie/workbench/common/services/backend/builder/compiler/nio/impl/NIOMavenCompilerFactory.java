@@ -19,7 +19,6 @@ package org.kie.workbench.common.services.backend.builder.compiler.nio.impl;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.Decorator;
 import org.kie.workbench.common.services.backend.builder.compiler.nio.NIOMavenCompiler;
 import org.kie.workbench.common.services.backend.builder.compiler.nio.decorators.JGITCompilerBeforeDecorator;
-import org.kie.workbench.common.services.backend.builder.compiler.nio.decorators.JGitCompilerAfterDecorator;
 
 import java.nio.file.Path;
 import java.util.Map;
@@ -47,7 +46,7 @@ public class NIOMavenCompilerFactory {
     private static NIOMavenCompiler createAndAddNewCompiler(Path mavenRepo, Decorator decorator) {
         switch (decorator) {
             case NONE:
-                    compilers.put(mavenRepo, new NIODefaultMavenCompiler(mavenRepo));
+                compilers.put(mavenRepo, new NIODefaultMavenCompiler(mavenRepo));
                 break;
 
             case JGIT_BEFORE:

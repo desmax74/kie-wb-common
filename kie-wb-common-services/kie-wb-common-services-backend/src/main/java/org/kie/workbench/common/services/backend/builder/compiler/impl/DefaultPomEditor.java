@@ -39,6 +39,8 @@ public class DefaultPomEditor implements PomEditor {
     public final String POM = "pom";
     public final String TRUE = "true";
     public final String POM_NAME = "pom.xml";
+    public final String MAVEN_COMPILER_EXECUTION_ID = "default-compile";
+    public final String MAVEN_COMPILER_EXECUTION_PHASE = "none";
     protected final Logger logger = LoggerFactory.getLogger(DefaultPomEditor.class);
     protected Compilers compiler;
     protected Map<ConfigurationKey, String> conf;
@@ -80,21 +82,30 @@ public class DefaultPomEditor implements PomEditor {
         int kieMavenPluginPosition = 0;
 
         int i = 0;
+        Boolean disableMavenCompiler = Boolean.TRUE;
         for (Plugin plugin : build.getPlugins()) {
 
             // Check if is present the default maven compiler
             if (plugin.getGroupId().equals(conf.get(ConfigurationKey.MAVEN_PLUGINS)) &&
                     plugin.getArtifactId().equals(conf.get(ConfigurationKey.MAVEN_COMPILER_PLUGIN))) {
                 defaultCompilerPluginPresent = Boolean.TRUE;
+
+                List<PluginExecution> executions = plugin.getExecutions();
+                for (PluginExecution exec : executions) {
+                    if (exec.getId().equals(MAVEN_COMPILER_EXECUTION_ID) && exec.getPhase().equals(MAVEN_COMPILER_EXECUTION_PHASE)) {
+                        disableMavenCompiler = Boolean.FALSE;
+                    }
+                }
                 //defaultCompilerPosition = i;
-                disableMavenCompilerAlreadyPresent(plugin); // disable the maven compiler if present
+                if (disableMavenCompiler) {
+                    disableMavenCompilerAlreadyPresent(plugin); // disable the maven compiler if present
+                }
             }
             //check if is present the alternative maven compiler
             if (plugin.getGroupId().equals(conf.get(ConfigurationKey.ALTERNATIVE_COMPILER_PLUGINS)) &&
                     plugin.getArtifactId().equals(conf.get(ConfigurationKey.ALTERNATIVE_COMPILER_PLUGIN))) {
                 alternativeCompilerPluginPresent = Boolean.TRUE;
                 alternativeCompilerPosition = i;
-                break; // alternative compiler plugin is present skip the pom
             }
 
             //check if is present the kie plugin and move after takari

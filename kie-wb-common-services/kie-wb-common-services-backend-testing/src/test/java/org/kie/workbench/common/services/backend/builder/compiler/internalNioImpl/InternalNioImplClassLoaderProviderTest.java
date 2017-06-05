@@ -18,7 +18,6 @@ package org.kie.workbench.common.services.backend.builder.compiler.internalNioIm
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.kie.workbench.common.services.backend.builder.compiler.CompilationResponse;
 import org.kie.workbench.common.services.backend.builder.compiler.KieClassLoaderProvider;
@@ -189,24 +188,24 @@ public class InternalNioImplClassLoaderProviderTest {
     }
 
     @Test
-    public void getClassloaderFromAllDependenciesTestSimple(){
+    public void getClassloaderFromAllDependenciesTestSimple() {
         KieClassLoaderProvider kieClazzLoaderProvider = new NIOClassLoaderProviderImpl();
         Path mavenRepo = Paths.get("src/test/resources/.ignore/m2_repo/");
         Optional<ClassLoader> classloaderOptional = kieClazzLoaderProvider.getClassloaderFromAllDependencies("src/test/projects/dummy_deps_simple", mavenRepo.toAbsolutePath().toString());
         assertTrue(classloaderOptional.isPresent());
-        ClassLoader classloader =classloaderOptional.get();
+        ClassLoader classloader = classloaderOptional.get();
         URLClassLoader urlsc = (URLClassLoader) classloader;
-        assertTrue(urlsc.getURLs().length== 4);
+        assertTrue(urlsc.getURLs().length == 4);
     }
 
-    @Ignore
-    public void getClassloaderFromAllDependenciesTestComplex(){
+    @Test
+    public void getClassloaderFromAllDependenciesTestComplex() {
         KieClassLoaderProvider kieClazzLoaderProvider = new NIOClassLoaderProviderImpl();
         Path mavenRepo = Paths.get("src/test/resources/.ignore/m2_repo/");
         Optional<ClassLoader> classloaderOptional = kieClazzLoaderProvider.getClassloaderFromAllDependencies("src/test/projects/dummy_deps_complex", mavenRepo.toAbsolutePath().toString());
         assertTrue(classloaderOptional.isPresent());
-        ClassLoader classloader =classloaderOptional.get();
+        ClassLoader classloader = classloaderOptional.get();
         URLClassLoader urlsc = (URLClassLoader) classloader;
-        assertTrue(urlsc.getURLs().length== 4);
+        assertTrue(urlsc.getURLs().length == 7);
     }
 }

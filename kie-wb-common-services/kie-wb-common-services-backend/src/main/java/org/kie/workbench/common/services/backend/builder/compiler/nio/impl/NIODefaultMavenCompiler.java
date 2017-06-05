@@ -145,7 +145,7 @@ public class NIODefaultMavenCompiler implements NIOMavenCompiler {
             logger.error("Some part of the object are not Serializable\n");
             logger.error(se.getMessage());
             //return Optional.empty();
-        }catch (Exception e) {
+        } catch (Exception e) {
             logger.error(e.getMessage());
             //return Optional.empty();
         }
@@ -169,7 +169,7 @@ public class NIODefaultMavenCompiler implements NIOMavenCompiler {
             in = new ObjectInputStream(bis);
             Object newObj = in.readObject();
             return newObj;
-        }finally {
+        } finally {
             try {
                 bos.close();
 

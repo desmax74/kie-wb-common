@@ -24,7 +24,6 @@ import org.kie.workbench.common.services.backend.builder.compiler.impl.Processed
 import org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.InternalNioImplCompilationRequest;
 import org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.InternalNioImplIncrementalCompilerEnabler;
 import org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.InternalNioImplMavenCompiler;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.uberfire.java.nio.file.Files;
@@ -139,7 +138,7 @@ public class InternalNioImplDefaultMavenCompiler implements InternalNioImplMaven
             logger.error("Some part of the object are not Serializable\n");
             logger.error(se.getMessage());
             return Optional.empty();
-        }catch (Exception e) {
+        } catch (Exception e) {
             logger.error(e.getMessage());
             return Optional.empty();
         }
@@ -163,7 +162,7 @@ public class InternalNioImplDefaultMavenCompiler implements InternalNioImplMaven
             in = new ObjectInputStream(bis);
             Object newObj = in.readObject();
             return newObj;
-        }finally {
+        } finally {
             try {
                 bos.close();
 
