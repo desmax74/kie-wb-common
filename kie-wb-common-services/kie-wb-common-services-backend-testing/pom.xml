@@ -16,6 +16,7 @@
         <dependency>
             <groupId>org.kie.workbench.services</groupId>
             <artifactId>kie-wb-common-services-backend</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
@@ -155,6 +156,11 @@
         <dependency>
             <groupId>org.uberfire</groupId>
             <artifactId>uberfire-nio2-model</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.guvnor</groupId>
+            <artifactId>guvnor-services-backend</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
