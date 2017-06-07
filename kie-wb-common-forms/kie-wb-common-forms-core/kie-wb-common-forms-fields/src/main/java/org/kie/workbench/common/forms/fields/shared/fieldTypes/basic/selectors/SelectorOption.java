@@ -21,6 +21,4 @@ public interface SelectorOption<T> {
     T getValue();
 
     String getText();
-
-    boolean isDefaultValue();
 }

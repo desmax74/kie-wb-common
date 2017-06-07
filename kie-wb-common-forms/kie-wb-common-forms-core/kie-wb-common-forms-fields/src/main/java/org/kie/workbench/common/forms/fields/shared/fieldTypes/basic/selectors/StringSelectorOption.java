@@ -29,7 +29,7 @@ import org.kie.workbench.common.forms.adf.definitions.annotations.layout.Layout;
 @Bindable
 @FormDefinition(
         i18n = @I18nSettings(keyPreffix = "FieldProperties.selector.options"),
-        layout = @Layout(value = {@Column, @Column, @Column}),
+        layout = @Layout(value = {@Column, @Column}),
         startElement = "value"
 )
 public class StringSelectorOption implements SelectorOption<String> {
@@ -43,21 +43,13 @@ public class StringSelectorOption implements SelectorOption<String> {
     )
     private String text;
 
-    @FormField(
-            labelKey = "defaultValue",
-            afterElement = "text"
-    )
-    private boolean defaultValue = false;
-
     public StringSelectorOption() {
     }
 
     public StringSelectorOption(@MapsTo("value") String value,
-                                @MapsTo("text") String text,
-                                @MapsTo("defaultValue") boolean defaultValue) {
+                                @MapsTo("text") String text) {
         this.value = value;
         this.text = text;
-        this.defaultValue = defaultValue;
     }
 
     @Override
@@ -76,14 +68,5 @@ public class StringSelectorOption implements SelectorOption<String> {
 
     public void setText(String text) {
         this.text = text;
-    }
-
-    @Override
-    public boolean isDefaultValue() {
-        return defaultValue;
-    }
-
-    public void setDefaultValue(Boolean defaultValue) {
-        this.defaultValue = defaultValue;
     }
 }
