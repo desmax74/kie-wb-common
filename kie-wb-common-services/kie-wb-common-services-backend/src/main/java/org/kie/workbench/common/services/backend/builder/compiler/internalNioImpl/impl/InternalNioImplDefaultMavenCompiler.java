@@ -16,6 +16,7 @@
 package org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.impl;
 
 import org.drools.core.rule.KieModuleMetaInfo;
+import org.kie.api.builder.KieModule;
 import org.kie.workbench.common.services.backend.builder.compiler.CompilationResponse;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.Compilers;
 import org.kie.workbench.common.services.backend.builder.compiler.external339.KieMavenCli;
@@ -110,9 +111,10 @@ public class InternalNioImplDefaultMavenCompiler implements InternalNioImplMaven
         int exitCode = cli.doMain(req.getKieCliRequest());
         if (exitCode == 0) {
             if (req.getInfo().isKiePluginPresent()) {
-                Optional<KieModuleMetaInfo> kieModuleMetaInfo = readKieModule(req);
-                if (kieModuleMetaInfo.isPresent()) {
-                    return new DefaultCompilationResponse(Boolean.TRUE, kieModuleMetaInfo.get());
+                Optional<KieModuleMetaInfo> kieModuleMetaInfo = readKieModuleMetaInfo(req);
+                Optional<KieModule> kieModule = readKieModule(req);
+                if (kieModuleMetaInfo.isPresent() && kieModule.isPresent()) {
+                    return new DefaultCompilationResponse(Boolean.TRUE, kieModuleMetaInfo.get(), kieModule.get());
                 }
             }
             return new DefaultCompilationResponse(Boolean.TRUE);
@@ -121,14 +123,14 @@ public class InternalNioImplDefaultMavenCompiler implements InternalNioImplMaven
         }
     }
 
-    private Optional<KieModuleMetaInfo> readKieModule(InternalNioImplCompilationRequest req) {
+    private Optional<KieModuleMetaInfo> readKieModuleMetaInfo(InternalNioImplCompilationRequest req) {
         Optional<KieModuleMetaInfo> kModule = Optional.empty();
         KieModuleMetaInfo info = null;
         try {
             /** This part is mandatory because the object loaded in the kie maven plugin is
              * loaded in a different classloader and every accessing cause a ClassCastException
              * */
-            Object o = req.getKieCliRequest().getMap().get(req.getKieCliRequest().getRequestUUID());
+            Object o = req.getKieCliRequest().getMap().get(req.getKieCliRequest().getRequestUUID()+".kieModuleMetaInfo");
 
             if (o != null) {
                 info = (KieModuleMetaInfo) readObjectFromADifferentClassloader(o);
@@ -143,6 +145,31 @@ public class InternalNioImplDefaultMavenCompiler implements InternalNioImplMaven
             return Optional.empty();
         }
         return kModule = Optional.of(info);
+    }
+
+
+    private Optional<KieModule> readKieModule(InternalNioImplCompilationRequest req) {
+        Optional<KieModule> kModule = Optional.empty();
+        KieModule kieModule = null;
+        try {
+            /** This part is mandatory because the object loaded in the kie maven plugin is
+             * loaded in a different classloader and every accessing cause a ClassCastException
+             * */
+            Object o = req.getKieCliRequest().getMap().get(req.getKieCliRequest().getRequestUUID()+".kieModule");
+
+            if (o != null) {
+                kieModule = (KieModule) readObjectFromADifferentClassloader(o);
+            }
+        } catch (java.io.NotSerializableException se) {
+            System.out.println(se.getMessage());
+            logger.error("Some part of the object are not Serializable\n");
+            logger.error(se.getMessage());
+            return Optional.empty();
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+            return Optional.empty();
+        }
+        return kModule = Optional.of(kieModule);
     }
 
     private Object readObjectFromADifferentClassloader(Object o) throws Exception {

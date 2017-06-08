@@ -21,6 +21,7 @@ import org.drools.core.rule.TypeMetaInfo;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.kie.api.builder.KieModule;
 import org.kie.workbench.common.services.backend.builder.compiler.CompilationResponse;
 import org.kie.workbench.common.services.backend.builder.compiler.TestUtil;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.Decorator;
@@ -66,8 +67,11 @@ public class NioKieMetadataTest {
         Assert.assertTrue(compiler.isValid());
 
         NIOWorkspaceCompilationInfo info = new NIOWorkspaceCompilationInfo(tmp, compiler);
-        NIOCompilationRequest req = new NIODefaultCompilationRequest(info, new String[]{MavenArgs.COMPILE, "-o"}, new HashMap<>());
+        NIOCompilationRequest req = new NIODefaultCompilationRequest(info, new String[]{MavenArgs.COMPILE }, new HashMap<>());
         CompilationResponse res = compiler.compileSync(req);
+        if(res.getErrorMessage().isPresent()){
+            System.out.println(res.getErrorMessage().get());
+        }
         Assert.assertTrue(res.isSuccessful());
         TestUtil.rm(tmpRoot.toFile());
 
@@ -80,6 +84,9 @@ public class NioKieMetadataTest {
         Assert.assertEquals(rulesBP.size(), 8);
         Map<String, TypeMetaInfo> typesMI = kieModuleMetaInfo.getTypeMetaInfos();
         Assert.assertEquals(typesMI.size(), 35);
+
+        Optional<KieModule> kieModuleOptional = res.getKieModule();
+        Assert.assertTrue(kieModuleOptional.isPresent());
 
         TestUtil.rm(tmpRoot.toFile());
     }

@@ -17,6 +17,7 @@ package org.kie.workbench.common.services.backend.builder.compiler.impl;
 
 
 import org.drools.core.rule.KieModuleMetaInfo;
+import org.kie.api.builder.KieModule;
 import org.kie.workbench.common.services.backend.builder.compiler.CompilationResponse;
 
 import java.util.Optional;
@@ -26,6 +27,7 @@ public class DefaultCompilationResponse implements CompilationResponse {
     private Boolean successful;
     private Optional<String> errorMessage;
     private Optional<KieModuleMetaInfo> kieModuleMetaInfo;
+    private Optional<KieModule> kieModule;
 
 
     public DefaultCompilationResponse(Boolean successful) {
@@ -34,10 +36,11 @@ public class DefaultCompilationResponse implements CompilationResponse {
         this.kieModuleMetaInfo = Optional.empty();
     }
 
-    public DefaultCompilationResponse(Boolean successful, KieModuleMetaInfo kieModuleMetaInfo) {
+    public DefaultCompilationResponse(Boolean successful, KieModuleMetaInfo kieModuleMetaInfo, KieModule kieModule) {
         this.successful = successful;
         this.errorMessage = Optional.empty();
         this.kieModuleMetaInfo = Optional.of(kieModuleMetaInfo);
+        this.kieModule = Optional.of(kieModule);
     }
 
     public DefaultCompilationResponse(Boolean successful, Optional<String> errorMessage) {
@@ -46,10 +49,11 @@ public class DefaultCompilationResponse implements CompilationResponse {
         this.kieModuleMetaInfo = Optional.empty();
     }
 
-    public DefaultCompilationResponse(Boolean successful, Optional<String> errorMessage, KieModuleMetaInfo kieModuleMetaInfo) {
+    public DefaultCompilationResponse(Boolean successful, Optional<String> errorMessage, KieModuleMetaInfo kieModuleMetaInfo, KieModule kieModule) {
         this.successful = successful;
         this.errorMessage = errorMessage;
         this.kieModuleMetaInfo = Optional.of(kieModuleMetaInfo);
+        this.kieModule = Optional.of(kieModule);
     }
 
     public Boolean isSuccessful() {
@@ -64,4 +68,6 @@ public class DefaultCompilationResponse implements CompilationResponse {
     public Optional<KieModuleMetaInfo> getKieModuleMetaInfo() {
         return kieModuleMetaInfo;
     }
+
+    public Optional<KieModule> getKieModule(){ return kieModule; }
 }

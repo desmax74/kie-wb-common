@@ -16,6 +16,7 @@
 package org.kie.workbench.common.services.backend.builder.compiler.nio.impl;
 
 import org.drools.core.rule.KieModuleMetaInfo;
+import org.kie.api.builder.KieModule;
 import org.kie.workbench.common.services.backend.builder.compiler.CompilationResponse;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.Compilers;
 import org.kie.workbench.common.services.backend.builder.compiler.external339.KieMavenCli;
@@ -113,12 +114,21 @@ public class NIODefaultMavenCompiler implements NIOMavenCompiler {
         if (exitCode == 0) {
 
             if (req.getInfo().isKiePluginPresent()) {
-                Optional<KieModuleMetaInfo> kieModuleMetaInfo = readKieModule(req);
-                if (kieModuleMetaInfo.isPresent()) {
-                    return new DefaultCompilationResponse(Boolean.TRUE, kieModuleMetaInfo.get());
+                KieTuple kieModuleMetaInfoTuple = readKieModuleMetaInfo(req);
+                KieTuple kieModuleTuple = readKieModule(req);
+                if (kieModuleMetaInfoTuple.getOptionalObject().isPresent() && kieModuleTuple.getOptionalObject().isPresent()) {
+                    return new DefaultCompilationResponse(Boolean.TRUE, (KieModuleMetaInfo) kieModuleMetaInfoTuple.getOptionalObject().get(), (KieModule) kieModuleTuple.getOptionalObject().get());
+                }else{
+                    StringBuilder sb = new StringBuilder();
+                    if(kieModuleMetaInfoTuple.getErrorMsg().isPresent()) {
+                        sb.append(" Error in the kieModuleMetaInfo from the kieMap:").append(kieModuleMetaInfoTuple.getErrorMsg().get());
+                    }
+                    if(kieModuleTuple.getErrorMsg().isPresent()){
+                        sb.append(" Error in the kieModule:").append(kieModuleTuple.getErrorMsg().get());
+                    }
+                    return new DefaultCompilationResponse(Boolean.FALSE,Optional.of(sb.toString()));
                 }
             }
-
             return new DefaultCompilationResponse(Boolean.TRUE);
 
         } else {
@@ -127,32 +137,49 @@ public class NIODefaultMavenCompiler implements NIOMavenCompiler {
         }
     }
 
-    private Optional<KieModuleMetaInfo> readKieModule(NIOCompilationRequest req) {
-        Optional<KieModuleMetaInfo> kModule = Optional.empty();
-        KieModuleMetaInfo info = null;
-        try {
+
+
+    private KieTuple readKieModuleMetaInfo(NIOCompilationRequest req) {
             /** This part is mandatory because the object loaded in the kie maven plugin is
              * loaded in a different classloader and every accessing cause a ClassCastException
+             * Standard for the kieMap's keys -> compilationID + dot + classtype with first lowercase
              * */
-            Object o = req.getKieCliRequest().getMap().get(req.getKieCliRequest().getRequestUUID());
-
+            Object o = req.getKieCliRequest().getMap().get(req.getKieCliRequest().getRequestUUID()+".kieModuleMetaInfo");
             if (o != null) {
-                info = (KieModuleMetaInfo) readObjectFromADifferentClassloader(o);
+                KieTuple tuple = readObjectFromADifferentClassloader(o);
+                if(tuple.getOptionalObject().isPresent()){
+                    return new KieTuple(tuple.getOptionalObject(), Optional.empty());
+                }else{
+                    return new KieTuple(Optional.empty(), tuple.getErrorMsg());
+                }
+            }else{
+                return new KieTuple(Optional.empty(), Optional.of("kieModuleMetaInfo not present in the map"));
             }
-            kModule = Optional.of(info);
-        } catch (java.io.NotSerializableException se) {
-            System.out.println(se.getMessage());
-            logger.error("Some part of the object are not Serializable\n");
-            logger.error(se.getMessage());
-            //return Optional.empty();
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            //return Optional.empty();
-        }
-        return kModule;
     }
 
-    private Object readObjectFromADifferentClassloader(Object o) throws Exception {
+    private KieTuple readKieModule(NIOCompilationRequest req) {
+
+            /** This part is mandatory because the object loaded in the kie maven plugin is
+             * loaded in a different classloader and every accessing cause a ClassCastException
+             * Standard for the kieMap's keys -> compilationID + dot + classtype with first lowercase
+             * */
+            Object o = req.getKieCliRequest().getMap().get(req.getKieCliRequest().getRequestUUID()+".kieModule");
+
+            if (o != null) {
+                KieTuple tuple = readObjectFromADifferentClassloader(o);
+                if(tuple.getOptionalObject().isPresent()){
+                    return new KieTuple(tuple.getOptionalObject(), Optional.empty());
+                }else{
+                    return new KieTuple(Optional.empty(), tuple.getErrorMsg());
+                }
+            }else{
+                return new KieTuple(Optional.empty(), Optional.of("kieModule not present in the map"));
+            }
+    }
+
+
+
+    private KieTuple readObjectFromADifferentClassloader(Object o)  {
 
         ObjectInput in = null;
         ObjectOutput out = null;
@@ -168,17 +195,51 @@ public class NIODefaultMavenCompiler implements NIOMavenCompiler {
             bis = new ByteArrayInputStream(objBytes);
             in = new ObjectInputStream(bis);
             Object newObj = in.readObject();
-            return newObj;
-        } finally {
+            return new KieTuple(Optional.of(newObj), Optional.empty());
+        }catch (NotSerializableException nse){
+            StringBuilder sb = new StringBuilder("NotSerializableException:").append(nse.getMessage());
+            return new KieTuple(Optional.empty(), Optional.of(sb.toString()));
+        }
+        catch (IOException ioe){
+            ioe.printStackTrace();
+            StringBuilder sb = new StringBuilder("IOException:").append(ioe.getMessage());
+            return new KieTuple(Optional.empty(), Optional.of(sb.toString()));
+        }
+        catch (ClassNotFoundException cnfe){
+            StringBuilder sb = new StringBuilder("ClassNotFoundException:").append(cnfe.getMessage());
+            return new KieTuple(Optional.empty(), Optional.of(sb.toString()));
+        }
+        catch (Exception e){
+            StringBuilder sb = new StringBuilder("Exception:").append(e.getMessage());
+            return new KieTuple(Optional.empty(), Optional.of(sb.toString()));
+        }
+        finally {
             try {
                 bos.close();
-
                 if (in != null) {
                     in.close();
                 }
             } catch (IOException ex) {
                 logger.error(ex.getMessage());
             }
+        }
+    }
+
+    class KieTuple{
+        private Optional<Object> optionalObj;
+        private Optional<String> errorMsg;
+
+        public KieTuple(Optional<Object> optionalObj, Optional<String> errorMsg) {
+            this.optionalObj = optionalObj;
+            this.errorMsg = errorMsg;
+        }
+
+        public Optional<Object> getOptionalObject() {
+            return optionalObj;
+        }
+
+        public Optional<String> getErrorMsg() {
+            return errorMsg;
         }
     }
 

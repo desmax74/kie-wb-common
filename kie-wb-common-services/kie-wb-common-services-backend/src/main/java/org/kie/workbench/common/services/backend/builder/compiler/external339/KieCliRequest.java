@@ -20,7 +20,6 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.maven.execution.DefaultMavenExecutionRequest;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.codehaus.plexus.classworlds.ClassWorld;
-import org.drools.core.rule.KieModuleMetaInfo;
 
 import java.util.Map;
 import java.util.Properties;
@@ -31,7 +30,6 @@ import java.util.Properties;
 public class KieCliRequest {
 
     private String[] args;
-    private KieModuleMetaInfo kieModuleMetaInfo;
     private CommandLine commandLine;
     private ClassWorld classWorld;
     private String workingDirectory;
@@ -60,14 +58,6 @@ public class KieCliRequest {
 
     public Map<String, Object> getMap() {
         return map;
-    }
-
-    public KieModuleMetaInfo getKieModuleMetaInfo() {
-        return kieModuleMetaInfo;
-    }
-
-    public void setKieModuleMetaInfo(KieModuleMetaInfo kieModuleMetaInfo) {
-        this.kieModuleMetaInfo = kieModuleMetaInfo;
     }
 
     public String[] getArgs() {

@@ -26,6 +26,7 @@ public interface KieClassLoaderProvider {
 
     /**
      * Build a classloader using the dependencies declared (transitive excluded) in the poms inside the modules
+     *
      * @param prjPath
      * @param localRepo
      * @return
@@ -34,6 +35,7 @@ public interface KieClassLoaderProvider {
 
     /**
      * Build a classloader using the dependencies declared (transitive excluded) in the poms inside the modules
+     *
      * @param deps
      * @param localRepo
      * @return
@@ -42,6 +44,7 @@ public interface KieClassLoaderProvider {
 
     /**
      * Build a classloader using the target folders of the modules in the project
+     *
      * @param targets
      * @param loadIntoClassloader
      * @return
@@ -56,6 +59,7 @@ public interface KieClassLoaderProvider {
 
     /**
      * Build a classloader with all the dependencies (included transitive) present in all the prj modules
+     *
      * @param prjPath
      * @param localRepo
      * @return
