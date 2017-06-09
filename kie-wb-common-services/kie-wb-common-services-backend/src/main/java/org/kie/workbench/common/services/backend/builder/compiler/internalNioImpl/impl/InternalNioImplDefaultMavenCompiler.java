@@ -15,6 +15,7 @@
  */
 package org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.impl;
 
+import org.drools.compiler.kie.builder.impl.FileKieModule;
 import org.drools.core.rule.KieModuleMetaInfo;
 import org.kie.api.builder.KieModule;
 import org.kie.workbench.common.services.backend.builder.compiler.CompilationResponse;
@@ -131,7 +132,8 @@ public class InternalNioImplDefaultMavenCompiler implements InternalNioImplMaven
              * loaded in a different classloader and every accessing cause a ClassCastException
              * Standard for the kieMap's keys -> compilationID + dot + classname
              * */
-            Object o = req.getKieCliRequest().getMap().get(req.getKieCliRequest().getRequestUUID()+".KieModuleMetaInfo");
+            StringBuilder sb = new StringBuilder(req.getKieCliRequest().getRequestUUID()).append(".").append(KieModuleMetaInfo.class.getName());
+            Object o = req.getKieCliRequest().getMap().get(sb.toString());
 
             if (o != null) {
                 info = (KieModuleMetaInfo) readObjectFromADifferentClassloader(o);
@@ -157,7 +159,8 @@ public class InternalNioImplDefaultMavenCompiler implements InternalNioImplMaven
              * loaded in a different classloader and every accessing cause a ClassCastException
              * Standard for the kieMap's keys -> compilationID + dot + classname
              * */
-            Object o = req.getKieCliRequest().getMap().get(req.getKieCliRequest().getRequestUUID()+".FileKieModule");
+            StringBuilder sb = new StringBuilder(req.getKieCliRequest().getRequestUUID()).append(".").append(FileKieModule.class.getName());
+            Object o = req.getKieCliRequest().getMap().get(sb.toString());
 
             if (o != null) {
                 kieModule = (KieModule) readObjectFromADifferentClassloader(o);

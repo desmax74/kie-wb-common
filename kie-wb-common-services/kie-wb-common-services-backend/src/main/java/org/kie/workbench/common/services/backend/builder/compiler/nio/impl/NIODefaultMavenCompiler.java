@@ -145,7 +145,8 @@ public class NIODefaultMavenCompiler implements NIOMavenCompiler {
              * loaded in a different classloader and every accessing cause a ClassCastException
              * Standard for the kieMap's keys -> compilationID + dot + classname
              * */
-            Object o = req.getKieCliRequest().getMap().get(req.getKieCliRequest().getRequestUUID()+"."+KieModuleMetaInfo.class.getName());
+            StringBuilder sb = new StringBuilder(req.getKieCliRequest().getRequestUUID()).append(".").append(KieModuleMetaInfo.class.getName());
+            Object o = req.getKieCliRequest().getMap().get(sb.toString());
             if (o != null) {
                 KieTuple tuple = readObjectFromADifferentClassloader(o);
                 if(tuple.getOptionalObject().isPresent()){
@@ -164,7 +165,8 @@ public class NIODefaultMavenCompiler implements NIOMavenCompiler {
              * loaded in a different classloader and every accessing cause a ClassCastException
              * Standard for the kieMap's keys -> compilationID + dot + classname
              * */
-            Object o = req.getKieCliRequest().getMap().get(req.getKieCliRequest().getRequestUUID()+"."+ FileKieModule.class.getName());
+            StringBuilder sb = new StringBuilder(req.getKieCliRequest().getRequestUUID()).append(".").append(FileKieModule.class.getName());
+            Object o = req.getKieCliRequest().getMap().get(sb.toString());
 
             if (o != null) {
                 KieTuple tuple = readObjectFromADifferentClassloader(o);
