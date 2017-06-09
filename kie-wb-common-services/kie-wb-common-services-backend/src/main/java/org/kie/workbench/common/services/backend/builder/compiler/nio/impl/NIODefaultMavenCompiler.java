@@ -15,6 +15,7 @@
  */
 package org.kie.workbench.common.services.backend.builder.compiler.nio.impl;
 
+import org.drools.compiler.kie.builder.impl.FileKieModule;
 import org.drools.core.rule.KieModuleMetaInfo;
 import org.kie.api.builder.KieModule;
 import org.kie.workbench.common.services.backend.builder.compiler.CompilationResponse;
@@ -144,7 +145,7 @@ public class NIODefaultMavenCompiler implements NIOMavenCompiler {
              * loaded in a different classloader and every accessing cause a ClassCastException
              * Standard for the kieMap's keys -> compilationID + dot + classname
              * */
-            Object o = req.getKieCliRequest().getMap().get(req.getKieCliRequest().getRequestUUID()+".KieModuleMetaInfo");
+            Object o = req.getKieCliRequest().getMap().get(req.getKieCliRequest().getRequestUUID()+"."+KieModuleMetaInfo.class.getName());
             if (o != null) {
                 KieTuple tuple = readObjectFromADifferentClassloader(o);
                 if(tuple.getOptionalObject().isPresent()){
@@ -163,7 +164,7 @@ public class NIODefaultMavenCompiler implements NIOMavenCompiler {
              * loaded in a different classloader and every accessing cause a ClassCastException
              * Standard for the kieMap's keys -> compilationID + dot + classname
              * */
-            Object o = req.getKieCliRequest().getMap().get(req.getKieCliRequest().getRequestUUID()+".KieModule");
+            Object o = req.getKieCliRequest().getMap().get(req.getKieCliRequest().getRequestUUID()+"."+ FileKieModule.class.getName());
 
             if (o != null) {
                 KieTuple tuple = readObjectFromADifferentClassloader(o);

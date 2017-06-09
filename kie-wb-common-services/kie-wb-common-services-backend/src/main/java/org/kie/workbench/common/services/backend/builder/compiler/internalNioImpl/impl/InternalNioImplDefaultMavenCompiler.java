@@ -157,7 +157,7 @@ public class InternalNioImplDefaultMavenCompiler implements InternalNioImplMaven
              * loaded in a different classloader and every accessing cause a ClassCastException
              * Standard for the kieMap's keys -> compilationID + dot + classname
              * */
-            Object o = req.getKieCliRequest().getMap().get(req.getKieCliRequest().getRequestUUID()+".KieModule");
+            Object o = req.getKieCliRequest().getMap().get(req.getKieCliRequest().getRequestUUID()+".FileKieModule");
 
             if (o != null) {
                 kieModule = (KieModule) readObjectFromADifferentClassloader(o);
