@@ -142,9 +142,9 @@ public class NIODefaultMavenCompiler implements NIOMavenCompiler {
     private KieTuple readKieModuleMetaInfo(NIOCompilationRequest req) {
             /** This part is mandatory because the object loaded in the kie maven plugin is
              * loaded in a different classloader and every accessing cause a ClassCastException
-             * Standard for the kieMap's keys -> compilationID + dot + classtype with first lowercase
+             * Standard for the kieMap's keys -> compilationID + dot + classname
              * */
-            Object o = req.getKieCliRequest().getMap().get(req.getKieCliRequest().getRequestUUID()+".kieModuleMetaInfo");
+            Object o = req.getKieCliRequest().getMap().get(req.getKieCliRequest().getRequestUUID()+".KieModuleMetaInfo");
             if (o != null) {
                 KieTuple tuple = readObjectFromADifferentClassloader(o);
                 if(tuple.getOptionalObject().isPresent()){
@@ -161,9 +161,9 @@ public class NIODefaultMavenCompiler implements NIOMavenCompiler {
 
             /** This part is mandatory because the object loaded in the kie maven plugin is
              * loaded in a different classloader and every accessing cause a ClassCastException
-             * Standard for the kieMap's keys -> compilationID + dot + classtype with first lowercase
+             * Standard for the kieMap's keys -> compilationID + dot + classname
              * */
-            Object o = req.getKieCliRequest().getMap().get(req.getKieCliRequest().getRequestUUID()+".kieModule");
+            Object o = req.getKieCliRequest().getMap().get(req.getKieCliRequest().getRequestUUID()+".KieModule");
 
             if (o != null) {
                 KieTuple tuple = readObjectFromADifferentClassloader(o);
