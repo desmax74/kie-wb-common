@@ -166,10 +166,10 @@ public class NIODefaultMavenCompiler implements NIOMavenCompiler {
              * Standard for the kieMap's keys -> compilationID + dot + classname
              * */
             StringBuilder sb = new StringBuilder(req.getKieCliRequest().getRequestUUID()).append(".").append(FileKieModule.class.getName());
-            Object o = req.getKieCliRequest().getMap().get(sb.toString());
+            byte[] o = (byte[])req.getKieCliRequest().getMap().get(sb.toString());
 
             if (o != null) {
-                KieTuple tuple = readObjectFromADifferentClassloader(o);
+                KieTuple tuple = readObjectRawFromADifferentClassloader(o);//readObjectFromADifferentClassloader(o);
                 if(tuple.getOptionalObject().isPresent()){
                     return new KieTuple(tuple.getOptionalObject(), Optional.empty());
                 }else{
@@ -181,6 +181,44 @@ public class NIODefaultMavenCompiler implements NIOMavenCompiler {
     }
 
 
+
+    private KieTuple readObjectRawFromADifferentClassloader(byte[] stream)  {
+
+        ObjectInput in = null;
+        ByteArrayInputStream bis = null;
+
+        try {
+            bis = new ByteArrayInputStream(stream);
+            in = new ObjectInputStream(bis);
+            Object newObj = in.readObject();
+            return new KieTuple(Optional.of(newObj), Optional.empty());
+        }catch (NotSerializableException nse){
+            StringBuilder sb = new StringBuilder("NotSerializableException:").append(nse.getMessage());
+            return new KieTuple(Optional.empty(), Optional.of(sb.toString()));
+        }
+        catch (IOException ioe){
+            ioe.printStackTrace();
+            StringBuilder sb = new StringBuilder("IOException:").append(ioe.getMessage());
+            return new KieTuple(Optional.empty(), Optional.of(sb.toString()));
+        }
+        catch (ClassNotFoundException cnfe){
+            StringBuilder sb = new StringBuilder("ClassNotFoundException:").append(cnfe.getMessage());
+            return new KieTuple(Optional.empty(), Optional.of(sb.toString()));
+        }
+        catch (Exception e){
+            StringBuilder sb = new StringBuilder("Exception:").append(e.getMessage());
+            return new KieTuple(Optional.empty(), Optional.of(sb.toString()));
+        }
+        finally {
+            try {
+                if (in != null) {
+                    in.close();
+                }
+            } catch (IOException ex) {
+                logger.error(ex.getMessage());
+            }
+        }
+    }
 
     private KieTuple readObjectFromADifferentClassloader(Object o)  {
 
