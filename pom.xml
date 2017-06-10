@@ -26,6 +26,9 @@
 
   <properties>
     <findbugs.failOnViolation>true</findbugs.failOnViolation>
+    <!-- In this modules the cli jboss-integration-bom 1.2 is overrided by the version used by maven embedder
+    pay attention if the tro version are deployed in the same classloader-->
+    <version.commons-cli>1.3.1</version.commons-cli>
   </properties>
 
   <dependencyManagement>
