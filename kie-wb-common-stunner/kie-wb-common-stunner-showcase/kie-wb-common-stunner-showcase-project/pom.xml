@@ -76,6 +76,11 @@
     <!-- Uberfire. -->
     <dependency>
       <groupId>org.uberfire</groupId>
+      <artifactId>uberfire-maven-support</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.uberfire</groupId>
       <artifactId>uberfire-widgets-service-api</artifactId>
     </dependency>
 
@@ -1129,6 +1134,7 @@
           <compileSourcesArtifacts>
 
             <!-- UberFire. -->
+            <compileSourcesArtifact>org.uberfire:uberfire-maven-support</compileSourcesArtifact>
             <compileSourcesArtifact>org.uberfire:uberfire-commons</compileSourcesArtifact>
             <compileSourcesArtifact>org.uberfire:uberfire-nio2-model</compileSourcesArtifact>
             <compileSourcesArtifact>org.uberfire:uberfire-io</compileSourcesArtifact>
@@ -1334,9 +1340,9 @@
             <configuration>
               <artifactItems>
                 <artifactItem>
-                  <groupId>org.wildfly</groupId>
+                  <groupId>org.jboss.errai</groupId>
                   <artifactId>wildfly-dist</artifactId>
-                  <version>${version.org.wildfly.gwt.sdm}</version>
+                  <version>${version.org.jboss.errai.wildfly}</version>
                   <type>zip</type>
                   <overWrite>false</overWrite>
                   <outputDirectory>${project.build.directory}</outputDirectory>
