@@ -40,6 +40,8 @@ public class MavenArgs {
 
     public static final String DEBUG = "-X";
 
+    public static final String OFFLINE = "-o";
+
     public static final String DEPS_BUILD_CLASSPATH = "dependency:build-classpath";
 
 }

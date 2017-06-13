@@ -15,6 +15,7 @@
  */
 package org.kie.workbench.common.services.backend.builder.compiler.nio.impl;
 
+import org.codehaus.plexus.classworlds.realm.ClassRealm;
 import org.drools.compiler.kie.builder.impl.FileKieModule;
 import org.drools.core.rule.KieModuleMetaInfo;
 import org.kie.api.builder.KieModule;
@@ -30,8 +31,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.lang.instrument.Instrumentation;
+import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Optional;
 
 
@@ -102,7 +107,7 @@ public class NIODefaultMavenCompiler implements NIOMavenCompiler {
         if (logger.isDebugEnabled()) {
             logger.debug("KieCompilationRequest:{}", req);
         }
-
+        ClassLoader contextClassloader = Thread.currentThread().getContextClassLoader();
         if (!req.getInfo().getEnhancedMainPomFile().isPresent()) {
             ProcessedPoms processedPoms = enabler.process(req);
             if (!processedPoms.getResult()) {
@@ -110,25 +115,22 @@ public class NIODefaultMavenCompiler implements NIOMavenCompiler {
             }
         }
         req.getKieCliRequest().getRequest().setLocalRepositoryPath(mavenRepo.toAbsolutePath().toString());
-
+        if (req.getInfo().isKiePluginPresent()) {
+            StringBuilder sb = new StringBuilder(req.getKieCliRequest().getRequestUUID()).append(".").append(ClassLoader.class.getName());
+            req.getKieCliRequest().getMap().put(sb.toString(),contextClassloader);
+            //logger.info("NioDefaultMetadataCompiler classloader available with :"+Thread.currentThread().getContextClassLoader());
+            //System.out.println("NioDefaultmetadatacompieler classloader available with :"+Thread.currentThread().getContextClassLoader());
+            //System.out.println("NioDefaultmetadatacompieler classloader available with key :"+sb.toString());
+        }
         int exitCode = cli.doMain(req.getKieCliRequest());
         if (exitCode == 0) {
 
+            Collection<ClassRealm> realms = req.getKieCliRequest().getClassWorld().getRealms();
+            for(ClassRealm realm : realms){
+                realm.setParentClassLoader(contextClassloader);
+            }
             if (req.getInfo().isKiePluginPresent()) {
-                KieTuple kieModuleMetaInfoTuple = readKieModuleMetaInfo(req);
-                KieTuple kieModuleTuple = readKieModule(req);
-                if (kieModuleMetaInfoTuple.getOptionalObject().isPresent() && kieModuleTuple.getOptionalObject().isPresent()) {
-                    return new DefaultCompilationResponse(Boolean.TRUE, (KieModuleMetaInfo) kieModuleMetaInfoTuple.getOptionalObject().get(), (KieModule) kieModuleTuple.getOptionalObject().get());
-                }else{
-                    StringBuilder sb = new StringBuilder();
-                    if(kieModuleMetaInfoTuple.getErrorMsg().isPresent()) {
-                        sb.append(" Error in the kieModuleMetaInfo from the kieMap:").append(kieModuleMetaInfoTuple.getErrorMsg().get());
-                    }
-                    if(kieModuleTuple.getErrorMsg().isPresent()){
-                        sb.append(" Error in the kieModule:").append(kieModuleTuple.getErrorMsg().get());
-                    }
-                    return new DefaultCompilationResponse(Boolean.FALSE,Optional.of(sb.toString()));
-                }
+                return handleKieMavenPlugin(req,contextClassloader);
             }
             return new DefaultCompilationResponse(Boolean.TRUE);
 
@@ -138,7 +140,39 @@ public class NIODefaultMavenCompiler implements NIOMavenCompiler {
         }
     }
 
+    private CompilationResponse handleKieMavenPlugin(NIOCompilationRequest req, ClassLoader contextClassloader ) {
 
+        //System.out.println("contextClassloader in handlekiemaven plugin origin:"+Thread.currentThread().getContextClassLoader());
+
+        Thread.currentThread().setContextClassLoader(contextClassloader);
+        //System.out.println("contextClassloader in handlekiemaven plugin modified:"+Thread.currentThread().getContextClassLoader());
+
+        StringBuilder sbKieModuleMetaInfo = new StringBuilder(req.getKieCliRequest().getRequestUUID()).append(".").append(KieModuleMetaInfo.class.getName());
+        StringBuilder sbFileKieModule = new StringBuilder(req.getKieCliRequest().getRequestUUID()).append(".").append(FileKieModule.class.getName());
+        //System.out.println("kieModuleMetaInfo classloader:"+req.getKieCliRequest().getMap().get(sbKieModuleMetaInfo.toString()).getClass().getClassLoader());
+        //System.out.println("kieModule classloader:"+req.getKieCliRequest().getMap().get(sbFileKieModule.toString()).getClass().getClassLoader());
+        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        //System.out.println("current classloader:"+(URLClassLoader)cl);
+        KieModuleMetaInfo kieModuleMetaInfo = (KieModuleMetaInfo) req.getKieCliRequest().getMap().get(sbKieModuleMetaInfo.toString());
+        FileKieModule kieModule = (FileKieModule) req.getKieCliRequest().getMap().get(sbFileKieModule.toString());
+
+
+        KieTuple kieModuleMetaInfoTuple = readKieModuleMetaInfo(req);
+        KieTuple kieModuleTuple = readKieModule(req);
+        if (kieModuleMetaInfoTuple.getOptionalObject().isPresent()  && kieModuleTuple.getOptionalObject().isPresent()) {
+             return new DefaultCompilationResponse(Boolean.TRUE, (KieModuleMetaInfo) kieModuleMetaInfoTuple.getOptionalObject().get(), (KieModule) kieModuleTuple.getOptionalObject().get());
+        }else{
+            StringBuilder sb = new StringBuilder();
+            if(kieModuleMetaInfoTuple.getErrorMsg().isPresent()) {
+                sb.append(" Error in the kieModuleMetaInfo from the kieMap:").append(kieModuleMetaInfoTuple.getErrorMsg().get());
+            }
+            if(kieModuleTuple.getErrorMsg().isPresent()){
+                sb.append(" Error in the kieModule:").append(kieModuleTuple.getErrorMsg().get());
+            }
+            return new DefaultCompilationResponse(Boolean.FALSE,
+                                                  Optional.of(sb.toString()));
+        }
+    }
 
     private KieTuple readKieModuleMetaInfo(NIOCompilationRequest req) {
             /** This part is mandatory because the object loaded in the kie maven plugin is
@@ -169,7 +203,7 @@ public class NIODefaultMavenCompiler implements NIOMavenCompiler {
             byte[] o = (byte[])req.getKieCliRequest().getMap().get(sb.toString());
 
             if (o != null) {
-                KieTuple tuple = readObjectRawFromADifferentClassloader(o);//readObjectFromADifferentClassloader(o);
+                KieTuple tuple = readObjectFromADifferentClassloader(o);//readObjectRawFromADifferentClassloader(o);//readObjectFromADifferentClassloader(o);
                 if(tuple.getOptionalObject().isPresent()){
                     return new KieTuple(tuple.getOptionalObject(), Optional.empty());
                 }else{
@@ -183,7 +217,9 @@ public class NIODefaultMavenCompiler implements NIOMavenCompiler {
 
 
     private KieTuple readObjectRawFromADifferentClassloader(byte[] stream)  {
-
+        if(stream == null || stream.length == 0){
+            return new KieTuple(Optional.empty(), Optional.of("stream empty"));
+        }
         ObjectInput in = null;
         ByteArrayInputStream bis = null;
 

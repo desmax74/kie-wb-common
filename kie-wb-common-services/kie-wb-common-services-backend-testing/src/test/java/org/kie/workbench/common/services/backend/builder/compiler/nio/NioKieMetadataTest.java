@@ -59,6 +59,10 @@ public class NioKieMetadataTest {
          * If the test fail check if the Drools core classes used, KieModuleMetaInfo and TypeMetaInfo implements Serializable
          * */
         //compile and install
+
+        ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
+        /*System.out.println("contextClassLoader test:"+contextClassLoader.toString());
+        System.out.println("contextClassLoader parent test:"+contextClassLoader.getParent());*/
         Path tmpRoot = Files.createTempDirectory("repo");
         Path tmp = Files.createDirectories(Paths.get(tmpRoot.toString(), "dummy"));
         TestUtil.copyTree(Paths.get("src/test/projects/kjar-2-all-resources"), tmp);
@@ -67,13 +71,12 @@ public class NioKieMetadataTest {
         Assert.assertTrue(compiler.isValid());
 
         NIOWorkspaceCompilationInfo info = new NIOWorkspaceCompilationInfo(tmp, compiler);
-        NIOCompilationRequest req = new NIODefaultCompilationRequest(info, new String[]{MavenArgs.COMPILE }, new HashMap<>());
+        NIOCompilationRequest req = new NIODefaultCompilationRequest(info, new String[]{MavenArgs.COMPILE , MavenArgs.DEBUG, "-o"}, new HashMap<>());
         CompilationResponse res = compiler.compileSync(req);
         if(res.getErrorMessage().isPresent()){
             System.out.println(res.getErrorMessage().get());
         }
         Assert.assertTrue(res.isSuccessful());
-        TestUtil.rm(tmpRoot.toFile());
 
         Optional<KieModuleMetaInfo> metaDataOptional = res.getKieModuleMetaInfo();
         Assert.assertTrue(metaDataOptional.isPresent());

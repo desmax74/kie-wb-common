@@ -214,6 +214,8 @@ public class KieMavenCli {
             toolchains(cliRequest);
             populateRequest(cliRequest);
             repository(cliRequest);
+            ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
+            System.out.println("contextClassLoader kiemavencli:"+contextClassLoader.toString());
             return execute(cliRequest);
         } catch (ExitException e) {
             return e.exitCode;
@@ -365,6 +367,11 @@ public class KieMavenCli {
     protected PlexusContainer container(KieCliRequest cliRequest)
             throws Exception {
         if (cliRequest.getClassWorld() == null) {
+            /*System.out.println("Plexus Container clazz "+Thread.currentThread().getContextClassLoader());
+            System.out.println("Plexus Container clazz parent"+Thread.currentThread().getContextClassLoader().getParent());*/
+            //StringBuilder sb = new StringBuilder(cliRequest.getRequestUUID()).append(".").append(ClassLoader.class.getName());
+            //ClassLoader cl = (ClassLoader) cliRequest.getMap().get(sb.toString());
+            //cliRequest.setClassWorld(new ClassWorld("plexus.core", cl.getParent()));
             cliRequest.setClassWorld(new ClassWorld("plexus.core", Thread.currentThread().getContextClassLoader()));
         }
 
