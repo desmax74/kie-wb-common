@@ -58,11 +58,6 @@ public class NioKieMetadataTest {
         /**
          * If the test fail check if the Drools core classes used, KieModuleMetaInfo and TypeMetaInfo implements Serializable
          * */
-        //compile and install
-
-        ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
-        /*System.out.println("contextClassLoader test:"+contextClassLoader.toString());
-        System.out.println("contextClassLoader parent test:"+contextClassLoader.getParent());*/
         Path tmpRoot = Files.createTempDirectory("repo");
         Path tmp = Files.createDirectories(Paths.get(tmpRoot.toString(), "dummy"));
         TestUtil.copyTree(Paths.get("src/test/projects/kjar-2-all-resources"), tmp);

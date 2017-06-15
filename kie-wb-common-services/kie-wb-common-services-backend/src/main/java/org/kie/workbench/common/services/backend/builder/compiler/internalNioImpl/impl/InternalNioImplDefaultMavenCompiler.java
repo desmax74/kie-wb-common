@@ -21,6 +21,7 @@ import org.kie.api.builder.KieModule;
 import org.kie.workbench.common.services.backend.builder.compiler.CompilationResponse;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.Compilers;
 import org.kie.workbench.common.services.backend.builder.compiler.external339.KieMavenCli;
+import org.kie.workbench.common.services.backend.builder.compiler.external339.KieMavenCliOutput;
 import org.kie.workbench.common.services.backend.builder.compiler.impl.DefaultCompilationResponse;
 import org.kie.workbench.common.services.backend.builder.compiler.impl.ProcessedPoms;
 import org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.InternalNioImplCompilationRequest;
@@ -57,6 +58,12 @@ public class InternalNioImplDefaultMavenCompiler implements InternalNioImplMaven
     public InternalNioImplDefaultMavenCompiler(Path mavenRepo) {
         this.mavenRepo = mavenRepo;
         cli = new KieMavenCli();
+        enabler = new InternalNioImplDefaultIncrementalCompilerEnabler(Compilers.JAVAC);
+    }
+
+    public InternalNioImplDefaultMavenCompiler(Path mavenRepo, KieMavenCliOutput output) {
+        this.mavenRepo = mavenRepo;
+        cli = new KieMavenCli(output);
         enabler = new InternalNioImplDefaultIncrementalCompilerEnabler(Compilers.JAVAC);
     }
 

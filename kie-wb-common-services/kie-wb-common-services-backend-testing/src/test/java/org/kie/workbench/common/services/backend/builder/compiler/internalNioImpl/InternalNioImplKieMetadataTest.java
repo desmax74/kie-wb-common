@@ -89,18 +89,6 @@ public class InternalNioImplKieMetadataTest {
         Optional<KieModule> kieModuleOptional = res.getKieModule();
         Assert.assertTrue(kieModuleOptional.isPresent());
 
-        // KieModuleMetaData kieModuleMetaData =
-        //@TODO continue
-        /*KieModule kModule = new KieModu
-        KieModuleMetaData metaData =  KieModuleMetaData.Factory.newKieModuleMetaData( kModule, DependencyFilter.COMPILE_FILTER );
-
-        //Check metadata
-        final Class clazz = metaData.getClass( packageName,
-                className );
-        final TypeMetaInfo typeMetaInfo = metaData.getTypeMetaInfo( clazz );
-        assertNotNull( typeMetaInfo );
-        assertFalse( typeMetaInfo.isEvent() );*/
-
         InternalNioImplTestUtil.rm(tmpRoot.toFile());
     }
 }
