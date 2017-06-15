@@ -21,7 +21,6 @@ import org.kie.api.builder.KieModule;
 import org.kie.workbench.common.services.backend.builder.compiler.CompilationResponse;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.Compilers;
 import org.kie.workbench.common.services.backend.builder.compiler.external339.KieMavenCli;
-import org.kie.workbench.common.services.backend.builder.compiler.external339.KieMavenCliOutput;
 import org.kie.workbench.common.services.backend.builder.compiler.impl.DefaultCompilationResponse;
 import org.kie.workbench.common.services.backend.builder.compiler.impl.ProcessedPoms;
 import org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.InternalNioImplCompilationRequest;
@@ -33,6 +32,7 @@ import org.uberfire.java.nio.file.Files;
 import org.uberfire.java.nio.file.Path;
 
 import java.io.*;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -61,9 +61,9 @@ public class InternalNioImplDefaultMavenCompiler implements InternalNioImplMaven
         enabler = new InternalNioImplDefaultIncrementalCompilerEnabler(Compilers.JAVAC);
     }
 
-    public InternalNioImplDefaultMavenCompiler(Path mavenRepo, KieMavenCliOutput output) {
+    public InternalNioImplDefaultMavenCompiler(Path mavenRepo, List<String> mavenOutput) {
         this.mavenRepo = mavenRepo;
-        cli = new KieMavenCli(output);
+        cli = new KieMavenCli();
         enabler = new InternalNioImplDefaultIncrementalCompilerEnabler(Compilers.JAVAC);
     }
 
@@ -112,7 +112,7 @@ public class InternalNioImplDefaultMavenCompiler implements InternalNioImplMaven
         if (!req.getInfo().getEnhancedMainPomFile().isPresent()) {
             ProcessedPoms processedPoms = enabler.process(req);
             if (!processedPoms.getResult()) {
-                return new DefaultCompilationResponse(Boolean.FALSE, Optional.of("Processing poms failed"));
+                return new DefaultCompilationResponse(Boolean.FALSE, Optional.of("Processing poms failed"),req.getKieCliRequest().getMavenOutput());
             }
         }
         req.getKieCliRequest().getRequest().setLocalRepositoryPath(mavenRepo.toAbsolutePath().toString());
@@ -122,12 +122,12 @@ public class InternalNioImplDefaultMavenCompiler implements InternalNioImplMaven
                 Optional<KieModuleMetaInfo> kieModuleMetaInfo = readKieModuleMetaInfo(req);
                 Optional<KieModule> kieModule = readKieModule(req);
                 if (kieModuleMetaInfo.isPresent() && kieModule.isPresent()) {
-                    return new DefaultCompilationResponse(Boolean.TRUE, kieModuleMetaInfo.get(), kieModule.get());
+                    return new DefaultCompilationResponse(Boolean.TRUE, kieModuleMetaInfo.get(), kieModule.get(), req.getKieCliRequest().getMavenOutput());
                 }
             }
-            return new DefaultCompilationResponse(Boolean.TRUE);
+            return new DefaultCompilationResponse(Boolean.TRUE,req.getKieCliRequest().getMavenOutput());
         } else {
-            return new DefaultCompilationResponse(Boolean.FALSE);
+            return new DefaultCompilationResponse(Boolean.FALSE,req.getKieCliRequest().getMavenOutput());
         }
     }
 

@@ -20,6 +20,7 @@ import org.kie.workbench.common.services.backend.builder.compiler.internalNioImp
 import org.uberfire.java.nio.file.Path;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
@@ -40,7 +41,7 @@ public class InternalNioImplDefaultCompilationRequest implements InternalNioImpl
         StringBuilder sb = new StringBuilder().append("-Dcompilation.ID=").append(requestUUID);
         String[] internalArgs = Arrays.copyOf(args, args.length + 1);
         internalArgs[args.length] = sb.toString();
-        this.req = new KieCliRequest(this.info.getPrjPath().toAbsolutePath().toString(), internalArgs, this.map, this.requestUUID);
+        this.req = new KieCliRequest(this.info.getPrjPath().toAbsolutePath().toString(), internalArgs, this.map, this.requestUUID, new ArrayList<>());
     }
 
     public String getRequestUUID() {

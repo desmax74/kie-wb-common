@@ -16,13 +16,14 @@
 
 package org.kie.workbench.common.services.backend.builder.compiler.external339;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.maven.execution.DefaultMavenExecutionRequest;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.codehaus.plexus.classworlds.ClassWorld;
-
-import java.util.Map;
-import java.util.Properties;
 
 /**
  * Used to open the API of Maven embedder
@@ -42,14 +43,24 @@ public class KieCliRequest {
     private MavenExecutionRequest request;
     private Map<String, Object> map;
     private String requestUUID;
+    private List<String> mavenOutput;
 
-    public KieCliRequest(String multiModuleProjectDirectory, String[] args, Map<String, Object> map, String requestUUID) {
+    public KieCliRequest(String multiModuleProjectDirectory,
+                         String[] args,
+                         Map<String, Object> map,
+                         String requestUUID,
+                         List<String> mavenOutput) {
         this.multiModuleProjectDirectory = multiModuleProjectDirectory;
         this.workingDirectory = multiModuleProjectDirectory.toString();
         this.request = new DefaultMavenExecutionRequest();
         this.args = args;
         this.map = map;
         this.requestUUID = requestUUID;
+        this.mavenOutput = mavenOutput;
+    }
+
+    public List<String> getMavenOutput() {
+        return mavenOutput;
     }
 
     public String getRequestUUID() {
@@ -135,5 +146,4 @@ public class KieCliRequest {
     public MavenExecutionRequest getRequest() {
         return request;
     }
-
 }

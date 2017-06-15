@@ -16,10 +16,11 @@
 
 package org.kie.workbench.common.services.backend.builder.compiler;
 
+import java.util.List;
+import java.util.Optional;
+
 import org.drools.core.rule.KieModuleMetaInfo;
 import org.kie.api.builder.KieModule;
-
-import java.util.Optional;
 
 /**
  * Wrapper of the result of a compilation execution
@@ -33,4 +34,6 @@ public interface CompilationResponse {
     Optional<KieModuleMetaInfo> getKieModuleMetaInfo();
 
     Optional<KieModule> getKieModule();
+
+    Optional<List<String>> getMavenOutput();
 }

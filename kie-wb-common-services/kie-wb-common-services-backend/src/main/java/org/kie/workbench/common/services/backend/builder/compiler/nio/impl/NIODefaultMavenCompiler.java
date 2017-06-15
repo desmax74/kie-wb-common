@@ -34,7 +34,6 @@ import org.kie.api.builder.KieModule;
 import org.kie.workbench.common.services.backend.builder.compiler.CompilationResponse;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.Compilers;
 import org.kie.workbench.common.services.backend.builder.compiler.external339.KieMavenCli;
-import org.kie.workbench.common.services.backend.builder.compiler.external339.KieMavenCliOutput;
 import org.kie.workbench.common.services.backend.builder.compiler.impl.DefaultCompilationResponse;
 import org.kie.workbench.common.services.backend.builder.compiler.impl.ProcessedPoms;
 import org.kie.workbench.common.services.backend.builder.compiler.nio.NIOCompilationRequest;
@@ -66,13 +65,6 @@ public class NIODefaultMavenCompiler implements NIOMavenCompiler {
     public NIODefaultMavenCompiler(Path mavenRepo) {
         this.mavenRepo = mavenRepo;
         cli = new KieMavenCli();
-        enabler = new NIODefaultIncrementalCompilerEnabler(Compilers.JAVAC);
-    }
-
-    public NIODefaultMavenCompiler(Path mavenRepo,
-                                   KieMavenCliOutput output) {
-        this.mavenRepo = mavenRepo;
-        cli = new KieMavenCli(output);
         enabler = new NIODefaultIncrementalCompilerEnabler(Compilers.JAVAC);
     }
 
@@ -130,10 +122,10 @@ public class NIODefaultMavenCompiler implements NIOMavenCompiler {
             if (req.getInfo().isKiePluginPresent()) {
                 return handleKieMavenPlugin(req);
             }
-            return new DefaultCompilationResponse(Boolean.TRUE);
+            return new DefaultCompilationResponse(Boolean.TRUE, req.getKieCliRequest().getMavenOutput());
         } else {
 
-            return new DefaultCompilationResponse(Boolean.FALSE);
+            return new DefaultCompilationResponse(Boolean.FALSE, req.getKieCliRequest().getMavenOutput());
         }
     }
 
@@ -144,7 +136,7 @@ public class NIODefaultMavenCompiler implements NIOMavenCompiler {
         if (kieModuleMetaInfoTuple.getOptionalObject().isPresent() && kieModuleTuple.getOptionalObject().isPresent()) {
             return new DefaultCompilationResponse(Boolean.TRUE,
                                                   (KieModuleMetaInfo) kieModuleMetaInfoTuple.getOptionalObject().get(),
-                                                  (KieModule) kieModuleTuple.getOptionalObject().get());
+                                                  (KieModule) kieModuleTuple.getOptionalObject().get(),req.getKieCliRequest().getMavenOutput());
         } else {
             StringBuilder sb = new StringBuilder();
             if (kieModuleMetaInfoTuple.getErrorMsg().isPresent()) {
@@ -154,7 +146,7 @@ public class NIODefaultMavenCompiler implements NIOMavenCompiler {
                 sb.append(" Error in the kieModule:").append(kieModuleTuple.getErrorMsg().get());
             }
             return new DefaultCompilationResponse(Boolean.FALSE,
-                                                  Optional.of(sb.toString()));
+                                                  Optional.of(sb.toString()),req.getKieCliRequest().getMavenOutput());
         }
     }
 

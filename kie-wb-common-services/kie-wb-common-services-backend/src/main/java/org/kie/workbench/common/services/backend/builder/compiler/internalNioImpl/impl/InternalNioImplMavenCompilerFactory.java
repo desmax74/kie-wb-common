@@ -21,7 +21,9 @@ import org.kie.workbench.common.services.backend.builder.compiler.internalNioImp
 import org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.decorators.InternalNioImplJGITCompilerBeforeDecorator;
 import org.uberfire.java.nio.file.Path;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class InternalNioImplMavenCompilerFactory {
@@ -59,6 +61,7 @@ public class InternalNioImplMavenCompilerFactory {
         }
         return compilers.get(mavenRepo);
     }
+
 
     /**
      * Delete the compilers creating a new data structure

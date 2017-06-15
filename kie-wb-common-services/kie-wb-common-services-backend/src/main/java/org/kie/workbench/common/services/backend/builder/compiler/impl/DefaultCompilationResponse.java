@@ -20,6 +20,7 @@ import org.drools.core.rule.KieModuleMetaInfo;
 import org.kie.api.builder.KieModule;
 import org.kie.workbench.common.services.backend.builder.compiler.CompilationResponse;
 
+import java.util.List;
 import java.util.Optional;
 
 public class DefaultCompilationResponse implements CompilationResponse {
@@ -28,12 +29,22 @@ public class DefaultCompilationResponse implements CompilationResponse {
     private Optional<String> errorMessage;
     private Optional<KieModuleMetaInfo> kieModuleMetaInfo;
     private Optional<KieModule> kieModule;
+    private Optional<List<String>> mavenOutput;
 
 
     public DefaultCompilationResponse(Boolean successful) {
         this.successful = successful;
         this.errorMessage = Optional.empty();
         this.kieModuleMetaInfo = Optional.empty();
+        this.mavenOutput = Optional.empty();
+    }
+
+    public DefaultCompilationResponse(Boolean successful, List<String> mavenOutput) {
+        this.successful = successful;
+        this.errorMessage = Optional.empty();
+        this.kieModuleMetaInfo = Optional.empty();
+        this.mavenOutput = Optional.of(mavenOutput);
+        this.mavenOutput = Optional.of(mavenOutput);
     }
 
     public DefaultCompilationResponse(Boolean successful, KieModuleMetaInfo kieModuleMetaInfo, KieModule kieModule) {
@@ -41,19 +52,29 @@ public class DefaultCompilationResponse implements CompilationResponse {
         this.errorMessage = Optional.empty();
         this.kieModuleMetaInfo = Optional.of(kieModuleMetaInfo);
         this.kieModule = Optional.of(kieModule);
+        this.mavenOutput = Optional.empty();
     }
 
     public DefaultCompilationResponse(Boolean successful, Optional<String> errorMessage) {
         this.successful = successful;
         this.errorMessage = errorMessage;
         this.kieModuleMetaInfo = Optional.empty();
+        this.mavenOutput = Optional.empty();
     }
 
-    public DefaultCompilationResponse(Boolean successful, Optional<String> errorMessage, KieModuleMetaInfo kieModuleMetaInfo, KieModule kieModule) {
+    public DefaultCompilationResponse(Boolean successful, Optional<String> errorMessage, List<String> mavenOutput) {
         this.successful = successful;
         this.errorMessage = errorMessage;
+        this.kieModuleMetaInfo = Optional.empty();
+        this.mavenOutput = Optional.of(mavenOutput);
+    }
+
+    public DefaultCompilationResponse(Boolean successful, KieModuleMetaInfo kieModuleMetaInfo, KieModule kieModule, List<String> mavenOutput) {
+        this.successful = successful;
+        this.errorMessage = Optional.empty();
         this.kieModuleMetaInfo = Optional.of(kieModuleMetaInfo);
         this.kieModule = Optional.of(kieModule);
+        this.mavenOutput = Optional.of(mavenOutput);
     }
 
     public Boolean isSuccessful() {
@@ -70,4 +91,6 @@ public class DefaultCompilationResponse implements CompilationResponse {
     }
 
     public Optional<KieModule> getKieModule(){ return kieModule; }
+
+    public Optional<List<String>> getMavenOutput(){ return mavenOutput;}
 }

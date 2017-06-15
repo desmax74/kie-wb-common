@@ -20,7 +20,9 @@ import org.kie.workbench.common.services.backend.builder.compiler.nio.NIOCompila
 
 import java.net.URI;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -31,6 +33,7 @@ public class NIODefaultCompilationRequest implements NIOCompilationRequest {
     private NIOWorkspaceCompilationInfo info;
     private String requestUUID;
     private Map map;
+    private List<String> mavenOutput;
 
     public NIODefaultCompilationRequest(NIOWorkspaceCompilationInfo info, String[] args, Map<String, Object> map) {
         this.info = info;
@@ -40,7 +43,19 @@ public class NIODefaultCompilationRequest implements NIOCompilationRequest {
         StringBuilder sb = new StringBuilder().append("-Dcompilation.ID=").append(requestUUID);
         String[] internalArgs = Arrays.copyOf(args, args.length + 1);
         internalArgs[args.length] = sb.toString();
-        this.req = new KieCliRequest(info.getPrjPath().toAbsolutePath().toString(), internalArgs, this.map, this.requestUUID);
+        this.req = new KieCliRequest(info.getPrjPath().toAbsolutePath().toString(), internalArgs, this.map, this.requestUUID, new ArrayList<>());
+    }
+
+    public NIODefaultCompilationRequest(NIOWorkspaceCompilationInfo info, String[] args, Map<String, Object> map, List<String> mavenOutput) {
+        this.info = info;
+        this.requestUUID = UUID.randomUUID().toString();
+        this.map = map;
+        this.mavenOutput = mavenOutput;
+
+        StringBuilder sb = new StringBuilder().append("-Dcompilation.ID=").append(requestUUID);
+        String[] internalArgs = Arrays.copyOf(args, args.length + 1);
+        internalArgs[args.length] = sb.toString();
+        this.req = new KieCliRequest(info.getPrjPath().toAbsolutePath().toString(), internalArgs, this.map, this.requestUUID, new ArrayList<>());
     }
 
 
@@ -69,5 +84,9 @@ public class NIODefaultCompilationRequest implements NIOCompilationRequest {
 
     public String getRequestUUID() {
         return requestUUID;
+    }
+
+    public List<String> getMavenOutput(){
+        return mavenOutput;
     }
 }
