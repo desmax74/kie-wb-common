@@ -16,6 +16,11 @@
 
 package org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.impl;
 
+import java.io.ByteArrayInputStream;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.DefaultArtifactHandler;
@@ -25,17 +30,11 @@ import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayInputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 public class InternalNioImplMavenUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(InternalNioImplMavenUtils.class);
 
     private final static String POM_NAME = "pom.xml";
-
 
     public static List<Artifact> resolveDependenciesFromMultimodulePrj(List<String> pomsPaths) {
         MavenXpp3Reader reader = new MavenXpp3Reader();
@@ -45,10 +44,12 @@ public class InternalNioImplMavenUtils {
                 org.uberfire.java.nio.file.Path pom = org.uberfire.java.nio.file.Paths.get(pomx);
                 Model model = reader.read(new ByteArrayInputStream(org.uberfire.java.nio.file.Files.readAllBytes(pom)));
                 if (model.getDependencyManagement() != null && model.getDependencyManagement().getDependencies() != null) {
-                    createArtifacts(model.getDependencyManagement().getDependencies(), deps);
+                    createArtifacts(model.getDependencyManagement().getDependencies(),
+                                    deps);
                 }
                 if (model.getDependencies() != null) {
-                    createArtifacts(model.getDependencies(), deps);
+                    createArtifacts(model.getDependencies(),
+                                    deps);
                 }
             }
         } catch (Exception ex) {
@@ -58,20 +59,29 @@ public class InternalNioImplMavenUtils {
         return deps;
     }
 
-    private static void createArtifacts(List<Dependency> pomDeps, List<Artifact> deps) {
+    private static void createArtifacts(List<Dependency> pomDeps,
+                                        List<Artifact> deps) {
         if (pomDeps != null && pomDeps.size() > 0) {
             for (Dependency dep : pomDeps) {
-                Artifact artifact = new DefaultArtifact(dep.getGroupId(), dep.getArtifactId(), dep.getVersion(), dep.getScope(), dep.getType(), dep.getClassifier(), new DefaultArtifactHandler());
+                Artifact artifact = new DefaultArtifact(dep.getGroupId(),
+                                                        dep.getArtifactId(),
+                                                        dep.getVersion(),
+                                                        dep.getScope(),
+                                                        dep.getType(),
+                                                        dep.getClassifier(),
+                                                        new DefaultArtifactHandler());
                 deps.add(artifact);
             }
         }
     }
 
-    public static void searchPoms(org.uberfire.java.nio.file.Path file, List<String> pomsList) {
+    public static void searchPoms(org.uberfire.java.nio.file.Path file,
+                                  List<String> pomsList) {
         try (org.uberfire.java.nio.file.DirectoryStream<org.uberfire.java.nio.file.Path> ds = org.uberfire.java.nio.file.Files.newDirectoryStream(file.toAbsolutePath())) {
             for (org.uberfire.java.nio.file.Path p : ds) {
                 if (org.uberfire.java.nio.file.Files.isDirectory(p)) {
-                    searchPoms(p, pomsList);
+                    searchPoms(p,
+                               pomsList);
                 } else if (p.endsWith(POM_NAME)) {
                     pomsList.add(p.toAbsolutePath().toString());
                 }
@@ -80,5 +90,4 @@ public class InternalNioImplMavenUtils {
             logger.error(e.getMessage());
         }
     }
-
 }

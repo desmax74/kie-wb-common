@@ -15,6 +15,9 @@
  */
 package org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl;
 
+import java.util.HashMap;
+import java.util.Optional;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -28,9 +31,6 @@ import org.kie.workbench.common.services.backend.builder.compiler.internalNioImp
 import org.uberfire.java.nio.file.Files;
 import org.uberfire.java.nio.file.Path;
 import org.uberfire.java.nio.file.Paths;
-
-import java.util.HashMap;
-
 
 public class InternalNioImplDefaultMavenIncrementalCompilerTest {
 
@@ -49,17 +49,24 @@ public class InternalNioImplDefaultMavenIncrementalCompilerTest {
     @Test
     public void testIsValidMavenHome() throws Exception {
         Path tmpRoot = Files.createTempDirectory("repo");
-        Path tmp = Files.createDirectories(Paths.get(tmpRoot.toString(), "dummy"));
+        Path tmp = Files.createDirectories(Paths.get(tmpRoot.toString(),
+                                                     "dummy"));
         //NIO creation and copy content
-        java.nio.file.Path temp = java.nio.file.Files.createDirectories(java.nio.file.Paths.get(tmpRoot.toString(), "dummy"));
-        TestUtil.copyTree(java.nio.file.Paths.get("src/test/projects/dummy"), temp);
+        java.nio.file.Path temp = java.nio.file.Files.createDirectories(java.nio.file.Paths.get(tmpRoot.toString(),
+                                                                                                "dummy"));
+        TestUtil.copyTree(java.nio.file.Paths.get("src/test/projects/dummy"),
+                          temp);
         //end NIO
 
-        InternalNioImplMavenCompiler compiler = InternalNioImplMavenCompilerFactory.getCompiler(mavenRepo, Decorator.NONE);
+        InternalNioImplMavenCompiler compiler = InternalNioImplMavenCompilerFactory.getCompiler(mavenRepo,
+                                                                                                Decorator.NONE);
         Assert.assertTrue(compiler.isValid());
 
-        InternalNioImplWorkspaceCompilationInfo info = new InternalNioImplWorkspaceCompilationInfo(tmp, compiler);
-        InternalNioImplCompilationRequest req = new InternalNioImplDefaultCompilationRequest(info, new String[]{MavenArgs.VERSION}, new HashMap<>());
+        InternalNioImplWorkspaceCompilationInfo info = new InternalNioImplWorkspaceCompilationInfo(tmp,
+                                                                                                   compiler);
+        InternalNioImplCompilationRequest req = new InternalNioImplDefaultCompilationRequest(info,
+                                                                                             new String[]{MavenArgs.VERSION},
+                                                                                             new HashMap<>(), Optional.empty());
         CompilationResponse res = compiler.compileSync(req);
         Assert.assertTrue(res.isSuccessful());
 
@@ -68,31 +75,38 @@ public class InternalNioImplDefaultMavenIncrementalCompilerTest {
 
     @Test()
     public void testIncompleteArguments() {
-        InternalNioImplMavenCompiler compiler = InternalNioImplMavenCompilerFactory.getCompiler(Paths.get(""), Decorator.NONE);
+        InternalNioImplMavenCompiler compiler = InternalNioImplMavenCompilerFactory.getCompiler(Paths.get(""),
+                                                                                                Decorator.NONE);
         Assert.assertFalse(compiler.isValid());
     }
-
 
     @Test
     public void testIncrementalWithPluginEnabled() throws Exception {
         Path tmpRoot = Files.createTempDirectory("repo");
-        Path tmp = Files.createDirectories(Paths.get(tmpRoot.toString(), "dummy"));
+        Path tmp = Files.createDirectories(Paths.get(tmpRoot.toString(),
+                                                     "dummy"));
         //NIO creation and copy content
-        java.nio.file.Path temp = java.nio.file.Files.createDirectories(java.nio.file.Paths.get(tmpRoot.toString(), "dummy"));
-        TestUtil.copyTree(java.nio.file.Paths.get("src/test/projects/dummy"), temp);
+        java.nio.file.Path temp = java.nio.file.Files.createDirectories(java.nio.file.Paths.get(tmpRoot.toString(),
+                                                                                                "dummy"));
+        TestUtil.copyTree(java.nio.file.Paths.get("src/test/projects/dummy"),
+                          temp);
         //end NIO
 
-        InternalNioImplMavenCompiler compiler = InternalNioImplMavenCompilerFactory.getCompiler(mavenRepo, Decorator.NONE);
+        InternalNioImplMavenCompiler compiler = InternalNioImplMavenCompilerFactory.getCompiler(mavenRepo,
+                                                                                                Decorator.NONE);
 
-        InternalNioImplWorkspaceCompilationInfo info = new InternalNioImplWorkspaceCompilationInfo(tmp, compiler);
-        InternalNioImplCompilationRequest req = new InternalNioImplDefaultCompilationRequest(info, new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE}, new HashMap<>());
+        InternalNioImplWorkspaceCompilationInfo info = new InternalNioImplWorkspaceCompilationInfo(tmp,
+                                                                                                   compiler);
+        InternalNioImplCompilationRequest req = new InternalNioImplDefaultCompilationRequest(info,
+                                                                                             new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE},
+                                                                                             new HashMap<>(), Optional.empty());
         CompilationResponse res = compiler.compileSync(req);
         Assert.assertTrue(res.isSuccessful());
 
-        Path incrementalConfiguration = Paths.get(tmp.toAbsolutePath().toString(), "/target/incremental/io.takari.maven.plugins_takari-lifecycle-plugin_compile_compile");
+        Path incrementalConfiguration = Paths.get(tmp.toAbsolutePath().toString(),
+                                                  "/target/incremental/io.takari.maven.plugins_takari-lifecycle-plugin_compile_compile");
         Assert.assertTrue(incrementalConfiguration.toFile().exists());
 
         InternalNioImplTestUtil.rm(tmpRoot.toFile());
     }
-
 }

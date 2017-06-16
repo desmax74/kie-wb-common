@@ -16,7 +16,6 @@
 
 package org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl;
 
-
 import org.kie.workbench.common.services.backend.builder.compiler.impl.ProcessedPoms;
 
 /**
@@ -25,5 +24,4 @@ import org.kie.workbench.common.services.backend.builder.compiler.impl.Processed
 public interface InternalNioImplIncrementalCompilerEnabler {
 
     ProcessedPoms process(InternalNioImplCompilationRequest req);
-
 }

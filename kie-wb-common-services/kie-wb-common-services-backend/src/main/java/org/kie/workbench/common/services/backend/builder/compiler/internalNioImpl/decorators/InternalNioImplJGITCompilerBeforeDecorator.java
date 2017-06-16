@@ -28,7 +28,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.uberfire.java.nio.file.Path;
 
-
 public class InternalNioImplJGITCompilerBeforeDecorator extends InternalNioImplCompilerDecorator {
 
     private static final Logger logger = LoggerFactory.getLogger(InternalNioImplJGITCompilerBeforeDecorator.class);

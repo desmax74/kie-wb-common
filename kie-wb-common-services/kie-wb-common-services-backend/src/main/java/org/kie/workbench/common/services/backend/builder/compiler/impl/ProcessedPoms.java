@@ -23,7 +23,8 @@ public class ProcessedPoms {
     private Boolean result;
     private List<String> projectPoms;
 
-    public ProcessedPoms(Boolean result, List<String> projectPoms) {
+    public ProcessedPoms(Boolean result,
+                         List<String> projectPoms) {
         this.result = result;
         this.projectPoms = projectPoms;
     }
@@ -35,5 +36,4 @@ public class ProcessedPoms {
     public List<String> getProjectPoms() {
         return projectPoms;
     }
-
 }

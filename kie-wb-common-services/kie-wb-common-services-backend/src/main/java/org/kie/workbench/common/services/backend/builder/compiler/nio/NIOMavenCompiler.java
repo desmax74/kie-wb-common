@@ -15,11 +15,10 @@
  */
 package org.kie.workbench.common.services.backend.builder.compiler.nio;
 
+import java.nio.file.Path;
 
 import org.kie.workbench.common.services.backend.builder.compiler.CompilationResponse;
 import org.kie.workbench.common.services.backend.builder.compiler.Valid;
-
-import java.nio.file.Path;
 
 /**
  * Created by Massimiliano Dessi @desmax74 on 18/04/17.
@@ -35,6 +34,4 @@ public interface NIOMavenCompiler extends Valid {
      * The local repo used by this compiler
      */
     Path getMavenRepo();
-
-
 }

@@ -17,7 +17,11 @@
 package org.kie.workbench.common.services.backend.builder.compiler.nio.impl;
 
 import java.io.IOException;
-import java.nio.file.*;
+import java.nio.file.FileSystems;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Path;
+import java.nio.file.PathMatcher;
+import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
@@ -46,19 +50,22 @@ public class NIOFinder extends SimpleFileVisitor<Path> {
     }
 
     @Override
-    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
+    public FileVisitResult visitFile(Path file,
+                                     BasicFileAttributes attrs) {
         find(file);
         return CONTINUE;
     }
 
     @Override
-    public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
+    public FileVisitResult preVisitDirectory(Path dir,
+                                             BasicFileAttributes attrs) {
         find(dir);
         return CONTINUE;
     }
 
     @Override
-    public FileVisitResult visitFileFailed(Path file, IOException exc) {
+    public FileVisitResult visitFileFailed(Path file,
+                                           IOException exc) {
         System.err.println(exc);
         return CONTINUE;
     }

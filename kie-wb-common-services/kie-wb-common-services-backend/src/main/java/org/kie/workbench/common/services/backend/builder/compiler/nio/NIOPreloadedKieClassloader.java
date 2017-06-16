@@ -40,7 +40,8 @@ public class NIOPreloadedKieClassloader extends ClassLoader {
         map = new HashMap<>();
     }
 
-    public NIOPreloadedKieClassloader(Map<String, byte[]> files, ClassLoader parent) {
+    public NIOPreloadedKieClassloader(Map<String, byte[]> files,
+                                      ClassLoader parent) {
         super(parent);
         map = files;
     }
@@ -58,27 +59,34 @@ public class NIOPreloadedKieClassloader extends ClassLoader {
                 classBytes = loadClassBytesFromFS(name);
             }
 
-            Class<?> cl = defineClass(name, classBytes, 0, classBytes.length);
-            if (cl == null) throw new ClassNotFoundException(name);
+            Class<?> cl = defineClass(name,
+                                      classBytes,
+                                      0,
+                                      classBytes.length);
+            if (cl == null) {
+                throw new ClassNotFoundException(name);
+            }
             return cl;
-
         } catch (IOException e) {
             throw new ClassNotFoundException();
         }
     }
 
     private byte[] loadClassBytesFromMap(String name) throws IOException {
-        String className = name.replace('.', '/');
+        String className = name.replace('.',
+                                        '/');
         return map.get(className);
     }
 
     private byte[] loadClassBytesFromFS(String name) throws IOException {
-        String className = name.replace('.', '/');
+        String className = name.replace('.',
+                                        '/');
         byte[] bytes = Files.readAllBytes(Paths.get(className));
         return bytes;
     }
 
     public static class IBMClassLoader extends NIOPreloadedKieClassloader {
+
         private static final Enumeration<URL> EMPTY_RESOURCE_ENUM = new Vector<URL>().elements();
         private final boolean parentImplementsFindResources;
 
@@ -86,7 +94,8 @@ public class NIOPreloadedKieClassloader extends ClassLoader {
             super(parent);
             Method m = null;
             try {
-                m = parent.getClass().getMethod("findResources", String.class);
+                m = parent.getClass().getMethod("findResources",
+                                                String.class);
             } catch (NoSuchMethodException e) {
             }
             parentImplementsFindResources = m != null && m.getDeclaringClass() == parent.getClass();

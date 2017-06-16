@@ -16,6 +16,9 @@
 
 package org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.maven.artifact.Artifact;
 import org.junit.Test;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.Compilers;
@@ -23,10 +26,7 @@ import org.kie.workbench.common.services.backend.builder.compiler.internalNioImp
 import org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.impl.InternalNioImplMavenUtils;
 import org.uberfire.java.nio.file.Paths;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class InternalNioImplMavenUtilsTest {
 
@@ -34,7 +34,8 @@ public class InternalNioImplMavenUtilsTest {
     public void presenceOfDepInThePrj() throws Exception {
         InternalNioImplDefaultIncrementalCompilerEnabler compiler = new InternalNioImplDefaultIncrementalCompilerEnabler(Compilers.JAVAC);
         List<String> pomList = new ArrayList<>();
-        InternalNioImplMavenUtils.searchPoms(Paths.get("src/test/projects/dummy_kie_multimodule_untouched/"), pomList);
+        InternalNioImplMavenUtils.searchPoms(Paths.get("src/test/projects/dummy_kie_multimodule_untouched/"),
+                                             pomList);
         assertTrue(pomList.size() == 3);
         List<Artifact> deps = InternalNioImplMavenUtils.resolveDependenciesFromMultimodulePrj(pomList);
         assertTrue(deps.size() == 1);

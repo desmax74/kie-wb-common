@@ -15,17 +15,15 @@
  */
 package org.kie.workbench.common.services.backend.builder.compiler.nio.impl;
 
-import org.kie.workbench.common.services.backend.builder.compiler.external339.KieCliRequest;
-import org.kie.workbench.common.services.backend.builder.compiler.nio.NIOCompilationRequest;
-
 import java.net.URI;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+
+import org.kie.workbench.common.services.backend.builder.compiler.external339.KieCliRequest;
+import org.kie.workbench.common.services.backend.builder.compiler.nio.NIOCompilationRequest;
 
 public class NIODefaultCompilationRequest implements NIOCompilationRequest {
 
@@ -33,31 +31,41 @@ public class NIODefaultCompilationRequest implements NIOCompilationRequest {
     private NIOWorkspaceCompilationInfo info;
     private String requestUUID;
     private Map map;
-    private List<String> mavenOutput;
 
-    public NIODefaultCompilationRequest(NIOWorkspaceCompilationInfo info, String[] args, Map<String, Object> map) {
+    public NIODefaultCompilationRequest(NIOWorkspaceCompilationInfo info,
+                                        String[] args,
+                                        Map<String, Object> map,
+                                        Optional<String> logFile) {
         this.info = info;
         this.requestUUID = UUID.randomUUID().toString();
         this.map = map;
-
-        StringBuilder sb = new StringBuilder().append("-Dcompilation.ID=").append(requestUUID);
-        String[] internalArgs = Arrays.copyOf(args, args.length + 1);
-        internalArgs[args.length] = sb.toString();
-        this.req = new KieCliRequest(info.getPrjPath().toAbsolutePath().toString(), internalArgs, this.map, this.requestUUID, new ArrayList<>());
+        String[] internalArgs = getInternalArgs(args,
+                                                logFile);
+        this.req = new KieCliRequest(info.getPrjPath().toAbsolutePath().toString(),
+                                     internalArgs,
+                                     this.map,
+                                     this.requestUUID,
+                                     logFile);
     }
 
-    public NIODefaultCompilationRequest(NIOWorkspaceCompilationInfo info, String[] args, Map<String, Object> map, List<String> mavenOutput) {
-        this.info = info;
-        this.requestUUID = UUID.randomUUID().toString();
-        this.map = map;
-        this.mavenOutput = mavenOutput;
+    private String[] getInternalArgs(String[] args,
+                                     Optional<String> logFile) {
+        String[] internalArgs;
+        StringBuilder sbCompilationID = new StringBuilder().append("-Dcompilation.ID=").append(requestUUID);
 
-        StringBuilder sb = new StringBuilder().append("-Dcompilation.ID=").append(requestUUID);
-        String[] internalArgs = Arrays.copyOf(args, args.length + 1);
-        internalArgs[args.length] = sb.toString();
-        this.req = new KieCliRequest(info.getPrjPath().toAbsolutePath().toString(), internalArgs, this.map, this.requestUUID, new ArrayList<>());
+        if (logFile.isPresent()) {
+            StringBuilder sbLogID = new StringBuilder().append("-l ").append(logFile.get()).append(".").append(requestUUID).append(".log");
+            internalArgs = Arrays.copyOf(args,
+                                         args.length + 2);
+            internalArgs[args.length + 1] = sbLogID.toString();
+        } else {
+            internalArgs = Arrays.copyOf(args,
+                                         args.length + 1);
+        }
+
+        internalArgs[args.length] = sbCompilationID.toString();
+        return internalArgs;
     }
-
 
     @Override
     public NIOWorkspaceCompilationInfo getInfo() {
@@ -84,9 +92,5 @@ public class NIODefaultCompilationRequest implements NIOCompilationRequest {
 
     public String getRequestUUID() {
         return requestUUID;
-    }
-
-    public List<String> getMavenOutput(){
-        return mavenOutput;
     }
 }

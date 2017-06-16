@@ -16,6 +16,11 @@
 
 package org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+
 import org.drools.core.rule.KieModuleMetaInfo;
 import org.drools.core.rule.TypeMetaInfo;
 import org.junit.Assert;
@@ -33,11 +38,6 @@ import org.uberfire.java.nio.file.Files;
 import org.uberfire.java.nio.file.Path;
 import org.uberfire.java.nio.file.Paths;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-
 public class InternalNioImplKieMetadataTest {
 
     private final Path mavenRepo = Paths.get("src/test/resources/.ignore/m2_repo/");
@@ -52,7 +52,6 @@ public class InternalNioImplKieMetadataTest {
         }
     }
 
-
     @Test
     public void compileAndloadKieJarMetadata() throws Exception {
         /**
@@ -60,18 +59,25 @@ public class InternalNioImplKieMetadataTest {
          * */
         //compile and install
         Path tmpRoot = Files.createTempDirectory("repo");
-        Path tmp = Files.createDirectories(Paths.get(tmpRoot.toString(), "dummy"));
+        Path tmp = Files.createDirectories(Paths.get(tmpRoot.toString(),
+                                                     "dummy"));
 
         //NIO creation and copy content
-        java.nio.file.Path temp = java.nio.file.Files.createDirectories(java.nio.file.Paths.get(tmpRoot.toString(), "dummy"));
-        TestUtil.copyTree(java.nio.file.Paths.get("src/test/projects/kjar-2-all-resources"), temp);
+        java.nio.file.Path temp = java.nio.file.Files.createDirectories(java.nio.file.Paths.get(tmpRoot.toString(),
+                                                                                                "dummy"));
+        TestUtil.copyTree(java.nio.file.Paths.get("src/test/projects/kjar-2-all-resources"),
+                          temp);
         //end NIO
 
-        InternalNioImplMavenCompiler compiler = InternalNioImplMavenCompilerFactory.getCompiler(mavenRepo, Decorator.NONE);
+        InternalNioImplMavenCompiler compiler = InternalNioImplMavenCompilerFactory.getCompiler(mavenRepo,
+                                                                                                Decorator.NONE);
         Assert.assertTrue(compiler.isValid());
 
-        InternalNioImplWorkspaceCompilationInfo info = new InternalNioImplWorkspaceCompilationInfo(tmp, compiler);
-        InternalNioImplCompilationRequest req = new InternalNioImplDefaultCompilationRequest(info, new String[]{MavenArgs.COMPILE, "-X"}, new HashMap<>());
+        InternalNioImplWorkspaceCompilationInfo info = new InternalNioImplWorkspaceCompilationInfo(tmp,
+                                                                                                   compiler);
+        InternalNioImplCompilationRequest req = new InternalNioImplDefaultCompilationRequest(info,
+                                                                                             new String[]{MavenArgs.COMPILE, MavenArgs.DEBUG},
+                                                                                             new HashMap<>(), Optional.empty());
         CompilationResponse res = compiler.compileSync(req);
         Assert.assertTrue(res.isSuccessful());
         TestUtil.rm(tmpRoot.toFile());
@@ -82,9 +88,11 @@ public class InternalNioImplKieMetadataTest {
         Assert.assertNotNull(kieModuleMetaInfo);
 
         Map<String, Set<String>> rulesBP = kieModuleMetaInfo.getRulesByPackage();
-        Assert.assertEquals(rulesBP.size(), 8);
+        Assert.assertEquals(rulesBP.size(),
+                            8);
         Map<String, TypeMetaInfo> typesMI = kieModuleMetaInfo.getTypeMetaInfos();
-        Assert.assertEquals(typesMI.size(), 35);
+        Assert.assertEquals(typesMI.size(),
+                            35);
 
         Optional<KieModule> kieModuleOptional = res.getKieModule();
         Assert.assertTrue(kieModuleOptional.isPresent());

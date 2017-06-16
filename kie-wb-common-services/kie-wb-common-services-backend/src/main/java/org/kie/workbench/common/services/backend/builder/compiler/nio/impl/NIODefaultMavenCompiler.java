@@ -23,9 +23,13 @@ import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
-import java.io.PrintStream;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 import org.drools.compiler.kie.builder.impl.FileKieModule;
@@ -33,6 +37,7 @@ import org.drools.core.rule.KieModuleMetaInfo;
 import org.kie.api.builder.KieModule;
 import org.kie.workbench.common.services.backend.builder.compiler.CompilationResponse;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.Compilers;
+import org.kie.workbench.common.services.backend.builder.compiler.configuration.FileSystemImpl;
 import org.kie.workbench.common.services.backend.builder.compiler.external339.KieMavenCli;
 import org.kie.workbench.common.services.backend.builder.compiler.impl.DefaultCompilationResponse;
 import org.kie.workbench.common.services.backend.builder.compiler.impl.ProcessedPoms;
@@ -64,14 +69,7 @@ public class NIODefaultMavenCompiler implements NIOMavenCompiler {
 
     public NIODefaultMavenCompiler(Path mavenRepo) {
         this.mavenRepo = mavenRepo;
-        cli = new KieMavenCli();
-        enabler = new NIODefaultIncrementalCompilerEnabler(Compilers.JAVAC);
-    }
-
-    public NIODefaultMavenCompiler(Path mavenRepo,
-                                   PrintStream output) {
-        this.mavenRepo = mavenRepo;
-        cli = new KieMavenCli(output);
+        cli = new KieMavenCli(FileSystemImpl.NIO);
         enabler = new NIODefaultIncrementalCompilerEnabler(Compilers.JAVAC);
     }
 
@@ -111,7 +109,8 @@ public class NIODefaultMavenCompiler implements NIOMavenCompiler {
             ProcessedPoms processedPoms = enabler.process(req);
             if (!processedPoms.getResult()) {
                 return new DefaultCompilationResponse(Boolean.FALSE,
-                                                      Optional.of("Processing poms failed"));
+                                                      Optional.of("Processing poms failed"),
+                                                      Optional.empty());
             }
         }
         req.getKieCliRequest().getRequest().setLocalRepositoryPath(mavenRepo.toAbsolutePath().toString());
@@ -122,10 +121,16 @@ public class NIODefaultMavenCompiler implements NIOMavenCompiler {
             if (req.getInfo().isKiePluginPresent()) {
                 return handleKieMavenPlugin(req);
             }
-            return new DefaultCompilationResponse(Boolean.TRUE, req.getKieCliRequest().getMavenOutput());
+            return new DefaultCompilationResponse(Boolean.TRUE,
+                                                  getOutput(req.getInfo().getPrjPath(),
+                                                            req.getKieCliRequest().getLogFile(),
+                                                            req.getKieCliRequest().getRequestUUID()));
         } else {
 
-            return new DefaultCompilationResponse(Boolean.FALSE, req.getKieCliRequest().getMavenOutput());
+            return new DefaultCompilationResponse(Boolean.FALSE,
+                                                  getOutput(req.getInfo().getPrjPath(),
+                                                            req.getKieCliRequest().getLogFile(),
+                                                            req.getKieCliRequest().getRequestUUID()));
         }
     }
 
@@ -136,7 +141,10 @@ public class NIODefaultMavenCompiler implements NIOMavenCompiler {
         if (kieModuleMetaInfoTuple.getOptionalObject().isPresent() && kieModuleTuple.getOptionalObject().isPresent()) {
             return new DefaultCompilationResponse(Boolean.TRUE,
                                                   (KieModuleMetaInfo) kieModuleMetaInfoTuple.getOptionalObject().get(),
-                                                  (KieModule) kieModuleTuple.getOptionalObject().get(),req.getKieCliRequest().getMavenOutput());
+                                                  (KieModule) kieModuleTuple.getOptionalObject().get(),
+                                                  getOutput(req.getInfo().getPrjPath(),
+                                                            req.getKieCliRequest().getLogFile(),
+                                                            req.getKieCliRequest().getRequestUUID()));
         } else {
             StringBuilder sb = new StringBuilder();
             if (kieModuleMetaInfoTuple.getErrorMsg().isPresent()) {
@@ -146,7 +154,10 @@ public class NIODefaultMavenCompiler implements NIOMavenCompiler {
                 sb.append(" Error in the kieModule:").append(kieModuleTuple.getErrorMsg().get());
             }
             return new DefaultCompilationResponse(Boolean.FALSE,
-                                                  Optional.of(sb.toString()),req.getKieCliRequest().getMavenOutput());
+                                                  Optional.of(sb.toString()),
+                                                  getOutput(req.getInfo().getPrjPath(),
+                                                            req.getKieCliRequest().getLogFile(),
+                                                            req.getKieCliRequest().getRequestUUID()));
         }
     }
 
@@ -249,6 +260,34 @@ public class NIODefaultMavenCompiler implements NIOMavenCompiler {
                 logger.error(ex.getMessage());
             }
         }
+    }
+
+    private Optional<List<String>> getOutput(Path prj,
+                                             Optional<String> log,
+                                             String uuid) {
+        if (log.isPresent()) {
+            StringBuilder sb = new StringBuilder(prj.toAbsolutePath().toString().trim()).append("/").append(log.get().trim()).append(".").append(uuid).append(".log");
+            return Optional.of(readTmpLog(sb.toString()));
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    private List<String> readTmpLog(String logFile) {
+        Path logPath = Paths.get(logFile);
+        List<String> log = new ArrayList<>();
+        if (Files.isReadable(logPath)) {
+            try {
+                for (String line : Files.readAllLines(logPath,
+                                                      Charset.defaultCharset())) {
+                    log.add(line);
+                }
+                return log;
+            } catch (IOException ioe) {
+                logger.error(ioe.getMessage());
+            }
+        }
+        return Collections.emptyList();
     }
 
     class KieTuple {

@@ -15,16 +15,15 @@
  */
 package org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.impl;
 
-import org.kie.workbench.common.services.backend.builder.compiler.external339.KieCliRequest;
-import org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.InternalNioImplCompilationRequest;
-import org.uberfire.java.nio.file.Path;
-
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+
+import org.kie.workbench.common.services.backend.builder.compiler.external339.KieCliRequest;
+import org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.InternalNioImplCompilationRequest;
+import org.uberfire.java.nio.file.Path;
 
 public class InternalNioImplDefaultCompilationRequest implements InternalNioImplCompilationRequest {
 
@@ -33,15 +32,40 @@ public class InternalNioImplDefaultCompilationRequest implements InternalNioImpl
     private String requestUUID;
     private Map map;
 
-    public InternalNioImplDefaultCompilationRequest(InternalNioImplWorkspaceCompilationInfo info, String[] args, Map<String, Object> map) {
+    public InternalNioImplDefaultCompilationRequest(InternalNioImplWorkspaceCompilationInfo info,
+                                                    String[] args,
+                                                    Map<String, Object> map,
+                                                    Optional<String> logFile) {
         this.info = info;
         this.requestUUID = UUID.randomUUID().toString();
         this.map = map;
 
-        StringBuilder sb = new StringBuilder().append("-Dcompilation.ID=").append(requestUUID);
-        String[] internalArgs = Arrays.copyOf(args, args.length + 1);
-        internalArgs[args.length] = sb.toString();
-        this.req = new KieCliRequest(this.info.getPrjPath().toAbsolutePath().toString(), internalArgs, this.map, this.requestUUID, new ArrayList<>());
+        String[] internalArgs = getInternalArgs(args,
+                                                logFile);
+        this.req = new KieCliRequest(this.info.getPrjPath().toAbsolutePath().toString(),
+                                     internalArgs,
+                                     this.map,
+                                     this.requestUUID,
+                                     logFile);
+    }
+
+    private String[] getInternalArgs(String[] args,
+                                     Optional<String> logFile) {
+        String[] internalArgs;
+        StringBuilder sbCompilationID = new StringBuilder().append("-Dcompilation.ID=").append(requestUUID);
+
+        if (logFile.isPresent()) {
+            StringBuilder sbLogID = new StringBuilder().append("-l ").append(logFile.get()).append(".").append(requestUUID).append(".log");
+            internalArgs = Arrays.copyOf(args,
+                                         args.length + 2);
+            internalArgs[args.length + 1] = sbLogID.toString();
+        } else {
+            internalArgs = Arrays.copyOf(args,
+                                         args.length + 1);
+        }
+
+        internalArgs[args.length] = sbCompilationID.toString();
+        return internalArgs;
     }
 
     public String getRequestUUID() {

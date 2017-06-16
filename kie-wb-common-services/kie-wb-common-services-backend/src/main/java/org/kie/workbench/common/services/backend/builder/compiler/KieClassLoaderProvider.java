@@ -26,44 +26,50 @@ public interface KieClassLoaderProvider {
 
     /**
      * Build a classloader using the dependencies declared (transitive excluded) in the poms inside the modules
-     *
      * @param prjPath
      * @param localRepo
      * @return
      */
-    Optional<ClassLoader> loadDependenciesClassloaderFromProject(String prjPath, String localRepo);
+    Optional<ClassLoader> loadDependenciesClassloaderFromProject(String prjPath,
+                                                                 String localRepo);
 
     /**
      * Build a classloader using the dependencies declared (transitive excluded) in the poms inside the modules
-     *
      * @param deps
      * @param localRepo
      * @return
      */
-    Optional<ClassLoader> loadDependenciesClassloaderFromProject(List<String> deps, String localRepo);
+    Optional<ClassLoader> loadDependenciesClassloaderFromProject(List<String> deps,
+                                                                 String localRepo);
 
     /**
      * Build a classloader using the target folders of the modules in the project
-     *
      * @param targets
      * @param loadIntoClassloader
      * @return
      */
-    Optional<ClassLoader> getClassloaderFromProjectTargets(List<String> targets, Boolean loadIntoClassloader);
+    Optional<ClassLoader> getClassloaderFromProjectTargets(List<String> targets,
+                                                           Boolean loadIntoClassloader);
 
-    Optional<ClassLoader> loadDependenciesClassloaderFromProject(String prjPath, String localRepo, ClassLoader parentClassloader);
+    Optional<ClassLoader> loadDependenciesClassloaderFromProject(String prjPath,
+                                                                 String localRepo,
+                                                                 ClassLoader parentClassloader);
 
-    Optional<ClassLoader> loadDependenciesClassloaderFromProject(List<String> deps, String localRepo, ClassLoader parentClassloader);
+    Optional<ClassLoader> loadDependenciesClassloaderFromProject(List<String> deps,
+                                                                 String localRepo,
+                                                                 ClassLoader parentClassloader);
 
-    Optional<ClassLoader> getClassloaderFromProjectTargets(List<String> targets, Boolean loadIntoClassloader, ClassLoader parentClassloader);
+    Optional<ClassLoader> getClassloaderFromProjectTargets(List<String> targets,
+                                                           Boolean loadIntoClassloader,
+                                                           ClassLoader parentClassloader);
 
     /**
      * Build a classloader with all the dependencies (included transitive) present in all the prj modules
-     *
      * @param prjPath
      * @param localRepo
      * @return
      */
-    Optional<ClassLoader> getClassloaderFromAllDependencies(String prjPath, String localRepo);
+    Optional<ClassLoader> getClassloaderFromAllDependencies(String prjPath,
+                                                            String localRepo);
 }
 

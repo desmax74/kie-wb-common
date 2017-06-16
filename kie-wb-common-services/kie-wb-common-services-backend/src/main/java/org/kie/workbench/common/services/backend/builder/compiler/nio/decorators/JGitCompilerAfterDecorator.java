@@ -16,6 +16,12 @@
 
 package org.kie.workbench.common.services.backend.builder.compiler.nio.decorators;
 
+import java.io.File;
+import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+
 import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -25,12 +31,6 @@ import org.kie.workbench.common.services.backend.builder.compiler.nio.NIOCompila
 import org.kie.workbench.common.services.backend.builder.compiler.nio.NIOMavenCompiler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.File;
-import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
 
 public class JGitCompilerAfterDecorator extends CompilerDecorator {
 
@@ -59,27 +59,32 @@ public class JGitCompilerAfterDecorator extends CompilerDecorator {
 
         CompilationResponse res = compiler.compileSync(req);
         if (res.isSuccessful()) {
-            applyAfter(req, res);
+            applyAfter(req,
+                       res);
         }
         return res;
     }
 
-
-    private void applyAfter(NIOCompilationRequest req, CompilationResponse res) {
+    private void applyAfter(NIOCompilationRequest req,
+                            CompilationResponse res) {
         //@TODO ADD JGIT push to sync the .class files
         Path prj = req.getInfo().getPrjPath().toAbsolutePath();
 
         Git localRepo = req.getInfo().getGitRepo().get();
         try {
             Set<String> filesChanged = localRepo.status().call().getChanged();
-            Map<String, File> trackedChanged = getTrackedChanged(filesChanged, prj);
+            Map<String, File> trackedChanged = getTrackedChanged(filesChanged,
+                                                                 prj);
 
             Set<String> filesUntracked = localRepo.status().call().getUntracked();
-            Map<String, File> dotClassToAdd = getUntrackedChangedByExtension(filesUntracked, prj, COMPILED_EXTENSION);
+            Map<String, File> dotClassToAdd = getUntrackedChangedByExtension(filesUntracked,
+                                                                             prj,
+                                                                             COMPILED_EXTENSION);
 
             trackedChanged.putAll(dotClassToAdd);
             if (trackedChanged.size() > 0) {
-                addAndCommit(localRepo, trackedChanged);
+                addAndCommit(localRepo,
+                             trackedChanged);
                 //@TODO push the result
 
             }
@@ -88,7 +93,8 @@ public class JGitCompilerAfterDecorator extends CompilerDecorator {
         }
     }
 
-    private void addAndCommit(Git localRepo, Map<String, File> trackedChanged) throws GitAPIException {
+    private void addAndCommit(Git localRepo,
+                              Map<String, File> trackedChanged) throws GitAPIException {
         AddCommand add = localRepo.add();
         for (String item : trackedChanged.keySet()) {
             add.addFilepattern(item);
@@ -97,21 +103,27 @@ public class JGitCompilerAfterDecorator extends CompilerDecorator {
         localRepo.commit().setMessage("Add untracked and changed files").call();
     }
 
-
-    private Map<String, File> getTrackedChanged(Set<String> changed, Path folderPath) {
+    private Map<String, File> getTrackedChanged(Set<String> changed,
+                                                Path folderPath) {
         Map<String, File> map = new HashMap<>();
         for (String item : changed) {
-            map.put(item, new File(folderPath.getParent().toString(), item));
+            map.put(item,
+                    new File(folderPath.getParent().toString(),
+                             item));
         }
         return map;
     }
 
-    private Map<String, File> getUntrackedChangedByExtension(Set<String> untracked, Path folderPath, String extension) {
+    private Map<String, File> getUntrackedChangedByExtension(Set<String> untracked,
+                                                             Path folderPath,
+                                                             String extension) {
         Map<String, File> map = new HashMap<>();
         //@TODO refactor with lambda
         for (String item : untracked) {
             if (item.endsWith(extension)) {
-                map.put(item, new File(folderPath.getParent().toString(), item));
+                map.put(item,
+                        new File(folderPath.getParent().toString(),
+                                 item));
             }
         }
         return map;

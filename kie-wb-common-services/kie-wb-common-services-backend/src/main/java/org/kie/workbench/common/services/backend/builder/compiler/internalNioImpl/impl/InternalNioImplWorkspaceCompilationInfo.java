@@ -16,12 +16,12 @@
 
 package org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.impl;
 
+import java.net.URI;
+import java.util.Optional;
+
 import org.eclipse.jgit.api.Git;
 import org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.InternalNioImplMavenCompiler;
 import org.uberfire.java.nio.file.Path;
-
-import java.net.URI;
-import java.util.Optional;
 
 public class InternalNioImplWorkspaceCompilationInfo {
 
@@ -32,14 +32,18 @@ public class InternalNioImplWorkspaceCompilationInfo {
     private Git gitRepo;
     private Boolean kiePluginPresent = Boolean.FALSE;
 
-    public InternalNioImplWorkspaceCompilationInfo(Path prjPath, URI remoteRepo, InternalNioImplMavenCompiler compiler, Git gitRepo) {
+    public InternalNioImplWorkspaceCompilationInfo(Path prjPath,
+                                                   URI remoteRepo,
+                                                   InternalNioImplMavenCompiler compiler,
+                                                   Git gitRepo) {
         this.prjPath = prjPath;
         this.remoteRepo = remoteRepo;
         this.compiler = compiler;
         this.gitRepo = gitRepo;
     }
 
-    public InternalNioImplWorkspaceCompilationInfo(Path prjPath, InternalNioImplMavenCompiler compiler) {
+    public InternalNioImplWorkspaceCompilationInfo(Path prjPath,
+                                                   InternalNioImplMavenCompiler compiler) {
         this.prjPath = prjPath;
         this.compiler = compiler;
     }

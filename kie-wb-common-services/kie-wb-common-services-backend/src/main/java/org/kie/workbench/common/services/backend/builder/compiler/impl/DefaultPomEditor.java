@@ -16,6 +16,13 @@
 
 package org.kie.workbench.common.services.backend.builder.compiler.impl;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.apache.maven.model.Build;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.Plugin;
@@ -32,8 +39,6 @@ import org.kie.workbench.common.services.backend.builder.compiler.configuration.
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
-
 public class DefaultPomEditor implements PomEditor {
 
     public final String POM = "pom";
@@ -48,7 +53,9 @@ public class DefaultPomEditor implements PomEditor {
     protected MavenXpp3Writer writer;
     protected Set<PomPlaceHolder> history;
 
-    public DefaultPomEditor(Set<PomPlaceHolder> history, ConfigurationProvider config, Compilers compiler) {
+    public DefaultPomEditor(Set<PomPlaceHolder> history,
+                            ConfigurationProvider config,
+                            Compilers compiler) {
         conf = config.loadConfiguration();
         reader = new MavenXpp3Reader();
         writer = new MavenXpp3Writer();
@@ -64,7 +71,6 @@ public class DefaultPomEditor implements PomEditor {
     public void cleanHistory() {
         history.clear();
     }
-
 
     protected PluginPresents updatePom(Model model) {
 
@@ -117,12 +123,27 @@ public class DefaultPomEditor implements PomEditor {
             i++;
         }
 
-        Boolean overwritePOM = updatePOMModel(build, defaultCompilerPluginPresent, alternativeCompilerPluginPresent, alternativeCompilerPosition, kiePluginPresent, kieMavenPluginPosition, i);
+        Boolean overwritePOM = updatePOMModel(build,
+                                              defaultCompilerPluginPresent,
+                                              alternativeCompilerPluginPresent,
+                                              alternativeCompilerPosition,
+                                              kiePluginPresent,
+                                              kieMavenPluginPosition,
+                                              i);
 
-        return new DefaultPluginPresents(defaultCompilerPluginPresent, alternativeCompilerPluginPresent, kiePluginPresent, overwritePOM);
+        return new DefaultPluginPresents(defaultCompilerPluginPresent,
+                                         alternativeCompilerPluginPresent,
+                                         kiePluginPresent,
+                                         overwritePOM);
     }
 
-    private Boolean updatePOMModel(Build build, Boolean defaultCompilerPluginPresent, Boolean alternativeCompilerPluginPresent, int alternativeCompilerPosition, Boolean kiePluginPresent, int kieMavenPluginPosition, int i) {
+    private Boolean updatePOMModel(Build build,
+                                   Boolean defaultCompilerPluginPresent,
+                                   Boolean alternativeCompilerPluginPresent,
+                                   int alternativeCompilerPosition,
+                                   Boolean kiePluginPresent,
+                                   int kieMavenPluginPosition,
+                                   int i) {
         Boolean overwritePOM = Boolean.FALSE;
 
         if (!alternativeCompilerPluginPresent && !kiePluginPresent) {
@@ -146,8 +167,10 @@ public class DefaultPomEditor implements PomEditor {
                 //swap the positions
                 Plugin kieMaven = build.getPlugins().get(kieMavenPluginPosition);
                 Plugin alternativeCompiler = build.getPlugins().get(alternativeCompilerPosition);
-                build.getPlugins().set(kieMavenPluginPosition, alternativeCompiler);
-                build.getPlugins().set(alternativeCompilerPosition, kieMaven);
+                build.getPlugins().set(kieMavenPluginPosition,
+                                       alternativeCompiler);
+                build.getPlugins().set(alternativeCompilerPosition,
+                                       kieMaven);
                 overwritePOM = Boolean.TRUE;
             }
         }
@@ -205,5 +228,4 @@ public class DefaultPomEditor implements PomEditor {
         executions.add(exec);
         plugin.setExecutions(executions);
     }
-
 }

@@ -16,6 +16,14 @@
 
 package org.kie.workbench.common.services.backend.builder.compiler.nio;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+
 import org.drools.core.rule.KieModuleMetaInfo;
 import org.drools.core.rule.TypeMetaInfo;
 import org.junit.Assert;
@@ -29,14 +37,6 @@ import org.kie.workbench.common.services.backend.builder.compiler.configuration.
 import org.kie.workbench.common.services.backend.builder.compiler.nio.impl.NIODefaultCompilationRequest;
 import org.kie.workbench.common.services.backend.builder.compiler.nio.impl.NIOMavenCompilerFactory;
 import org.kie.workbench.common.services.backend.builder.compiler.nio.impl.NIOWorkspaceCompilationInfo;
-
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
 
 public class NioKieMetadataTest {
 
@@ -52,23 +52,29 @@ public class NioKieMetadataTest {
         }
     }
 
-
     @Test
     public void compileAndloadKieJarMetadata() throws Exception {
         /**
          * If the test fail check if the Drools core classes used, KieModuleMetaInfo and TypeMetaInfo implements Serializable
          * */
         Path tmpRoot = Files.createTempDirectory("repo");
-        Path tmp = Files.createDirectories(Paths.get(tmpRoot.toString(), "dummy"));
-        TestUtil.copyTree(Paths.get("src/test/projects/kjar-2-all-resources"), tmp);
+        Path tmp = Files.createDirectories(Paths.get(tmpRoot.toString(),
+                                                     "dummy"));
+        TestUtil.copyTree(Paths.get("src/test/projects/kjar-2-all-resources"),
+                          tmp);
 
-        NIOMavenCompiler compiler = NIOMavenCompilerFactory.getCompiler(mavenRepo, Decorator.NONE);
+        NIOMavenCompiler compiler = NIOMavenCompilerFactory.getCompiler(mavenRepo,
+                                                                        Decorator.NONE);
         Assert.assertTrue(compiler.isValid());
 
-        NIOWorkspaceCompilationInfo info = new NIOWorkspaceCompilationInfo(tmp, compiler);
-        NIOCompilationRequest req = new NIODefaultCompilationRequest(info, new String[]{MavenArgs.COMPILE , MavenArgs.DEBUG, "-o"}, new HashMap<>());
+        NIOWorkspaceCompilationInfo info = new NIOWorkspaceCompilationInfo(tmp,
+                                                                           compiler);
+        NIOCompilationRequest req = new NIODefaultCompilationRequest(info,
+                                                                     new String[]{MavenArgs.COMPILE, MavenArgs.DEBUG, "-o"},
+                                                                     new HashMap<>(),
+                                                                     Optional.empty());
         CompilationResponse res = compiler.compileSync(req);
-        if(res.getErrorMessage().isPresent()){
+        if (res.getErrorMessage().isPresent()) {
             System.out.println(res.getErrorMessage().get());
         }
         Assert.assertTrue(res.isSuccessful());
@@ -79,9 +85,11 @@ public class NioKieMetadataTest {
         Assert.assertNotNull(kieModuleMetaInfo);
 
         Map<String, Set<String>> rulesBP = kieModuleMetaInfo.getRulesByPackage();
-        Assert.assertEquals(rulesBP.size(), 8);
+        Assert.assertEquals(rulesBP.size(),
+                            8);
         Map<String, TypeMetaInfo> typesMI = kieModuleMetaInfo.getTypeMetaInfos();
-        Assert.assertEquals(typesMI.size(), 35);
+        Assert.assertEquals(typesMI.size(),
+                            35);
 
         Optional<KieModule> kieModuleOptional = res.getKieModule();
         Assert.assertTrue(kieModuleOptional.isPresent());

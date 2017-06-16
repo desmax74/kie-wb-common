@@ -16,14 +16,6 @@
 
 package org.kie.workbench.common.services.backend.builder.compiler.nio.impl;
 
-import org.apache.maven.model.Model;
-import org.kie.workbench.common.services.backend.builder.compiler.PluginPresents;
-import org.kie.workbench.common.services.backend.builder.compiler.configuration.Compilers;
-import org.kie.workbench.common.services.backend.builder.compiler.configuration.ConfigurationProvider;
-import org.kie.workbench.common.services.backend.builder.compiler.impl.DefaultPomEditor;
-import org.kie.workbench.common.services.backend.builder.compiler.impl.PomPlaceHolder;
-import org.kie.workbench.common.services.backend.builder.compiler.nio.NIOCompilationRequest;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
@@ -33,36 +25,56 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Set;
 
+import org.apache.maven.model.Model;
+import org.kie.workbench.common.services.backend.builder.compiler.PluginPresents;
+import org.kie.workbench.common.services.backend.builder.compiler.configuration.Compilers;
+import org.kie.workbench.common.services.backend.builder.compiler.configuration.ConfigurationProvider;
+import org.kie.workbench.common.services.backend.builder.compiler.impl.DefaultPomEditor;
+import org.kie.workbench.common.services.backend.builder.compiler.impl.PomPlaceHolder;
+import org.kie.workbench.common.services.backend.builder.compiler.nio.NIOCompilationRequest;
+
 public class NIODefaultPomEditor extends DefaultPomEditor {
 
-
-    public NIODefaultPomEditor(Set<PomPlaceHolder> history, ConfigurationProvider config, Compilers compiler) {
-        super(history, config, compiler);
+    public NIODefaultPomEditor(Set<PomPlaceHolder> history,
+                               ConfigurationProvider config,
+                               Compilers compiler) {
+        super(history,
+              config,
+              compiler);
     }
-
 
     public PomPlaceHolder readSingle(Path pom) {
         PomPlaceHolder holder = new PomPlaceHolder();
         try {
             Model model = reader.read(new ByteArrayInputStream(Files.readAllBytes(pom)));
-            holder = new PomPlaceHolder(pom.toAbsolutePath().toString(), model.getArtifactId(), model.getGroupId(), model.getVersion(), model.getPackaging());
+            holder = new PomPlaceHolder(pom.toAbsolutePath().toString(),
+                                        model.getArtifactId(),
+                                        model.getGroupId(),
+                                        model.getVersion(),
+                                        model.getPackaging());
         } catch (Exception e) {
             logger.error(e.getMessage());
         }
         return holder;
     }
 
-
-    public void write(Path pom, NIOCompilationRequest request) {
+    public void write(Path pom,
+                      NIOCompilationRequest request) {
 
         try {
             Model model = reader.read(new ByteArrayInputStream(Files.readAllBytes(pom)));
             if (model == null) {
-                logger.error("Model null from pom file:", pom.toString());
+                logger.error("Model null from pom file:",
+                             pom.toString());
                 return;
             }
 
-            PomPlaceHolder pomPH = new PomPlaceHolder(pom.toAbsolutePath().toString(), model.getArtifactId(), model.getGroupId(), model.getVersion(), model.getPackaging(), Files.readAllBytes(Paths.get(pom.toAbsolutePath().toString())));
+            PomPlaceHolder pomPH = new PomPlaceHolder(pom.toAbsolutePath().toString(),
+                                                      model.getArtifactId(),
+                                                      model.getGroupId(),
+                                                      model.getVersion(),
+                                                      model.getPackaging(),
+                                                      Files.readAllBytes(Paths.get(pom.toAbsolutePath().toString())));
 
             if (!history.contains(pomPH) /* && model.getPackaging().equals(POM)*/) {
 
@@ -70,20 +82,24 @@ public class NIODefaultPomEditor extends DefaultPomEditor {
                 request.getInfo().lateAdditionKiePluginPresent(plugs.isKiePluginPresent());
                 if (plugs.getOverwritePOM()) {
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    writer.write(baos, model);
+                    writer.write(baos,
+                                 model);
                     if (logger.isDebugEnabled()) {
-                        logger.debug("Pom changed:{}", new String(baos.toByteArray(), StandardCharsets.UTF_8));
+                        logger.debug("Pom changed:{}",
+                                     new String(baos.toByteArray(),
+                                                StandardCharsets.UTF_8));
                     }
-                    Files.delete(Paths.get(pom.getParent().toAbsolutePath().toString(), POM_NAME));
-                    Files.write(Paths.get(pom.getParent().toAbsolutePath().toString(), POM_NAME),
-                            baos.toByteArray(), StandardOpenOption.CREATE_NEW);//enhanced pom
+                    Files.delete(Paths.get(pom.getParent().toAbsolutePath().toString(),
+                                           POM_NAME));
+                    Files.write(Paths.get(pom.getParent().toAbsolutePath().toString(),
+                                          POM_NAME),
+                                baos.toByteArray(),
+                                StandardOpenOption.CREATE_NEW);//enhanced pom
                 }
                 history.add(pomPH);
             }
-
         } catch (Exception e) {
             logger.error(e.getMessage());
         }
     }
-
 }

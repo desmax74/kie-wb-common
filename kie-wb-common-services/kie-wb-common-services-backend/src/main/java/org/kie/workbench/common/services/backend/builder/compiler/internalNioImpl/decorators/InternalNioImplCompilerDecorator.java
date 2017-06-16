@@ -19,4 +19,5 @@ package org.kie.workbench.common.services.backend.builder.compiler.internalNioIm
 import org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.InternalNioImplMavenCompiler;
 
 public abstract class InternalNioImplCompilerDecorator implements InternalNioImplMavenCompiler {
+
 }

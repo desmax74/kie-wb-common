@@ -16,7 +16,6 @@
 
 package org.kie.workbench.common.services.backend.builder.compiler.configuration;
 
-
 import java.util.Map;
 
 public interface ConfigurationProvider {

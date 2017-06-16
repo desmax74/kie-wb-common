@@ -16,9 +16,9 @@
 
 package org.kie.workbench.common.services.backend.builder.compiler;
 
-import org.kie.workbench.common.services.backend.builder.compiler.impl.PomPlaceHolder;
-
 import java.util.Set;
+
+import org.kie.workbench.common.services.backend.builder.compiler.impl.PomPlaceHolder;
 
 /**
  * The PomEditor manage the pom changed in a prj

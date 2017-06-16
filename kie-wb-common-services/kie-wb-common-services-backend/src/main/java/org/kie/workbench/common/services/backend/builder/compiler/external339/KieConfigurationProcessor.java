@@ -16,20 +16,6 @@
 
 package org.kie.workbench.common.services.backend.builder.compiler.external339;
 
-import org.apache.commons.cli.CommandLine;
-import org.apache.maven.artifact.InvalidRepositoryException;
-import org.apache.maven.bridge.MavenRepositorySystem;
-import org.apache.maven.building.Source;
-import org.apache.maven.cli.configuration.ConfigurationProcessor;
-import org.apache.maven.execution.MavenExecutionRequest;
-import org.apache.maven.execution.MavenExecutionRequestPopulationException;
-import org.apache.maven.settings.*;
-import org.apache.maven.settings.building.*;
-import org.apache.maven.settings.crypto.SettingsDecrypter;
-import org.codehaus.plexus.component.annotations.Component;
-import org.codehaus.plexus.component.annotations.Requirement;
-import org.slf4j.Logger;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.nio.file.Files;
@@ -37,6 +23,30 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.List;
+
+import org.apache.commons.cli.CommandLine;
+import org.apache.maven.artifact.InvalidRepositoryException;
+import org.apache.maven.bridge.MavenRepositorySystem;
+import org.apache.maven.building.Source;
+import org.apache.maven.cli.configuration.ConfigurationProcessor;
+import org.apache.maven.execution.MavenExecutionRequest;
+import org.apache.maven.execution.MavenExecutionRequestPopulationException;
+import org.apache.maven.settings.Mirror;
+import org.apache.maven.settings.Profile;
+import org.apache.maven.settings.Proxy;
+import org.apache.maven.settings.Repository;
+import org.apache.maven.settings.Server;
+import org.apache.maven.settings.Settings;
+import org.apache.maven.settings.SettingsUtils;
+import org.apache.maven.settings.building.DefaultSettingsBuildingRequest;
+import org.apache.maven.settings.building.SettingsBuilder;
+import org.apache.maven.settings.building.SettingsBuildingRequest;
+import org.apache.maven.settings.building.SettingsBuildingResult;
+import org.apache.maven.settings.building.SettingsProblem;
+import org.apache.maven.settings.crypto.SettingsDecrypter;
+import org.codehaus.plexus.component.annotations.Component;
+import org.codehaus.plexus.component.annotations.Requirement;
+import org.slf4j.Logger;
 
 /**
  * Used to open the API of the maven embedder
@@ -61,17 +71,25 @@ public class KieConfigurationProcessor {
     @Requirement
     private SettingsDecrypter settingsDecrypter;
 
-    public KieConfigurationProcessor(Path userHome, Path mavenHome) {
+    public KieConfigurationProcessor(Path userHome,
+                                     Path mavenHome) {
         USER_HOME = userHome;
         MAVEN_HOME = mavenHome;
-        USER_MAVEN_CONFIGURATION_HOME = Paths.get(USER_HOME.toString(), ".m2");
-        DEFAULT_USER_SETTINGS_FILE = Paths.get(USER_MAVEN_CONFIGURATION_HOME.toString(), "settings.xml");
-        DEFAULT_GLOBAL_SETTINGS_FILE = Paths.get(System.getProperty("maven.home", System.getProperty("user.dir", "")), "conf/settings.xml");
+        USER_MAVEN_CONFIGURATION_HOME = Paths.get(USER_HOME.toString(),
+                                                  ".m2");
+        DEFAULT_USER_SETTINGS_FILE = Paths.get(USER_MAVEN_CONFIGURATION_HOME.toString(),
+                                               "settings.xml");
+        DEFAULT_GLOBAL_SETTINGS_FILE = Paths.get(System.getProperty("maven.home",
+                                                                    System.getProperty("user.dir",
+                                                                                       "")),
+                                                 "conf/settings.xml");
     }
 
     //@TODO check if it's necessary with the nio2 impl
-    static Path resolvePath(Path file, String workingDirectory) {
-        return file == null ? null : (file.isAbsolute() ? file : (file.getFileName().startsWith(File.separator) ? file.toAbsolutePath() : (Paths.get(workingDirectory, file.getFileName().toString()))));
+    static Path resolvePath(Path file,
+                            String workingDirectory) {
+        return file == null ? null : (file.isAbsolute() ? file : (file.getFileName().startsWith(File.separator) ? file.toAbsolutePath() : (Paths.get(workingDirectory,
+                                                                                                                                                     file.getFileName().toString()))));
     }
 
     public Path getUSER_HOME() {
@@ -101,7 +119,8 @@ public class KieConfigurationProcessor {
         Path userSettingsFile;
         if (commandLine.hasOption('s')) {
             userSettingsFile = Paths.get(commandLine.getOptionValue('s'));
-            userSettingsFile = resolvePath(userSettingsFile, workingDirectory);
+            userSettingsFile = resolvePath(userSettingsFile,
+                                           workingDirectory);
             if (!Files.isRegularFile(userSettingsFile)) {
                 throw new FileNotFoundException("The specified user settings file does not exist: " + userSettingsFile);
             }
@@ -112,7 +131,8 @@ public class KieConfigurationProcessor {
         Path globalSettingsFile;
         if (commandLine.hasOption("gs")) {
             globalSettingsFile = Paths.get(commandLine.getOptionValue("gs"));
-            globalSettingsFile = resolvePath(globalSettingsFile, workingDirectory);
+            globalSettingsFile = resolvePath(globalSettingsFile,
+                                             workingDirectory);
             if (!Files.isRegularFile(globalSettingsFile)) {
                 throw new FileNotFoundException("The specified global settings file does not exist: " + globalSettingsFile);
             }
@@ -131,14 +151,17 @@ public class KieConfigurationProcessor {
             request.getEventSpyDispatcher().onEvent(settingsRequest);
         }
 
-        this.logger.debug("Reading global settings from " + this.getLocation(settingsRequest.getGlobalSettingsSource(), settingsRequest.getGlobalSettingsFile()));
-        this.logger.debug("Reading user settings from " + this.getLocation(settingsRequest.getUserSettingsSource(), settingsRequest.getUserSettingsFile()));
+        this.logger.debug("Reading global settings from " + this.getLocation(settingsRequest.getGlobalSettingsSource(),
+                                                                             settingsRequest.getGlobalSettingsFile()));
+        this.logger.debug("Reading user settings from " + this.getLocation(settingsRequest.getUserSettingsSource(),
+                                                                           settingsRequest.getUserSettingsFile()));
         SettingsBuildingResult settingsResult = this.settingsBuilder.build(settingsRequest);
         if (request.getEventSpyDispatcher() != null) {
             request.getEventSpyDispatcher().onEvent(settingsResult);
         }
 
-        this.populateFromSettings(request, settingsResult.getEffectiveSettings());
+        this.populateFromSettings(request,
+                                  settingsResult.getEffectiveSettings());
         if (!settingsResult.getProblems().isEmpty() && this.logger.isWarnEnabled()) {
             this.logger.warn("");
             this.logger.warn("Some problems were encountered while building the effective settings");
@@ -151,10 +174,10 @@ public class KieConfigurationProcessor {
 
             this.logger.warn("");
         }
-
     }
 
-    private MavenExecutionRequest populateFromSettings(MavenExecutionRequest request, Settings settings) throws MavenExecutionRequestPopulationException {
+    private MavenExecutionRequest populateFromSettings(MavenExecutionRequest request,
+                                                       Settings settings) throws MavenExecutionRequestPopulationException {
         if (settings == null) {
             return request;
         } else {
@@ -231,8 +254,8 @@ public class KieConfigurationProcessor {
         }
     }
 
-    private Object getLocation(Source source, File defaultLocation) {
+    private Object getLocation(Source source,
+                               File defaultLocation) {
         return source != null ? source.getLocation() : defaultLocation;
     }
-
 }

@@ -16,8 +16,8 @@
 
 package org.kie.workbench.common.services.backend.builder.compiler.external339;
 
-import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 
 import org.apache.commons.cli.CommandLine;
@@ -43,24 +43,28 @@ public class KieCliRequest {
     private MavenExecutionRequest request;
     private Map<String, Object> map;
     private String requestUUID;
-    private List<String> mavenOutput;
+    private Optional<String> logFile;
 
     public KieCliRequest(String multiModuleProjectDirectory,
                          String[] args,
                          Map<String, Object> map,
                          String requestUUID,
-                         List<String> mavenOutput) {
+                         Optional<String> logFile) {
         this.multiModuleProjectDirectory = multiModuleProjectDirectory;
         this.workingDirectory = multiModuleProjectDirectory.toString();
         this.request = new DefaultMavenExecutionRequest();
         this.args = args;
         this.map = map;
         this.requestUUID = requestUUID;
-        this.mavenOutput = mavenOutput;
+        if (logFile.isPresent()) {
+            this.logFile = logFile;
+        } else {
+            this.logFile = Optional.empty();
+        }
     }
 
-    public List<String> getMavenOutput() {
-        return mavenOutput;
+    public Optional<String> getLogFile() {
+        return logFile;
     }
 
     public String getRequestUUID() {

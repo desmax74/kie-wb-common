@@ -16,6 +16,8 @@
 
 package org.kie.workbench.common.services.backend.builder.compiler.nio.decorators;
 
+import java.nio.file.Path;
+
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.PullCommand;
 import org.eclipse.jgit.api.PullResult;
@@ -27,8 +29,6 @@ import org.kie.workbench.common.services.backend.builder.compiler.nio.NIOCompila
 import org.kie.workbench.common.services.backend.builder.compiler.nio.NIOMavenCompiler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.nio.file.Path;
 
 public class JGITCompilerBeforeDecorator extends CompilerDecorator {
 

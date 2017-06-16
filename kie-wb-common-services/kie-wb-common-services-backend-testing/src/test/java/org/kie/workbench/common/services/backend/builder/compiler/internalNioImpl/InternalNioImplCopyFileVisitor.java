@@ -16,20 +16,26 @@
 
 package org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl;
 
-import org.uberfire.java.nio.file.*;
+import org.uberfire.java.nio.file.FileVisitResult;
+import org.uberfire.java.nio.file.Files;
+import org.uberfire.java.nio.file.Path;
+import org.uberfire.java.nio.file.SimpleFileVisitor;
+import org.uberfire.java.nio.file.StandardCopyOption;
 import org.uberfire.java.nio.file.attribute.BasicFileAttributes;
 
 public class InternalNioImplCopyFileVisitor extends SimpleFileVisitor<Path> {
 
     private Path srcPath, dstPath;
 
-    public InternalNioImplCopyFileVisitor(Path srcPath, Path dstPath) {
+    public InternalNioImplCopyFileVisitor(Path srcPath,
+                                          Path dstPath) {
         this.srcPath = srcPath;
         this.dstPath = dstPath;
     }
 
     @Override
-    public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
+    public FileVisitResult preVisitDirectory(Path dir,
+                                             BasicFileAttributes attrs) {
         /*Path targetPath = dstPath.resolve(srcPath.relativize(dir));
         if(targetPath.toFile().exists()) {
             Boolean res = Files.deleteIfExists(targetPath);
@@ -47,10 +53,10 @@ public class InternalNioImplCopyFileVisitor extends SimpleFileVisitor<Path> {
     public FileVisitResult visitFile(Path file,
                                      BasicFileAttributes attr) {
         Path targetPath = dstPath.resolve(srcPath.relativize(file));
-        Files.copy(file, targetPath,
-                StandardCopyOption.REPLACE_EXISTING,
-                StandardCopyOption.REPLACE_EXISTING);
+        Files.copy(file,
+                   targetPath,
+                   StandardCopyOption.REPLACE_EXISTING,
+                   StandardCopyOption.REPLACE_EXISTING);
         return FileVisitResult.CONTINUE;
     }
-
 }

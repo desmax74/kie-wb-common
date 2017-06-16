@@ -18,7 +18,8 @@ package org.kie.workbench.common.services.backend.builder.compiler.configuration
 
 public enum Compilers {
 
-    JAVAC("javac"), JDT("jdt");
+    JAVAC("javac"),
+    JDT("jdt");
 
     private final String compiler;
 

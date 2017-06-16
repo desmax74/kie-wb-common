@@ -16,11 +16,11 @@
 
 package org.kie.workbench.common.services.backend.builder.compiler.nio;
 
-import org.kie.workbench.common.services.backend.builder.compiler.external339.KieCliRequest;
-import org.kie.workbench.common.services.backend.builder.compiler.nio.impl.NIOWorkspaceCompilationInfo;
-
 import java.nio.file.Path;
 import java.util.Optional;
+
+import org.kie.workbench.common.services.backend.builder.compiler.external339.KieCliRequest;
+import org.kie.workbench.common.services.backend.builder.compiler.nio.impl.NIOWorkspaceCompilationInfo;
 
 /**
  * Wrap a compilation request

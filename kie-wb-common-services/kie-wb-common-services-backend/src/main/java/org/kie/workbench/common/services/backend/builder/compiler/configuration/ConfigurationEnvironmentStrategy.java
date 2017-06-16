@@ -16,13 +16,14 @@
 
 package org.kie.workbench.common.services.backend.builder.compiler.configuration;
 
-import org.kie.workbench.common.services.backend.builder.compiler.Order;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ConfigurationEnvironmentStrategy implements ConfigurationStrategy, Order {
+import org.kie.workbench.common.services.backend.builder.compiler.Order;
+
+public class ConfigurationEnvironmentStrategy implements ConfigurationStrategy,
+                                                         Order {
 
     protected Map<ConfigurationKey, String> conf;
 
@@ -38,7 +39,8 @@ public class ConfigurationEnvironmentStrategy implements ConfigurationStrategy, 
                 valid = Boolean.FALSE;
                 break;
             } else {
-                conf.put(key, value);
+                conf.put(key,
+                         value);
             }
         }
     }

@@ -16,10 +16,6 @@
 
 package org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl;
 
-
-import org.uberfire.java.nio.file.Files;
-import org.uberfire.java.nio.file.Paths;
-
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URL;
@@ -28,11 +24,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
 
+import org.uberfire.java.nio.file.Files;
+import org.uberfire.java.nio.file.Paths;
+
 public class InternalNioImplPreloadedKieClassloader extends ClassLoader {
 
     private static boolean isIBM_JVM = System.getProperty("java.vendor").toLowerCase().contains("ibm");
     private Map<String, byte[]> map;
-
 
     public InternalNioImplPreloadedKieClassloader() {
         map = new HashMap<>();
@@ -47,7 +45,8 @@ public class InternalNioImplPreloadedKieClassloader extends ClassLoader {
         map = new HashMap<>();
     }
 
-    public InternalNioImplPreloadedKieClassloader(Map<String, byte[]> files, ClassLoader parent) {
+    public InternalNioImplPreloadedKieClassloader(Map<String, byte[]> files,
+                                                  ClassLoader parent) {
         super(parent);
         map = files;
     }
@@ -65,27 +64,34 @@ public class InternalNioImplPreloadedKieClassloader extends ClassLoader {
                 classBytes = loadClassBytesFromFS(name);
             }
 
-            Class<?> cl = defineClass(name, classBytes, 0, classBytes.length);
-            if (cl == null) throw new ClassNotFoundException(name);
+            Class<?> cl = defineClass(name,
+                                      classBytes,
+                                      0,
+                                      classBytes.length);
+            if (cl == null) {
+                throw new ClassNotFoundException(name);
+            }
             return cl;
-
         } catch (IOException e) {
             throw new ClassNotFoundException();
         }
     }
 
     private byte[] loadClassBytesFromMap(String name) throws IOException {
-        String className = name.replace('.', '/');
+        String className = name.replace('.',
+                                        '/');
         return map.get(className);
     }
 
     private byte[] loadClassBytesFromFS(String name) throws IOException {
-        String className = name.replace('.', '/');
+        String className = name.replace('.',
+                                        '/');
         byte[] bytes = Files.readAllBytes(Paths.get(className));
         return bytes;
     }
 
     public static class IBMClassLoader extends InternalNioImplPreloadedKieClassloader {
+
         private static final Enumeration<URL> EMPTY_RESOURCE_ENUM = new Vector<URL>().elements();
         private final boolean parentImplementsFindResources;
 
@@ -93,7 +99,8 @@ public class InternalNioImplPreloadedKieClassloader extends ClassLoader {
             super(parent);
             Method m = null;
             try {
-                m = parent.getClass().getMethod("findResources", String.class);
+                m = parent.getClass().getMethod("findResources",
+                                                String.class);
             } catch (NoSuchMethodException e) {
             }
             parentImplementsFindResources = m != null && m.getDeclaringClass() == parent.getClass();

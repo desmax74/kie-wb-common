@@ -25,7 +25,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -100,6 +99,7 @@ import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.eclipse.aether.transfer.TransferListener;
+import org.kie.workbench.common.services.backend.builder.compiler.configuration.FileSystemImpl;
 import org.slf4j.ILoggerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -142,8 +142,11 @@ public class KieMavenCli {
 
     private PrintStream output;
 
-    public KieMavenCli() {
+    private FileSystemImpl fs;
+
+    public KieMavenCli(FileSystemImpl fs) {
         this.output = System.out;
+        this.fs = fs;
     }
 
     public KieMavenCli(PrintStream output) {
@@ -252,7 +255,7 @@ public class KieMavenCli {
             properties(cliRequest);
             localContainer = container(cliRequest);
             commands(cliRequest);
-            configure(cliRequest);//@TODO
+            configure(cliRequest);
             toolchains(cliRequest);
             populateRequest(cliRequest);
             repository(cliRequest);
@@ -307,7 +310,8 @@ public class KieMavenCli {
         // Parsing errors can happen during the processing of the arguments and we prefer not having to check if
         // the logger is null and construct this so we can use an SLF4J logger everywhere.
         //
-        slf4jLogger = new Slf4jStdoutLogger();
+        slf4jLogger = new Slf4jStdoutLogger();//@TODO MAX
+        //slf4jLogger = new KieSlf4Logger();//@TODO MAX
 
         CLIManager cliManager = new CLIManager();
 
@@ -332,7 +336,6 @@ public class KieMavenCli {
         } catch (ParseException e) {
             System.err.println("Unable to parse maven.config: " + e.getMessage());
             cliManager.displayHelp(output);
-            cliRequest.getMavenOutput().add("Unable to parse maven.config: " + e.getMessage());
             throw e;
         }
 
@@ -343,12 +346,9 @@ public class KieMavenCli {
         } catch (ParseException e) {
             System.err.println("Unable to parse command line options: " + e.getMessage());
             cliManager.displayHelp(output);
-            cliRequest.getMavenOutput().add("Unable to parse command line options: " + e.getMessage());
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             PrintStream ps = new PrintStream(baos);
             cliManager.displayHelp(ps);
-            cliRequest.getMavenOutput().add(new String(baos.toByteArray(),
-                                                       StandardCharsets.UTF_8));
             throw e;
         }
 
@@ -358,14 +358,11 @@ public class KieMavenCli {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             PrintStream ps = new PrintStream(baos);
             cliManager.displayHelp(ps);
-            cliRequest.getMavenOutput().add(new String(baos.toByteArray(),
-                                                       StandardCharsets.UTF_8));
             throw new ExitException(0);
         }
 
         if (cliRequest.getCommandLine().hasOption(CLIManager.VERSION)) {
             System.out.println(KieCLIReportingUtils.showVersion());
-            cliRequest.getMavenOutput().add(KieCLIReportingUtils.showVersion());
             throw new ExitException(0);
         }
     }
@@ -387,9 +384,9 @@ public class KieMavenCli {
         }
 
         if (cliRequest.getCommandLine().hasOption(CLIManager.LOG_FILE)) {
-            File logFile = new File(cliRequest.getCommandLine().getOptionValue(CLIManager.LOG_FILE));
+            File logFile = new File(cliRequest.getCommandLine().getOptionValue(CLIManager.LOG_FILE).trim());
             logFile = resolveFile(logFile,
-                                  cliRequest.getWorkingDirectory());
+                                  cliRequest.getWorkingDirectory()); //@MAX
 
             try {
                 PrintStream ps = new PrintStream(new FileOutputStream(logFile));
@@ -750,7 +747,7 @@ public class KieMavenCli {
 
             if (MavenExecutionRequest.REACTOR_FAIL_NEVER.equals(cliRequest.getRequest().getReactorFailureBehavior())) {
                 slf4jLogger.info("Build failures were ignored.");
-
+                //@TODO Max
                 return 0;
             } else {
                 return 1;
@@ -1055,12 +1052,9 @@ public class KieMavenCli {
         }
 
         ExecutionListener executionListener = new ExecutionEventLogger();
-        //ExecutionListener executionListener = new KieExecutionEventLogger();
-        KieExecutionListener kieListListener = new KieExecutionListener(executionListener,
-                                                                        cliRequest.getMavenOutput());
-        //@TODO MAX
+
         if (eventSpyDispatcher != null) {
-            executionListener = eventSpyDispatcher.chainListener(kieListListener);
+            executionListener = eventSpyDispatcher.chainListener(executionListener);
         }
 
         String alternatePomFile = null;

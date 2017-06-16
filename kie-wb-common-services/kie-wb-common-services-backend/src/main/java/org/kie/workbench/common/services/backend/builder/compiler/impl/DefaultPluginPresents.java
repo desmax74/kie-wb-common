@@ -25,7 +25,10 @@ public class DefaultPluginPresents implements PluginPresents {
     private Boolean kiePluginPresent;
     private Boolean overwritePOM;
 
-    public DefaultPluginPresents(Boolean defaultCompilerPresent, Boolean alternativeCompilerPresent, Boolean kiePluginPresent, Boolean overwritePOM) {
+    public DefaultPluginPresents(Boolean defaultCompilerPresent,
+                                 Boolean alternativeCompilerPresent,
+                                 Boolean kiePluginPresent,
+                                 Boolean overwritePOM) {
         this.defaultCompilerPresent = defaultCompilerPresent;
         this.alternativeCompilerPresent = alternativeCompilerPresent;
         this.kiePluginPresent = kiePluginPresent;

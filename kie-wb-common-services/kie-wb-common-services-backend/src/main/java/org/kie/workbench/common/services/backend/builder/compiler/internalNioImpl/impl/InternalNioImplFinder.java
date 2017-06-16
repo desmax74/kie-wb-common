@@ -16,15 +16,18 @@
 
 package org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.impl;
 
-import org.uberfire.java.nio.file.*;
-import org.uberfire.java.nio.file.attribute.BasicFileAttributes;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.uberfire.java.nio.file.FileVisitResult.CONTINUE;
+import org.uberfire.java.nio.file.FileSystems;
+import org.uberfire.java.nio.file.FileVisitResult;
+import org.uberfire.java.nio.file.Path;
+import org.uberfire.java.nio.file.PathMatcher;
+import org.uberfire.java.nio.file.SimpleFileVisitor;
+import org.uberfire.java.nio.file.attribute.BasicFileAttributes;
 
+import static org.uberfire.java.nio.file.FileVisitResult.CONTINUE;
 
 public class InternalNioImplFinder extends SimpleFileVisitor<Path> {
 
@@ -48,18 +51,21 @@ public class InternalNioImplFinder extends SimpleFileVisitor<Path> {
     }
 
     @Override
-    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
+    public FileVisitResult visitFile(Path file,
+                                     BasicFileAttributes attrs) {
         find(file);
         return CONTINUE;
     }
 
     @Override
-    public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
+    public FileVisitResult preVisitDirectory(Path dir,
+                                             BasicFileAttributes attrs) {
         find(dir);
         return CONTINUE;
     }
 
-    public FileVisitResult visitFileFailed(Path file, IOException exc) {
+    public FileVisitResult visitFileFailed(Path file,
+                                           IOException exc) {
         System.err.println(exc);
         return CONTINUE;
     }

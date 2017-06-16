@@ -15,7 +15,6 @@
  */
 package org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl;
 
-
 import org.kie.workbench.common.services.backend.builder.compiler.CompilationResponse;
 import org.kie.workbench.common.services.backend.builder.compiler.Valid;
 import org.uberfire.java.nio.file.Path;
@@ -34,6 +33,4 @@ public interface InternalNioImplMavenCompiler extends Valid {
      * The local repo used by this compiler
      */
     Path getMavenRepo();
-
-
 }

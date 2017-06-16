@@ -16,16 +16,16 @@
 
 package org.kie.workbench.common.services.backend.builder.compiler.external339;
 
-import org.apache.commons.lang3.StringUtils;
-import org.codehaus.plexus.util.Os;
-import org.slf4j.Logger;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Properties;
+
+import org.apache.commons.lang3.StringUtils;
+import org.codehaus.plexus.util.Os;
+import org.slf4j.Logger;
 
 /**
  * Used to open the API of the maven embedder
@@ -48,16 +48,20 @@ public class KieCLIReportingUtils {
         version.append(createMavenVersionString(properties)).append(ls);
         version.append(reduce(
                 properties.getProperty("distributionShortName") + " home: " + System.getProperty("maven.home",
-                        "<unknown Maven "
-                                + "home>")))
+                                                                                                 "<unknown Maven "
+                                                                                                         + "home>")))
                 .append(
                         ls);
         version.append("Java version: ").append(
-                System.getProperty("java.version", "<unknown Java version>")).append(", vendor: ").append(
-                System.getProperty("java.vendor", "<unknown vendor>")).append(ls);
-        version.append("Java home: ").append(System.getProperty("java.home", "<unknown Java home>")).append(ls);
+                System.getProperty("java.version",
+                                   "<unknown Java version>")).append(", vendor: ").append(
+                System.getProperty("java.vendor",
+                                   "<unknown vendor>")).append(ls);
+        version.append("Java home: ").append(System.getProperty("java.home",
+                                                                "<unknown Java home>")).append(ls);
         version.append("Default locale: ").append(Locale.getDefault()).append(", platform encoding: ").append(
-                System.getProperty("file.encoding", "<unknown encoding>")).append(ls);
+                System.getProperty("file.encoding",
+                                   "<unknown encoding>")).append(ls);
         version.append("OS name: \"").append(Os.OS_NAME).append("\", version: \"").append(Os.OS_VERSION).append(
                 "\", arch: \"").append(Os.OS_ARCH).append("\", family: \"").append(Os.OS_FAMILY).append('\"');
         return version.toString();
@@ -65,7 +69,6 @@ public class KieCLIReportingUtils {
 
     /**
      * Create a human readable string containing the Maven version, buildnumber, and time of build
-     *
      * @param buildProperties The build properties
      * @return Readable build info
      */
@@ -109,9 +112,13 @@ public class KieCLIReportingUtils {
         return properties;
     }
 
-    public static void showError(Logger logger, String message, Throwable e, boolean showStackTrace) {
+    public static void showError(Logger logger,
+                                 String message,
+                                 Throwable e,
+                                 boolean showStackTrace) {
         if (showStackTrace) {
-            logger.error(message, e);
+            logger.error(message,
+                         e);
         } else {
             logger.error(message);
 
@@ -154,7 +161,11 @@ public class KieCLIReportingUtils {
             format = "%4$d.%5$03d s";
         }
 
-        return String.format(format, d, h, m, s, ms);
+        return String.format(format,
+                             d,
+                             h,
+                             m,
+                             s,
+                             ms);
     }
-
 }

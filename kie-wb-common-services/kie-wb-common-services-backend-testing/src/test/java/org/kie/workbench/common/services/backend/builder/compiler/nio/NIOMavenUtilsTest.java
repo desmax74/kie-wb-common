@@ -16,17 +16,17 @@
 
 package org.kie.workbench.common.services.backend.builder.compiler.nio;
 
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.maven.artifact.Artifact;
 import org.junit.Test;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.Compilers;
 import org.kie.workbench.common.services.backend.builder.compiler.nio.impl.NIODefaultIncrementalCompilerEnabler;
 import org.kie.workbench.common.services.backend.builder.compiler.nio.impl.NIOMavenUtils;
 
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class NIOMavenUtilsTest {
 
@@ -34,7 +34,8 @@ public class NIOMavenUtilsTest {
     public void presenceOfDepInThePrj() throws Exception {
         NIODefaultIncrementalCompilerEnabler compiler = new NIODefaultIncrementalCompilerEnabler(Compilers.JAVAC);
         List<String> pomList = new ArrayList<>();
-        NIOMavenUtils.searchPoms(Paths.get("src/test/projects/dummy_kie_multimodule_untouched/"), pomList);
+        NIOMavenUtils.searchPoms(Paths.get("src/test/projects/dummy_kie_multimodule_untouched/"),
+                                 pomList);
         assertTrue(pomList.size() == 3);
         List<Artifact> deps = NIOMavenUtils.resolveDependenciesFromMultimodulePrj(pomList);
         assertTrue(deps.size() == 1);

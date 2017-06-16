@@ -16,13 +16,6 @@
 
 package org.kie.workbench.common.services.backend.builder.compiler.nio.decorators;
 
-import org.kie.workbench.common.services.backend.builder.compiler.CompilationResponse;
-import org.kie.workbench.common.services.backend.builder.compiler.decorators.CompilerDecorator;
-import org.kie.workbench.common.services.backend.builder.compiler.nio.NIOCompilationRequest;
-import org.kie.workbench.common.services.backend.builder.compiler.nio.NIOMavenCompiler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.io.FilenameFilter;
 import java.net.MalformedURLException;
@@ -31,6 +24,13 @@ import java.net.URLClassLoader;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.kie.workbench.common.services.backend.builder.compiler.CompilationResponse;
+import org.kie.workbench.common.services.backend.builder.compiler.decorators.CompilerDecorator;
+import org.kie.workbench.common.services.backend.builder.compiler.nio.NIOCompilationRequest;
+import org.kie.workbench.common.services.backend.builder.compiler.nio.NIOMavenCompiler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ClassloaderAfterDecorator extends CompilerDecorator {
 
@@ -53,7 +53,8 @@ public class ClassloaderAfterDecorator extends CompilerDecorator {
         CompilationResponse res = compiler.compileSync(req);
         if (res.isSuccessful()) {
             try {
-                applyAfter(req, res);
+                applyAfter(req,
+                           res);
             } catch (MalformedURLException muex) {
                 logger.error(muex.getMessage());
             }
@@ -66,23 +67,28 @@ public class ClassloaderAfterDecorator extends CompilerDecorator {
         return compiler.getMavenRepo();
     }
 
-    private void applyAfter(NIOCompilationRequest req, CompilationResponse res) throws MalformedURLException {
-        File classDir = new File(req.getInfo().getPrjPath().toFile(), "target/classes");
+    private void applyAfter(NIOCompilationRequest req,
+                            CompilationResponse res) throws MalformedURLException {
+        File classDir = new File(req.getInfo().getPrjPath().toFile(),
+                                 "target/classes");
 
         System.out.println(classDir);
 
         List<URL> classloadingURLs = new ArrayList<>();
         classloadingURLs.add(classDir.toURI().toURL());
 
-        File libDir = new File(req.getInfo().getPrjPath().toFile(), "target/lib");
+        File libDir = new File(req.getInfo().getPrjPath().toFile(),
+                               "target/lib");
         for (File jar : libDir.listFiles(new FilenameFilter() {
-            public boolean accept(File dir, String name) {
+            public boolean accept(File dir,
+                                  String name) {
                 return name.endsWith(".jar");
             }
         })) {
             classloadingURLs.add(jar.toURI().toURL());
         }
-        ClassLoader cl = new URLClassLoader(classloadingURLs.toArray(new URL[]{}), null);
+        ClassLoader cl = new URLClassLoader(classloadingURLs.toArray(new URL[]{}),
+                                            null);
         //@TODO add the changes
 
     }

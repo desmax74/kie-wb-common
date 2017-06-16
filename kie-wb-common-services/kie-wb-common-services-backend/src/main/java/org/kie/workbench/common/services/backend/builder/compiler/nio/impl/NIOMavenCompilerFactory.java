@@ -16,13 +16,13 @@
 
 package org.kie.workbench.common.services.backend.builder.compiler.nio.impl;
 
-import org.kie.workbench.common.services.backend.builder.compiler.configuration.Decorator;
-import org.kie.workbench.common.services.backend.builder.compiler.nio.NIOMavenCompiler;
-import org.kie.workbench.common.services.backend.builder.compiler.nio.decorators.JGITCompilerBeforeDecorator;
-
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import org.kie.workbench.common.services.backend.builder.compiler.configuration.Decorator;
+import org.kie.workbench.common.services.backend.builder.compiler.nio.NIOMavenCompiler;
+import org.kie.workbench.common.services.backend.builder.compiler.nio.decorators.JGITCompilerBeforeDecorator;
 
 public class NIOMavenCompilerFactory {
 
@@ -31,26 +31,30 @@ public class NIOMavenCompilerFactory {
     private NIOMavenCompilerFactory() {
     }
 
-
     /**
      * Provides a Maven compiler decorated with a Decorator Behaviour
      */
-    public static NIOMavenCompiler getCompiler(Path mavenRepo, Decorator decorator) {
+    public static NIOMavenCompiler getCompiler(Path mavenRepo,
+                                               Decorator decorator) {
         NIOMavenCompiler compiler = compilers.get(mavenRepo);
         if (compiler == null) {
-            compiler = createAndAddNewCompiler(mavenRepo, decorator);
+            compiler = createAndAddNewCompiler(mavenRepo,
+                                               decorator);
         }
         return compiler;
     }
 
-    private static NIOMavenCompiler createAndAddNewCompiler(Path mavenRepo, Decorator decorator) {
+    private static NIOMavenCompiler createAndAddNewCompiler(Path mavenRepo,
+                                                            Decorator decorator) {
         switch (decorator) {
             case NONE:
-                compilers.put(mavenRepo, new NIODefaultMavenCompiler(mavenRepo));
+                compilers.put(mavenRepo,
+                              new NIODefaultMavenCompiler(mavenRepo));
                 break;
 
             case JGIT_BEFORE:
-                compilers.put(mavenRepo, new JGITCompilerBeforeDecorator(new NIODefaultMavenCompiler(mavenRepo)));
+                compilers.put(mavenRepo,
+                              new JGITCompilerBeforeDecorator(new NIODefaultMavenCompiler(mavenRepo)));
                 break;
 
             /*case JGIT_AFTER:
@@ -62,7 +66,8 @@ public class NIOMavenCompilerFactory {
                 break;*/
 
             default:
-                compilers.put(mavenRepo, new NIODefaultMavenCompiler(mavenRepo));
+                compilers.put(mavenRepo,
+                              new NIODefaultMavenCompiler(mavenRepo));
         }
         return compilers.get(mavenRepo);
     }
@@ -74,7 +79,6 @@ public class NIOMavenCompilerFactory {
         compilers = new ConcurrentHashMap<>();
     }
 
-
     /**
      * Clear the internal data structure
      */
@@ -82,13 +86,13 @@ public class NIOMavenCompilerFactory {
         compilers.clear();
     }
 
-
     public static void removeCompiler(Path mavenRepo) {
         compilers.remove(mavenRepo);
     }
 
-    public static void replaceCompiler(Path mavenRepo, NIOMavenCompiler compiler) {
-        compilers.replace(mavenRepo, compiler);
+    public static void replaceCompiler(Path mavenRepo,
+                                       NIOMavenCompiler compiler) {
+        compilers.replace(mavenRepo,
+                          compiler);
     }
-
 }

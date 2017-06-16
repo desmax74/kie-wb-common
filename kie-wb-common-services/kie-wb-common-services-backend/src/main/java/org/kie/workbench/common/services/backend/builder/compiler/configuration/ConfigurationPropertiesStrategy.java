@@ -16,10 +16,6 @@
 
 package org.kie.workbench.common.services.backend.builder.compiler.configuration;
 
-import org.kie.workbench.common.services.backend.builder.compiler.Order;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
@@ -27,7 +23,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-public class ConfigurationPropertiesStrategy implements ConfigurationStrategy, Order {
+import org.kie.workbench.common.services.backend.builder.compiler.Order;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class ConfigurationPropertiesStrategy implements ConfigurationStrategy,
+                                                        Order {
 
     private static final Logger logger = LoggerFactory.getLogger(ConfigurationPropertiesStrategy.class);
 
@@ -37,29 +38,42 @@ public class ConfigurationPropertiesStrategy implements ConfigurationStrategy, O
 
     private Boolean valid = Boolean.FALSE;
 
-
     public ConfigurationPropertiesStrategy() {
         Properties props = loadProperties();
         if (isValid()) {
             conf = new HashMap<>();
-            conf.put(ConfigurationKey.MAVEN_PLUGIN_CONFIGURATION, props.getProperty(ConfigurationKey.MAVEN_PLUGIN_CONFIGURATION.name()));
-            conf.put(ConfigurationKey.MAVEN_COMPILER_ID, props.getProperty(ConfigurationKey.MAVEN_COMPILER_ID.name()));
-            conf.put(ConfigurationKey.MAVEN_SKIP, props.getProperty(ConfigurationKey.MAVEN_SKIP.name()));
-            conf.put(ConfigurationKey.MAVEN_SKIP_MAIN, props.getProperty(ConfigurationKey.MAVEN_SKIP_MAIN.name()));
+            conf.put(ConfigurationKey.MAVEN_PLUGIN_CONFIGURATION,
+                     props.getProperty(ConfigurationKey.MAVEN_PLUGIN_CONFIGURATION.name()));
+            conf.put(ConfigurationKey.MAVEN_COMPILER_ID,
+                     props.getProperty(ConfigurationKey.MAVEN_COMPILER_ID.name()));
+            conf.put(ConfigurationKey.MAVEN_SKIP,
+                     props.getProperty(ConfigurationKey.MAVEN_SKIP.name()));
+            conf.put(ConfigurationKey.MAVEN_SKIP_MAIN,
+                     props.getProperty(ConfigurationKey.MAVEN_SKIP_MAIN.name()));
 
-            conf.put(ConfigurationKey.MAVEN_PLUGINS, props.getProperty(ConfigurationKey.MAVEN_PLUGINS.name()));
-            conf.put(ConfigurationKey.MAVEN_COMPILER_PLUGIN, props.getProperty(ConfigurationKey.MAVEN_COMPILER_PLUGIN.name()));
-            conf.put(ConfigurationKey.MAVEN_COMPILER_PLUGIN_VERSION, props.getProperty(ConfigurationKey.MAVEN_COMPILER_PLUGIN_VERSION.name()));
+            conf.put(ConfigurationKey.MAVEN_PLUGINS,
+                     props.getProperty(ConfigurationKey.MAVEN_PLUGINS.name()));
+            conf.put(ConfigurationKey.MAVEN_COMPILER_PLUGIN,
+                     props.getProperty(ConfigurationKey.MAVEN_COMPILER_PLUGIN.name()));
+            conf.put(ConfigurationKey.MAVEN_COMPILER_PLUGIN_VERSION,
+                     props.getProperty(ConfigurationKey.MAVEN_COMPILER_PLUGIN_VERSION.name()));
 
-            conf.put(ConfigurationKey.ALTERNATIVE_COMPILER_PLUGINS, props.getProperty(ConfigurationKey.ALTERNATIVE_COMPILER_PLUGINS.name()));
-            conf.put(ConfigurationKey.ALTERNATIVE_COMPILER_PLUGIN, props.getProperty(ConfigurationKey.ALTERNATIVE_COMPILER_PLUGIN.name()));
-            conf.put(ConfigurationKey.ALTERNATIVE_COMPILER_PLUGIN_VERSION, props.getProperty(ConfigurationKey.ALTERNATIVE_COMPILER_PLUGIN_VERSION.name()));
+            conf.put(ConfigurationKey.ALTERNATIVE_COMPILER_PLUGINS,
+                     props.getProperty(ConfigurationKey.ALTERNATIVE_COMPILER_PLUGINS.name()));
+            conf.put(ConfigurationKey.ALTERNATIVE_COMPILER_PLUGIN,
+                     props.getProperty(ConfigurationKey.ALTERNATIVE_COMPILER_PLUGIN.name()));
+            conf.put(ConfigurationKey.ALTERNATIVE_COMPILER_PLUGIN_VERSION,
+                     props.getProperty(ConfigurationKey.ALTERNATIVE_COMPILER_PLUGIN_VERSION.name()));
 
-            conf.put(ConfigurationKey.MAVEN_DEFAULT_COMPILE, props.getProperty(ConfigurationKey.MAVEN_DEFAULT_COMPILE.name()));
-            conf.put(ConfigurationKey.MAVEN_PHASE_NONE, props.getProperty(ConfigurationKey.MAVEN_PHASE_NONE.name()));
+            conf.put(ConfigurationKey.MAVEN_DEFAULT_COMPILE,
+                     props.getProperty(ConfigurationKey.MAVEN_DEFAULT_COMPILE.name()));
+            conf.put(ConfigurationKey.MAVEN_PHASE_NONE,
+                     props.getProperty(ConfigurationKey.MAVEN_PHASE_NONE.name()));
 
-            conf.put(ConfigurationKey.KIE_MAVEN_PLUGINS, props.getProperty(ConfigurationKey.KIE_MAVEN_PLUGINS.name()));
-            conf.put(ConfigurationKey.KIE_MAVEN_PLUGIN, props.getProperty(ConfigurationKey.KIE_MAVEN_PLUGIN.name()));
+            conf.put(ConfigurationKey.KIE_MAVEN_PLUGINS,
+                     props.getProperty(ConfigurationKey.KIE_MAVEN_PLUGINS.name()));
+            conf.put(ConfigurationKey.KIE_MAVEN_PLUGIN,
+                     props.getProperty(ConfigurationKey.KIE_MAVEN_PLUGIN.name()));
         }
     }
 

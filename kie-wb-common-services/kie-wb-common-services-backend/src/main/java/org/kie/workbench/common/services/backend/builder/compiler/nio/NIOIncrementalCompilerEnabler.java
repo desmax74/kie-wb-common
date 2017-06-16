@@ -24,5 +24,4 @@ import org.kie.workbench.common.services.backend.builder.compiler.impl.Processed
 public interface NIOIncrementalCompilerEnabler {
 
     ProcessedPoms process(NIOCompilationRequest req);
-
 }

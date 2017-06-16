@@ -15,6 +15,12 @@
  */
 package org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.impl;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.Compilers;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.ConfigurationContextProvider;
 import org.kie.workbench.common.services.backend.builder.compiler.impl.PomPlaceHolder;
@@ -27,8 +33,6 @@ import org.uberfire.java.nio.file.Files;
 import org.uberfire.java.nio.file.Path;
 import org.uberfire.java.nio.file.Paths;
 
-import java.util.*;
-
 public class InternalNioImplDefaultIncrementalCompilerEnabler implements InternalNioImplIncrementalCompilerEnabler {
 
     private static final Logger logger = LoggerFactory.getLogger(InternalNioImplDefaultIncrementalCompilerEnabler.class);
@@ -38,40 +42,51 @@ public class InternalNioImplDefaultIncrementalCompilerEnabler implements Interna
     private InternalNioImplDefaultPomEditor editor;
 
     public InternalNioImplDefaultIncrementalCompilerEnabler(Compilers compiler) {
-        editor = new InternalNioImplDefaultPomEditor(new HashSet<PomPlaceHolder>(), new ConfigurationContextProvider(), compiler);
+        editor = new InternalNioImplDefaultPomEditor(new HashSet<PomPlaceHolder>(),
+                                                     new ConfigurationContextProvider(),
+                                                     compiler);
     }
 
     @Override
     public ProcessedPoms process(final InternalNioImplCompilationRequest req) {
-        Path mainPom = Paths.get(req.getInfo().getPrjPath().toString(), POM_NAME);
+        Path mainPom = Paths.get(req.getInfo().getPrjPath().toString(),
+                                 POM_NAME);
         if (!Files.isReadable(mainPom)) {
-            return new ProcessedPoms(Boolean.FALSE, Collections.emptyList());
+            return new ProcessedPoms(Boolean.FALSE,
+                                     Collections.emptyList());
         }
 
         PomPlaceHolder placeHolder = editor.readSingle(mainPom);
         Boolean isPresent = isPresent(placeHolder);   // check if the main pom is already scanned and edited
         if (placeHolder.isValid() && !isPresent) {
             List<String> pomsList = new ArrayList();
-            InternalNioImplMavenUtils.searchPoms(Paths.get(req.getInfo().getPrjPath().toString()), pomsList);// recursive NIO search in all subfolders
+            InternalNioImplMavenUtils.searchPoms(Paths.get(req.getInfo().getPrjPath().toString()),
+                                                 pomsList);// recursive NIO search in all subfolders
             if (pomsList.size() > 0) {
-                processFoundedPoms(pomsList, req);
+                processFoundedPoms(pomsList,
+                                   req);
             }
-            return new ProcessedPoms(Boolean.TRUE, pomsList);
+            return new ProcessedPoms(Boolean.TRUE,
+                                     pomsList);
         } else {
-            return new ProcessedPoms(Boolean.FALSE, Collections.emptyList());
+            return new ProcessedPoms(Boolean.FALSE,
+                                     Collections.emptyList());
         }
     }
 
-    private void processFoundedPoms(List<String> poms, InternalNioImplCompilationRequest request) {
+    private void processFoundedPoms(List<String> poms,
+                                    InternalNioImplCompilationRequest request) {
 
         for (String pom : poms) {
             Path tmpPom = Paths.get(pom);
             PomPlaceHolder tmpPlaceHolder = editor.readSingle(tmpPom);
             if (!isPresent(tmpPlaceHolder)) {
-                editor.write(tmpPom, request);
+                editor.write(tmpPom,
+                             request);
             }
         }
-        Path mainPom = Paths.get(request.getInfo().getPrjPath().toAbsolutePath().toString(), POM_NAME);
+        Path mainPom = Paths.get(request.getInfo().getPrjPath().toAbsolutePath().toString(),
+                                 POM_NAME);
         request.getInfo().lateAdditionEnhancedMainPomFile(mainPom);
     }
 
@@ -82,7 +97,6 @@ public class InternalNioImplDefaultIncrementalCompilerEnabler implements Interna
         return editor.getHistory().contains(placeholder);
     }
 
-
     /***
      * Return a unmodifiable history
      * @return
@@ -90,6 +104,4 @@ public class InternalNioImplDefaultIncrementalCompilerEnabler implements Interna
     public Set<PomPlaceHolder> getHistory() {
         return Collections.unmodifiableSet(editor.getHistory());
     }
-
-
 }

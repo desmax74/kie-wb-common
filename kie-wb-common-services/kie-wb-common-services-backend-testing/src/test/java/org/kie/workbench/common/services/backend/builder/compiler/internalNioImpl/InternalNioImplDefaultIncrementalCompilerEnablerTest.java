@@ -16,6 +16,11 @@
 
 package org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl;
 
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Optional;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.kie.workbench.common.services.backend.builder.compiler.TestUtil;
@@ -32,12 +37,7 @@ import org.uberfire.java.nio.file.Paths;
 import org.uberfire.java.nio.file.api.FileSystemProviders;
 import org.uberfire.java.nio.file.spi.FileSystemProvider;
 
-import java.net.URI;
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-
 public class InternalNioImplDefaultIncrementalCompilerEnablerTest {
-
 
     //private final Path prj = Paths.get("src/test/projects/dummy_multimodule");
 
@@ -50,29 +50,39 @@ public class InternalNioImplDefaultIncrementalCompilerEnablerTest {
         Path mavenRepo = fs.getPath(URI.create("file://src/test/resources/.ignore/m2_repo/"));
         Path tmpRoot = Files.createTempDirectory("repo");
         //NIO creation and copy content
-        java.nio.file.Path temp = java.nio.file.Files.createDirectories(java.nio.file.Paths.get(tmpRoot.toString(), "dummy"));
-        TestUtil.copyTree(java.nio.file.Paths.get("src/test/projects/dummy_multimodule_untouched"), temp);
+        java.nio.file.Path temp = java.nio.file.Files.createDirectories(java.nio.file.Paths.get(tmpRoot.toString(),
+                                                                                                "dummy"));
+        TestUtil.copyTree(java.nio.file.Paths.get("src/test/projects/dummy_multimodule_untouched"),
+                          temp);
         //end NIO
-        Path tmp = Paths.get(tmpRoot.toAbsolutePath().toString(), "dummy");
+        Path tmp = Paths.get(tmpRoot.toAbsolutePath().toString(),
+                             "dummy");
 
-        Path mainPom = Paths.get(temp.toAbsolutePath().toString(), "pom.xml");
+        Path mainPom = Paths.get(temp.toAbsolutePath().toString(),
+                                 "pom.xml");
 
-        byte[] encoded = Files.readAllBytes(Paths.get(temp.toAbsolutePath().toString(), "pom.xml"));
-        String pomAsAstring = new String(encoded, StandardCharsets.UTF_8);
+        byte[] encoded = Files.readAllBytes(Paths.get(temp.toAbsolutePath().toString(),
+                                                      "pom.xml"));
+        String pomAsAstring = new String(encoded,
+                                         StandardCharsets.UTF_8);
         Assert.assertFalse(pomAsAstring.contains("<artifactId>takari-lifecycle-plugin</artifactId>"));
-        InternalNioImplWorkspaceCompilationInfo info = new InternalNioImplWorkspaceCompilationInfo(tmp, InternalNioImplMavenCompilerFactory.getCompiler(mavenRepo, Decorator.NONE));
+        InternalNioImplWorkspaceCompilationInfo info = new InternalNioImplWorkspaceCompilationInfo(tmp,
+                                                                                                   InternalNioImplMavenCompilerFactory.getCompiler(mavenRepo,
+                                                                                                                                                   Decorator.NONE));
 
-        InternalNioImplCompilationRequest req = new InternalNioImplDefaultCompilationRequest(info, new String[]{MavenArgs.COMPILE}, new HashMap<>());
+        InternalNioImplCompilationRequest req = new InternalNioImplDefaultCompilationRequest(info,
+                                                                                             new String[]{MavenArgs.COMPILE},
+                                                                                             new HashMap<>(), Optional.empty());
         InternalNioImplDefaultIncrementalCompilerEnabler enabler = new InternalNioImplDefaultIncrementalCompilerEnabler(Compilers.JAVAC);
         Assert.assertTrue(enabler.process(req).getResult());
 
         encoded = Files.readAllBytes(Paths.get(mainPom.toString()));
-        pomAsAstring = new String(encoded, StandardCharsets.UTF_8);
+        pomAsAstring = new String(encoded,
+                                  StandardCharsets.UTF_8);
         Assert.assertTrue(pomAsAstring.contains("<artifactId>takari-lifecycle-plugin</artifactId>"));
 
         InternalNioImplTestUtil.rm(tmpRoot.toFile());
     }
-
 
     @Test
     public void testReadKiePluginTest() throws Exception {
@@ -81,30 +91,40 @@ public class InternalNioImplDefaultIncrementalCompilerEnablerTest {
         Path tmpRoot = Files.createTempDirectory("repo");
 
         //NIO creation and copy content
-        java.nio.file.Path temp = java.nio.file.Files.createDirectories(java.nio.file.Paths.get(tmpRoot.toString(), "dummy"));
-        TestUtil.copyTree(java.nio.file.Paths.get("src/test/projects/dummy_kie_multimodule_untouched"), temp);
+        java.nio.file.Path temp = java.nio.file.Files.createDirectories(java.nio.file.Paths.get(tmpRoot.toString(),
+                                                                                                "dummy"));
+        TestUtil.copyTree(java.nio.file.Paths.get("src/test/projects/dummy_kie_multimodule_untouched"),
+                          temp);
         //end NIO
-        Path tmp = Paths.get(tmpRoot.toAbsolutePath().toString(), "dummy");
+        Path tmp = Paths.get(tmpRoot.toAbsolutePath().toString(),
+                             "dummy");
 
-        Path mainPom = Paths.get(tmp.toAbsolutePath().toString(), "pom.xml");
-        byte[] encoded = Files.readAllBytes(Paths.get(tmp.toAbsolutePath().toString(), "pom.xml"));
-        String pomAsAstring = new String(encoded, StandardCharsets.UTF_8);
+        Path mainPom = Paths.get(tmp.toAbsolutePath().toString(),
+                                 "pom.xml");
+        byte[] encoded = Files.readAllBytes(Paths.get(tmp.toAbsolutePath().toString(),
+                                                      "pom.xml"));
+        String pomAsAstring = new String(encoded,
+                                         StandardCharsets.UTF_8);
         Assert.assertFalse(pomAsAstring.contains("<artifactId>takari-lifecycle-plugin</artifactId>"));
 
-        InternalNioImplWorkspaceCompilationInfo info = new InternalNioImplWorkspaceCompilationInfo(tmp, InternalNioImplMavenCompilerFactory.getCompiler(mavenRepo, Decorator.NONE));
-        InternalNioImplCompilationRequest req = new InternalNioImplDefaultCompilationRequest(info, new String[]{MavenArgs.COMPILE}, new HashMap<>());
+        InternalNioImplWorkspaceCompilationInfo info = new InternalNioImplWorkspaceCompilationInfo(tmp,
+                                                                                                   InternalNioImplMavenCompilerFactory.getCompiler(mavenRepo,
+                                                                                                                                                   Decorator.NONE));
+        InternalNioImplCompilationRequest req = new InternalNioImplDefaultCompilationRequest(info,
+                                                                                             new String[]{MavenArgs.COMPILE},
+                                                                                             new HashMap<>(), Optional.empty());
         InternalNioImplDefaultIncrementalCompilerEnabler enabler = new InternalNioImplDefaultIncrementalCompilerEnabler(Compilers.JAVAC);
         Assert.assertTrue(enabler.process(req).getResult());
 
         Assert.assertTrue(info.isKiePluginPresent());
 
         encoded = Files.readAllBytes(Paths.get(mainPom.toString()));
-        pomAsAstring = new String(encoded, StandardCharsets.UTF_8);
+        pomAsAstring = new String(encoded,
+                                  StandardCharsets.UTF_8);
         //Assert.assertTrue(pomAsAstring.contains("<artifactId>takari-lifecycle-plugin</artifactId>"));
 
         Assert.assertTrue(pomAsAstring.contains("kie-maven-plugin"));
 
         InternalNioImplTestUtil.rm(tmpRoot.toFile());
     }
-
 }

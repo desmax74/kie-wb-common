@@ -18,16 +18,16 @@ package org.kie.workbench.common.services.backend.builder.compiler.internalNioIm
 
 import java.io.File;
 
-
 public class InternalNioImplTestUtil {
-
 
     public static void rm(File f) {
         if (f.isDirectory()) {
-            for (File c : f.listFiles())
+            for (File c : f.listFiles()) {
                 rm(c);
+            }
         }
-        if (!f.delete())
+        if (!f.delete()) {
             System.err.println("Couldn't delete file " + f);
+        }
     }
 }

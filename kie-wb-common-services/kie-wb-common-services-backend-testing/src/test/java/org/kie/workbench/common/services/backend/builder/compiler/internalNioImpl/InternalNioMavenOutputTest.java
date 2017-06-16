@@ -1,9 +1,8 @@
 package org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl;
 
-
-
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -15,6 +14,11 @@ import org.kie.workbench.common.services.backend.builder.compiler.configuration.
 import org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.impl.InternalNioImplDefaultCompilationRequest;
 import org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.impl.InternalNioImplMavenCompilerFactory;
 import org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.impl.InternalNioImplWorkspaceCompilationInfo;
+import org.kie.workbench.common.services.backend.builder.compiler.nio.NIOCompilationRequest;
+import org.kie.workbench.common.services.backend.builder.compiler.nio.NIOMavenCompiler;
+import org.kie.workbench.common.services.backend.builder.compiler.nio.impl.NIODefaultCompilationRequest;
+import org.kie.workbench.common.services.backend.builder.compiler.nio.impl.NIOMavenCompilerFactory;
+import org.kie.workbench.common.services.backend.builder.compiler.nio.impl.NIOWorkspaceCompilationInfo;
 import org.uberfire.java.nio.file.Files;
 import org.uberfire.java.nio.file.Path;
 import org.uberfire.java.nio.file.Paths;
@@ -33,62 +37,57 @@ public class InternalNioMavenOutputTest {
         }
     }
 
-
-
     @Test
-    public void testIsValidMavenHome() throws Exception {
-        org.uberfire.java.nio.file.Path tmpRoot = org.uberfire.java.nio.file.Files.createTempDirectory("repo");
-        org.uberfire.java.nio.file.Path tmp = org.uberfire.java.nio.file.Files.createDirectories(org.uberfire.java.nio.file.Paths.get(tmpRoot.toString(), "dummy"));
-        //NIO creation and copy content
-        java.nio.file.Path temp = java.nio.file.Files.createDirectories(java.nio.file.Paths.get(tmpRoot.toString(), "dummy"));
-        TestUtil.copyTree(java.nio.file.Paths.get("src/test/projects/dummy"), temp);
-        //end NIO
+    public void testReadMavenHome() throws Exception {
+        java.nio.file.Path tmpRoot = java.nio.file.Files.createTempDirectory("repo");
+        java.nio.file.Path tmpNio = java.nio.file.Files.createDirectories(java.nio.file.Paths.get(tmpRoot.toString(),
+                                                                                               "dummy"));
+        TestUtil.copyTree(java.nio.file.Paths.get("src/test/projects/dummy"),
+                          tmpNio);
 
-        InternalNioImplMavenCompiler compiler = InternalNioImplMavenCompilerFactory.getCompiler(mavenRepo, Decorator.NONE);
+        Path tmp = Paths.get(tmpNio.toAbsolutePath().toString());
+
+       InternalNioImplMavenCompiler compiler = InternalNioImplMavenCompilerFactory.getCompiler(mavenRepo,
+                                                                                               Decorator.NONE);
         Assert.assertTrue(compiler.isValid());
 
-        InternalNioImplWorkspaceCompilationInfo info = new InternalNioImplWorkspaceCompilationInfo(tmp, compiler);
-        InternalNioImplCompilationRequest req = new InternalNioImplDefaultCompilationRequest(info, new String[]{MavenArgs.VERSION}, new HashMap<>());
+        InternalNioImplWorkspaceCompilationInfo info = new InternalNioImplWorkspaceCompilationInfo(tmp,
+                                                                                                   compiler);
+        InternalNioImplCompilationRequest req = new InternalNioImplDefaultCompilationRequest(info,
+                                                                                                                new String[]{MavenArgs.DEBUG, MavenArgs.COMPILE},
+                                                                                                                new HashMap<>(),
+                                                                                                                Optional.of("log"));
         CompilationResponse res = compiler.compileSync(req);
         Assert.assertTrue(res.isSuccessful());
         Assert.assertTrue(res.getMavenOutput().isPresent());
-        List<String> outPut = res.getMavenOutput().get();
-        System.out.println("\nOutput from CompilerResponse>>>>\n::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::");
-        for(String line : outPut){
-            System.out.println(line);
-        }
-        System.out.println("::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::\nEnd output");
-
-        InternalNioImplTestUtil.rm(tmpRoot.toFile());
+        Assert.assertTrue(res.getMavenOutput().get().size() > 0);
+        TestUtil.rm(tmpRoot.toFile());
     }
-
-
 
     @Test
-    public void testHelpOutput() throws Exception {
-        org.uberfire.java.nio.file.Path tmpRoot = org.uberfire.java.nio.file.Files.createTempDirectory("repo");
-        org.uberfire.java.nio.file.Path tmp = org.uberfire.java.nio.file.Files.createDirectories(org.uberfire.java.nio.file.Paths.get(tmpRoot.toString(), "dummy"));
-        //NIO creation and copy content
-        java.nio.file.Path temp = java.nio.file.Files.createDirectories(java.nio.file.Paths.get(tmpRoot.toString(), "dummy"));
-        TestUtil.copyTree(java.nio.file.Paths.get("src/test/projects/dummy"), temp);
-        //end NIO
+    public void testOutputWithTakari() throws Exception {
+        java.nio.file.Path tmpRoot = java.nio.file.Files.createTempDirectory("repo");
+        java.nio.file.Path tmpNio = java.nio.file.Files.createDirectories(java.nio.file.Paths.get(tmpRoot.toString(),
+                                                                                               "dummy"));
+        TestUtil.copyTree(java.nio.file.Paths.get("src/test/projects/dummy"),
+                          tmpNio);
 
-        InternalNioImplMavenCompiler compiler = InternalNioImplMavenCompilerFactory.getCompiler(mavenRepo, Decorator.NONE);
-        Assert.assertTrue(compiler.isValid());
+        Path tmp = Paths.get(tmpNio.toAbsolutePath().toString());
 
-        InternalNioImplWorkspaceCompilationInfo info = new InternalNioImplWorkspaceCompilationInfo(tmp, compiler);
-        InternalNioImplCompilationRequest req = new InternalNioImplDefaultCompilationRequest(info, new String[]{"-h"}, new HashMap<>());
+        InternalNioImplMavenCompiler compiler = InternalNioImplMavenCompilerFactory.getCompiler(mavenRepo,
+                                                                                                Decorator.NONE);
+
+        InternalNioImplWorkspaceCompilationInfo info = new InternalNioImplWorkspaceCompilationInfo(tmp,
+                                                                                                   compiler);
+        InternalNioImplCompilationRequest req = new InternalNioImplDefaultCompilationRequest(info,
+                                                                     new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE},
+                                                                     new HashMap<>(),
+                                                                     Optional.of("log"));
         CompilationResponse res = compiler.compileSync(req);
-        Assert.assertTrue(res.isSuccessful());
+
         Assert.assertTrue(res.getMavenOutput().isPresent());
-        List<String> outPut = res.getMavenOutput().get();
-        System.out.println("\nOutput from CompilerResponse>>>>\n::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::");
-        for(String line : outPut){
-            System.out.println(line);
-        }
-        System.out.println("::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::\nEnd output");
+        Assert.assertTrue(res.getMavenOutput().get().size() > 0);
 
-        InternalNioImplTestUtil.rm(tmpRoot.toFile());
+        TestUtil.rm(tmpRoot.toFile());
     }
-
 }

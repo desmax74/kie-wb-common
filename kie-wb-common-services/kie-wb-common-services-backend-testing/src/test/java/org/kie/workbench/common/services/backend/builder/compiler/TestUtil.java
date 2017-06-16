@@ -16,25 +16,30 @@
 
 package org.kie.workbench.common.services.backend.builder.compiler;
 
-import org.kie.workbench.common.services.backend.builder.compiler.nio.CopyFileVisitor;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import org.kie.workbench.common.services.backend.builder.compiler.nio.CopyFileVisitor;
+
 public class TestUtil {
 
-    public static void copyTree(Path source, Path target) throws IOException {
-        Files.walkFileTree(source, new CopyFileVisitor(source, target));
+    public static void copyTree(Path source,
+                                Path target) throws IOException {
+        Files.walkFileTree(source,
+                           new CopyFileVisitor(source,
+                                               target));
     }
 
     public static void rm(File f) {
         if (f.isDirectory()) {
-            for (File c : f.listFiles())
+            for (File c : f.listFiles()) {
                 rm(c);
+            }
         }
-        if (!f.delete())
+        if (!f.delete()) {
             System.err.println("Couldn't delete file " + f);
+        }
     }
 }

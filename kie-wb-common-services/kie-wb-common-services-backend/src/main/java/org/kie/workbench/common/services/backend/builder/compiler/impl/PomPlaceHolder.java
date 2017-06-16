@@ -32,7 +32,11 @@ public class PomPlaceHolder {
         this.isValid = Boolean.FALSE;
     }
 
-    public PomPlaceHolder(String filePath, String artifactID, String groupID, String version, String packaging) {
+    public PomPlaceHolder(String filePath,
+                          String artifactID,
+                          String groupID,
+                          String version,
+                          String packaging) {
         this.filePath = filePath;
         this.artifactID = artifactID;
         this.groupID = groupID;
@@ -41,7 +45,12 @@ public class PomPlaceHolder {
         this.isValid = Boolean.TRUE;
     }
 
-    public PomPlaceHolder(String filePath, String artifactID, String groupID, String version, String packaging, byte[] content) {
+    public PomPlaceHolder(String filePath,
+                          String artifactID,
+                          String groupID,
+                          String version,
+                          String packaging,
+                          byte[] content) {
         this.filePath = filePath;
         this.artifactID = artifactID;
         this.groupID = groupID;
@@ -49,12 +58,10 @@ public class PomPlaceHolder {
         this.packaging = packaging;
         this.isValid = Boolean.TRUE;
         this.rawContent = content.clone();
-
     }
 
     /**
      * If is false you have to check the correctness of the POM
-     *
      * @return
      */
     public Boolean isValid() {
@@ -98,6 +105,4 @@ public class PomPlaceHolder {
         sb.append('}');
         return sb.toString();
     }
-
-
 }

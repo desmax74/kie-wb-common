@@ -16,11 +16,11 @@
 
 package org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl;
 
+import java.util.Optional;
+
 import org.kie.workbench.common.services.backend.builder.compiler.external339.KieCliRequest;
 import org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.impl.InternalNioImplWorkspaceCompilationInfo;
 import org.uberfire.java.nio.file.Path;
-
-import java.util.Optional;
 
 /**
  * Wrap a compilation request

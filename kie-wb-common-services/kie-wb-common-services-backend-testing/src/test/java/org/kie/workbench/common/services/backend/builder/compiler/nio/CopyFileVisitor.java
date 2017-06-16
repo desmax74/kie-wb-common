@@ -17,22 +17,31 @@
 package org.kie.workbench.common.services.backend.builder.compiler.nio;
 
 import java.io.IOException;
-import java.nio.file.*;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 
 public class CopyFileVisitor extends SimpleFileVisitor<Path> {
 
     private Path srcPath, dstPath;
 
-    public CopyFileVisitor(Path srcPath, Path dstPath) {
+    public CopyFileVisitor(Path srcPath,
+                           Path dstPath) {
         this.srcPath = srcPath;
         this.dstPath = dstPath;
     }
 
     @Override
-    public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+    public FileVisitResult preVisitDirectory(Path dir,
+                                             BasicFileAttributes attrs) throws IOException {
         Path targetPath = dstPath.resolve(srcPath.relativize(dir));
-        Files.copy(dir, targetPath, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
+        Files.copy(dir,
+                   targetPath,
+                   StandardCopyOption.REPLACE_EXISTING,
+                   StandardCopyOption.COPY_ATTRIBUTES);
         return FileVisitResult.CONTINUE;
     }
 
@@ -41,10 +50,10 @@ public class CopyFileVisitor extends SimpleFileVisitor<Path> {
                                      BasicFileAttributes attr)
             throws IOException {
         Path targetPath = dstPath.resolve(srcPath.relativize(file));
-        Files.copy(file, targetPath,
-                StandardCopyOption.REPLACE_EXISTING,
-                StandardCopyOption.REPLACE_EXISTING);
+        Files.copy(file,
+                   targetPath,
+                   StandardCopyOption.REPLACE_EXISTING,
+                   StandardCopyOption.REPLACE_EXISTING);
         return FileVisitResult.CONTINUE;
     }
-
 }
