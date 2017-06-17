@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 
@@ -218,7 +219,7 @@ public class Builder implements Serializable {
     public BuildResults build() {
 
         //@TODO max in this place we run the maven compiler
-        NIOCompilationRequest req = new NIODefaultCompilationRequest(workspaceCompilationInfo, new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE}, new HashMap<>());
+        NIOCompilationRequest req = new NIODefaultCompilationRequest(workspaceCompilationInfo, new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE}, new HashMap<>(), Optional.empty());
         CompilationResponse res = compiler.compileSync(req);
         res.isSuccessful();
 
@@ -236,18 +237,18 @@ public class Builder implements Serializable {
             try {
                 final Results kieResults = ( (InternalKieBuilder) kieBuilder ).buildAll( classFilter ).getResults();
                 results.addAllBuildMessages( convertMessages( kieResults.getMessages(),
-                        handles ) );
+                                                              handles ) );
 
             } catch ( LinkageError e ) {
                 final String msg = MessageFormat.format( ERROR_CLASS_NOT_FOUND,
-                        e.getLocalizedMessage() );
+                                                         e.getLocalizedMessage() );
                 logger.warn( msg );
                 results.addBuildMessage( makeWarningMessage( msg ) );
 
             } catch ( Throwable e ) {
                 final String msg = e.getLocalizedMessage();
                 logger.error( msg,
-                        e );
+                              e );
                 results.addBuildMessage( makeErrorMessage( msg ) );
 
             } finally {
@@ -262,7 +263,7 @@ public class Builder implements Serializable {
                 final org.uberfire.backend.vfs.Path vfsPath = Paths.convert( e.getKey() );
                 final List<ValidationMessage> validationMessages = e.getValue().validate( vfsPath );
                 nonKieResourceValidationHelperMessages.put( e.getKey(),
-                        validationMessages );
+                                                            validationMessages );
                 results.addAllBuildMessages( convertValidationMessages( validationMessages ) );
             }
 
@@ -280,7 +281,7 @@ public class Builder implements Serializable {
                     } catch ( ClassNotFoundException cnfe ) {
                         logger.warn( cnfe.getMessage() );
                         final String msg = MessageFormat.format( ERROR_CLASS_NOT_FOUND,
-                                fullyQualifiedClassName );
+                                                                 fullyQualifiedClassName );
                         results.addBuildMessage( makeWarningMessage( msg ) );
                     }
                 }
@@ -293,7 +294,7 @@ public class Builder implements Serializable {
 
             //store the project dependencies ClassLoader for optimization purposes.
             updateDependenciesClassLoader( project,
-                    kieModuleMetaData );
+                                           kieModuleMetaData );
 
             results.addAllBuildMessages( verifyClasses( kieModuleMetaData ) );
 
