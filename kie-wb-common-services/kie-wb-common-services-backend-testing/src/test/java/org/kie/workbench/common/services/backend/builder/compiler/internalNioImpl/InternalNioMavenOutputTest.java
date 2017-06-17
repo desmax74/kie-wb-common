@@ -61,7 +61,7 @@ public class InternalNioMavenOutputTest {
         Assert.assertTrue(res.isSuccessful());
         Assert.assertTrue(res.getMavenOutput().isPresent());
         Assert.assertTrue(res.getMavenOutput().get().size() > 0);
-        TestUtil.rm(tmpRoot.toFile());
+        InternalNioImplTestUtil.rm(tmpRoot.toFile());
     }
 
     @Test
@@ -88,6 +88,6 @@ public class InternalNioMavenOutputTest {
         Assert.assertTrue(res.getMavenOutput().isPresent());
         Assert.assertTrue(res.getMavenOutput().get().size() > 0);
 
-        TestUtil.rm(tmpRoot.toFile());
+        InternalNioImplTestUtil.rm(tmpRoot.toFile());
     }
 }

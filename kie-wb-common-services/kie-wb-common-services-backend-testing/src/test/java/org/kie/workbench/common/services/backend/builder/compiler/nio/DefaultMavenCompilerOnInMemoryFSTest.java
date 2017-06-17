@@ -301,7 +301,7 @@ public class DefaultMavenCompilerOnInMemoryFSTest {
     @Test
     public void buildWithDecoratorsTest() throws Exception {
         NIOMavenCompiler compiler = NIOMavenCompilerFactory.getCompiler(mavenRepo,
-                                                                        Decorator.JGIT_BEFORE_AND_AFTER);
+                                                                        Decorator.JGIT_BEFORE);
 
         String MASTER_BRANCH = "master";
 

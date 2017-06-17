@@ -299,7 +299,7 @@ public class InternalNioImplDefaultMavenCompilerOnInMemoryFSTest {
     @Test
     public void buildWithDecoratorsTest() throws Exception {
         InternalNioImplMavenCompiler compiler = InternalNioImplMavenCompilerFactory.getCompiler(mavenRepo,
-                                                                                                Decorator.JGIT_BEFORE_AND_AFTER);
+                                                                                                Decorator.JGIT_BEFORE);
 
         String MASTER_BRANCH = "master";
 
