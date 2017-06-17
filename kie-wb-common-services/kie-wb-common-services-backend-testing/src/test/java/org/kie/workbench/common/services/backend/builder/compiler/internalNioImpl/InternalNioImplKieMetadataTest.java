@@ -58,7 +58,7 @@ public class InternalNioImplKieMetadataTest {
         }
     }
 
-    @Test
+    @Ignore //@Test
     public void compileAndloadKieJarMetadata() throws Exception {
         /**
          * If the test fail check if the Drools core classes used, KieModuleMetaInfo and TypeMetaInfo implements Serializable
