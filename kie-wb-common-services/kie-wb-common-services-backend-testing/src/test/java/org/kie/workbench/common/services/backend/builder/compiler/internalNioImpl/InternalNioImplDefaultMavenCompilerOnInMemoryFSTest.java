@@ -62,10 +62,8 @@ public class InternalNioImplDefaultMavenCompilerOnInMemoryFSTest {
 
     private static final Logger logger = LoggerFactory.getLogger(InternalNioImplDefaultMavenCompilerOnInMemoryFSTest.class);
 
-    private final static Path mavenRepo = Paths.get("src/test/resources/.ignore/m2_repo/");
-
+    private Path mavenRepo;
     private int gitSSHPort;
-
     private JGitFileSystemProvider provider;
 
     public static int findFreePort() {
@@ -84,8 +82,11 @@ public class InternalNioImplDefaultMavenCompilerOnInMemoryFSTest {
 
     @Before
     public void setUp() throws Exception {
+        mavenRepo = Paths.get(System.getProperty("user.home"),
+                              "/.m2/repository");
+
         if (!Files.exists(mavenRepo)) {
-            System.out.println("Creating a m2_repo into src/test/resources/.ignore/m2_repo/");
+            System.out.println("Creating a m2_repo into " + mavenRepo);
             if (!Files.exists(Files.createDirectories(mavenRepo))) {
                 throw new Exception("Folder not writable in the project");
             }
@@ -105,6 +106,7 @@ public class InternalNioImplDefaultMavenCompilerOnInMemoryFSTest {
             FileUtils.delete(provider.getGitRepoContainerDir(),
                              FileUtils.RECURSIVE);
         }
+        TestUtil.rm(new File("src/../.security/"));
     }
 
     @Test
@@ -165,12 +167,12 @@ public class InternalNioImplDefaultMavenCompilerOnInMemoryFSTest {
                                          StandardCharsets.UTF_8);
         Assert.assertFalse(pomAsAstring.contains("<artifactId>takari-lifecycle-plugin</artifactId>"));
 
-        //KieCliRequest kcr = new KieCliRequest(prjFolder, new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE});
         InternalNioImplWorkspaceCompilationInfo info = new InternalNioImplWorkspaceCompilationInfo(prjFolder,
                                                                                                    compiler);
         InternalNioImplCompilationRequest req = new InternalNioImplDefaultCompilationRequest(info,
                                                                                              new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE},
-                                                                                             new HashMap<>(), Optional.empty());
+                                                                                             new HashMap<>(),
+                                                                                             Optional.empty());
 
         CompilationResponse res = compiler.compileSync(req);
         Assert.assertTrue(res.isSuccessful());
@@ -279,7 +281,8 @@ public class InternalNioImplDefaultMavenCompilerOnInMemoryFSTest {
                                                                                                    compiler);
         InternalNioImplCompilationRequest req = new InternalNioImplDefaultCompilationRequest(info,
                                                                                              new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE},
-                                                                                             new HashMap<>(), Optional.empty());
+                                                                                             new HashMap<>(),
+                                                                                             Optional.empty());
 
         CompilationResponse res = compiler.compileSync(req);
         Assert.assertTrue(res.isSuccessful());
@@ -364,8 +367,9 @@ public class InternalNioImplDefaultMavenCompilerOnInMemoryFSTest {
                                                                                                    compiler,
                                                                                                    cloned);
         InternalNioImplCompilationRequest req = new InternalNioImplDefaultCompilationRequest(info,
-                                                                                             new String[]{MavenArgs.COMPILE},
-                                                                                             new HashMap<>(), Optional.empty());
+                                                                                             new String[]{MavenArgs.CLEAN,MavenArgs.COMPILE},
+                                                                                             new HashMap<>(),
+                                                                                             Optional.empty());
         CompilationResponse res = compiler.compileSync(req);
         Assert.assertTrue(res.isSuccessful());
 

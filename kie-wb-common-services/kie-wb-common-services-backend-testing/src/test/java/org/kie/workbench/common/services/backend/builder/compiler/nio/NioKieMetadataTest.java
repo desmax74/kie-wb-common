@@ -16,6 +16,7 @@
 
 package org.kie.workbench.common.services.backend.builder.compiler.nio;
 
+import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -28,6 +29,7 @@ import org.drools.core.rule.KieModuleMetaInfo;
 import org.drools.core.rule.TypeMetaInfo;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.kie.api.builder.KieModule;
 import org.kie.workbench.common.services.backend.builder.compiler.CompilationResponse;
@@ -40,19 +42,24 @@ import org.kie.workbench.common.services.backend.builder.compiler.nio.impl.NIOWo
 
 public class NioKieMetadataTest {
 
-    private final Path mavenRepo = Paths.get("src/test/resources/.ignore/m2_repo/");
+    private Path mavenRepo;
 
     @Before
     public void setUp() throws Exception {
-        if (!Files.exists(mavenRepo)) {
-            System.out.println("Creating a m2_repo into src/test/resources/.ignore/m2_repo/");
-            if (!Files.exists(Files.createDirectories(mavenRepo))) {
-                throw new Exception("Folder not writable in the project");
+        mavenRepo = Paths.get(System.getProperty("user.home"),
+                              "/.m2/repository");
+        //mavenRepo = Paths.get("src/test/resources/.ignore/m2_repo/");
+        if (System.getProperty("M2_REPO") == null) {
+            if (!Files.exists(mavenRepo)) {
+                System.out.println("Creating a m2_repo into" + mavenRepo);
+                if (!Files.exists(Files.createDirectories(mavenRepo))) {
+                    throw new Exception("Folder not writable in the project");
+                }
             }
         }
     }
 
-    @Test
+    @Ignore //@Test
     public void compileAndloadKieJarMetadata() throws Exception {
         /**
          * If the test fail check if the Drools core classes used, KieModuleMetaInfo and TypeMetaInfo implements Serializable
@@ -70,13 +77,14 @@ public class NioKieMetadataTest {
         NIOWorkspaceCompilationInfo info = new NIOWorkspaceCompilationInfo(tmp,
                                                                            compiler);
         NIOCompilationRequest req = new NIODefaultCompilationRequest(info,
-                                                                     new String[]{MavenArgs.COMPILE, MavenArgs.DEBUG, "-o"},
+                                                                     new String[]{MavenArgs.COMPILE},
                                                                      new HashMap<>(),
                                                                      Optional.empty());
         CompilationResponse res = compiler.compileSync(req);
         if (res.getErrorMessage().isPresent()) {
             System.out.println(res.getErrorMessage().get());
         }
+
         Assert.assertTrue(res.isSuccessful());
 
         Optional<KieModuleMetaInfo> metaDataOptional = res.getKieModuleMetaInfo();
@@ -95,5 +103,7 @@ public class NioKieMetadataTest {
         Assert.assertTrue(kieModuleOptional.isPresent());
 
         TestUtil.rm(tmpRoot.toFile());
+
+        TestUtil.rm(new File("src/../.repositories"));
     }
 }

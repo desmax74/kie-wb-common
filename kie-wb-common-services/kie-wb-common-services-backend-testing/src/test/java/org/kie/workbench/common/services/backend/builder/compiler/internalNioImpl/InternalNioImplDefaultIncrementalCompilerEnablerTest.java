@@ -16,12 +16,12 @@
 
 package org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl;
 
-import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Optional;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.kie.workbench.common.services.backend.builder.compiler.TestUtil;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.Compilers;
@@ -39,15 +39,26 @@ import org.uberfire.java.nio.file.spi.FileSystemProvider;
 
 public class InternalNioImplDefaultIncrementalCompilerEnablerTest {
 
-    //private final Path prj = Paths.get("src/test/projects/dummy_multimodule");
+    private Path mavenRepo;
 
-    //private final Path mavenRepo = Paths.get("src/test/resources/.ignore/m2_repo/");
+    @Before
+    public void setUp() throws Exception {
+        mavenRepo = Paths.get(System.getProperty("user.home"),
+                              "/.m2/repository");
+
+        if (!Files.exists(mavenRepo)) {
+            System.out.println("Creating a m2_repo into " + mavenRepo);
+            if (!Files.exists(Files.createDirectories(mavenRepo))) {
+                throw new Exception("Folder not writable in the project");
+            }
+        }
+    }
 
     @Test
     public void testReadPomsInaPrjTest() throws Exception {
 
         FileSystemProvider fs = FileSystemProviders.getDefaultProvider();
-        Path mavenRepo = fs.getPath(URI.create("file://src/test/resources/.ignore/m2_repo/"));
+
         Path tmpRoot = Files.createTempDirectory("repo");
         //NIO creation and copy content
         java.nio.file.Path temp = java.nio.file.Files.createDirectories(java.nio.file.Paths.get(tmpRoot.toString(),
@@ -71,8 +82,9 @@ public class InternalNioImplDefaultIncrementalCompilerEnablerTest {
                                                                                                                                                    Decorator.NONE));
 
         InternalNioImplCompilationRequest req = new InternalNioImplDefaultCompilationRequest(info,
-                                                                                             new String[]{MavenArgs.COMPILE},
-                                                                                             new HashMap<>(), Optional.empty());
+                                                                                             new String[]{MavenArgs.CLEAN,MavenArgs.COMPILE},
+                                                                                             new HashMap<>(),
+                                                                                             Optional.empty());
         InternalNioImplDefaultIncrementalCompilerEnabler enabler = new InternalNioImplDefaultIncrementalCompilerEnabler(Compilers.JAVAC);
         Assert.assertTrue(enabler.process(req).getResult());
 
@@ -87,7 +99,6 @@ public class InternalNioImplDefaultIncrementalCompilerEnablerTest {
     @Test
     public void testReadKiePluginTest() throws Exception {
 
-        Path mavenRepo = Paths.get("src/test/resources/.ignore/m2_repo/");
         Path tmpRoot = Files.createTempDirectory("repo");
 
         //NIO creation and copy content
@@ -111,8 +122,9 @@ public class InternalNioImplDefaultIncrementalCompilerEnablerTest {
                                                                                                    InternalNioImplMavenCompilerFactory.getCompiler(mavenRepo,
                                                                                                                                                    Decorator.NONE));
         InternalNioImplCompilationRequest req = new InternalNioImplDefaultCompilationRequest(info,
-                                                                                             new String[]{MavenArgs.COMPILE},
-                                                                                             new HashMap<>(), Optional.empty());
+                                                                                             new String[]{MavenArgs.CLEAN,MavenArgs.COMPILE},
+                                                                                             new HashMap<>(),
+                                                                                             Optional.empty());
         InternalNioImplDefaultIncrementalCompilerEnabler enabler = new InternalNioImplDefaultIncrementalCompilerEnabler(Compilers.JAVAC);
         Assert.assertTrue(enabler.process(req).getResult());
 

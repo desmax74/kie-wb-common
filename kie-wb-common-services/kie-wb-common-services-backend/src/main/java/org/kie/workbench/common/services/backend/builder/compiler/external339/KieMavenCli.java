@@ -310,8 +310,8 @@ public class KieMavenCli {
         // Parsing errors can happen during the processing of the arguments and we prefer not having to check if
         // the logger is null and construct this so we can use an SLF4J logger everywhere.
         //
-        slf4jLogger = new Slf4jStdoutLogger();//@TODO MAX
-        //slf4jLogger = new KieSlf4Logger();//@TODO MAX
+        slf4jLogger = new Slf4jStdoutLogger();
+
 
         CLIManager cliManager = new CLIManager();
 

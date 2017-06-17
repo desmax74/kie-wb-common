@@ -25,6 +25,7 @@ import org.drools.core.rule.KieModuleMetaInfo;
 import org.drools.core.rule.TypeMetaInfo;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.kie.api.builder.KieModule;
 import org.kie.workbench.common.services.backend.builder.compiler.CompilationResponse;
@@ -40,14 +41,19 @@ import org.uberfire.java.nio.file.Paths;
 
 public class InternalNioImplKieMetadataTest {
 
-    private final Path mavenRepo = Paths.get("src/test/resources/.ignore/m2_repo/");
+    private Path mavenRepo;
 
     @Before
     public void setUp() throws Exception {
-        if (!Files.exists(mavenRepo)) {
-            System.out.println("Creating a m2_repo into src/test/resources/.ignore/m2_repo/");
-            if (!Files.exists(Files.createDirectories(mavenRepo))) {
-                throw new Exception("Folder not writable in the project");
+        mavenRepo = Paths.get(System.getProperty("user.home"),
+                              "/.m2/repository");
+
+        if (System.getProperty("M2_REPO") == null) {
+            if (!Files.exists(mavenRepo)) {
+                System.out.println("Creating a m2_repo into:" + mavenRepo.toString());
+                if (!Files.exists(Files.createDirectories(mavenRepo))) {
+                    throw new Exception("Folder not writable in the project");
+                }
             }
         }
     }
@@ -76,11 +82,15 @@ public class InternalNioImplKieMetadataTest {
         InternalNioImplWorkspaceCompilationInfo info = new InternalNioImplWorkspaceCompilationInfo(tmp,
                                                                                                    compiler);
         InternalNioImplCompilationRequest req = new InternalNioImplDefaultCompilationRequest(info,
-                                                                                             new String[]{MavenArgs.COMPILE, MavenArgs.DEBUG},
-                                                                                             new HashMap<>(), Optional.empty());
+                                                                                             new String[]{MavenArgs.CLEAN,MavenArgs.COMPILE},
+                                                                                             new HashMap<>(),
+                                                                                             Optional.empty());
         CompilationResponse res = compiler.compileSync(req);
+
+        if (res.getErrorMessage().isPresent()) {
+            System.out.println("Error:" + res.getErrorMessage().get());
+        }
         Assert.assertTrue(res.isSuccessful());
-        TestUtil.rm(tmpRoot.toFile());
 
         Optional<KieModuleMetaInfo> metaDataOptional = res.getKieModuleMetaInfo();
         Assert.assertTrue(metaDataOptional.isPresent());
@@ -98,6 +108,7 @@ public class InternalNioImplKieMetadataTest {
         Assert.assertTrue(kieModuleOptional.isPresent());
 
         InternalNioImplTestUtil.rm(tmpRoot.toFile());
+
     }
 }
 

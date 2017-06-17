@@ -46,11 +46,16 @@ import static org.junit.Assert.*;
 
 public class InternalNioImplClassLoaderProviderTest {
 
+    private Path mavenRepo;
+
     @Before
     public void setUp() throws Exception {
-        Path mavenRepo = Paths.get("src/test/resources/.ignore/m2_repo/");
+        //Path mavenRepo = Paths.get("src/test/resources/.ignore/m2_repo/");
+        mavenRepo = Paths.get(System.getProperty("user.home"),
+                              "/.m2/repository");
+
         if (!Files.exists(mavenRepo)) {
-            System.out.println("Creating a m2_repo into src/test/resources/.ignore/m2_repo/");
+            System.out.println("Creating a m2_repo into " + mavenRepo);
             if (!Files.exists(Files.createDirectories(mavenRepo))) {
                 throw new Exception("Folder not writable in the project");
             }
@@ -65,7 +70,7 @@ public class InternalNioImplClassLoaderProviderTest {
                                                                                                "dummy"));
         TestUtil.copyTree(java.nio.file.Paths.get("src/test/projects/dummy_kie_multimodule_classloader"),
                           tmp);
-        Path mavenRepo = Paths.get("src/test/resources/.ignore/m2_repo/");
+
         InternalNioImplMavenCompiler compiler = InternalNioImplMavenCompilerFactory.getCompiler(mavenRepo,
                                                                                                 Decorator.NONE);
         Assert.assertTrue(compiler.isValid());
@@ -74,12 +79,12 @@ public class InternalNioImplClassLoaderProviderTest {
         InternalNioImplWorkspaceCompilationInfo info = new InternalNioImplWorkspaceCompilationInfo(uberfireTmp,
                                                                                                    compiler);
         InternalNioImplCompilationRequest req = new InternalNioImplDefaultCompilationRequest(info,
-                                                                                             new String[]{MavenArgs.COMPILE, MavenArgs.INSTALL},
-                                                                                             new HashMap<>(), Optional.empty());
+                                                                                             new String[]{MavenArgs.CLEAN,MavenArgs.COMPILE, MavenArgs.INSTALL},
+                                                                                             new HashMap<>(),
+                                                                                             Optional.empty());
         CompilationResponse res = compiler.compileSync(req);
         Assert.assertTrue(res.isSuccessful());
 
-        //Path mavenRepo = Paths.get("src/test/resources/.ignore/m2_repo/");
         KieClassLoaderProvider kieClazzLoaderProvider = new InternalNioImplClassLoaderProviderImpl();
         List<String> pomList = new ArrayList<>();
         InternalNioImplMavenUtils.searchPoms(Paths.get("src/test/projects/dummy_kie_multimodule_classloader/"),
@@ -118,7 +123,6 @@ public class InternalNioImplClassLoaderProviderTest {
         TestUtil.copyTree(java.nio.file.Paths.get("src/test/projects/dummy_kie_multimodule_classloader"),
                           tmp);
 
-        Path mavenRepo = Paths.get("src/test/resources/.ignore/m2_repo/");
         InternalNioImplMavenCompiler compiler = InternalNioImplMavenCompilerFactory.getCompiler(mavenRepo,
                                                                                                 Decorator.NONE);
         Assert.assertTrue(compiler.isValid());
@@ -127,15 +131,14 @@ public class InternalNioImplClassLoaderProviderTest {
         InternalNioImplWorkspaceCompilationInfo info = new InternalNioImplWorkspaceCompilationInfo(uberfireTmp,
                                                                                                    compiler);
         InternalNioImplCompilationRequest req = new InternalNioImplDefaultCompilationRequest(info,
-                                                                                             new String[]{MavenArgs.COMPILE, MavenArgs.INSTALL},
-                                                                                             new HashMap<>(), Optional.empty());
+                                                                                             new String[]{MavenArgs.CLEAN,MavenArgs.COMPILE, MavenArgs.INSTALL},
+                                                                                             new HashMap<>(),
+                                                                                             Optional.empty());
         CompilationResponse res = compiler.compileSync(req);
         Assert.assertTrue(res.isSuccessful());
 
-        //Path mavenRepo = Paths.get("src/test/resources/.ignore/m2_repo/");
         KieClassLoaderProvider kieClazzLoaderProvider = new InternalNioImplClassLoaderProviderImpl();
-        /*List<String> pomList = new ArrayList<>();
-        UberfireMavenUtils.searchPoms(Paths.get("src/test/projects/dummy_kie_multimodule_classloader/"), pomList);*/
+
         Optional<ClassLoader> clazzLoader = kieClazzLoaderProvider.loadDependenciesClassloaderFromProject(uberfireTmp.toAbsolutePath().toString(),
                                                                                                           mavenRepo.toAbsolutePath().toString());
         assertNotNull(clazzLoader);
@@ -169,7 +172,7 @@ public class InternalNioImplClassLoaderProviderTest {
                                                                                                "dummy"));
         TestUtil.copyTree(java.nio.file.Paths.get("src/test/projects/dummy_kie_multimodule_classloader"),
                           tmp);
-        Path mavenRepo = Paths.get("src/test/resources/.ignore/m2_repo/");
+
         InternalNioImplMavenCompiler compiler = InternalNioImplMavenCompilerFactory.getCompiler(mavenRepo,
                                                                                                 Decorator.NONE);
         Assert.assertTrue(compiler.isValid());
@@ -178,8 +181,9 @@ public class InternalNioImplClassLoaderProviderTest {
         InternalNioImplWorkspaceCompilationInfo info = new InternalNioImplWorkspaceCompilationInfo(uberfireTmp,
                                                                                                    compiler);
         InternalNioImplCompilationRequest req = new InternalNioImplDefaultCompilationRequest(info,
-                                                                                             new String[]{MavenArgs.COMPILE},
-                                                                                             new HashMap<>(), Optional.empty());
+                                                                                             new String[]{MavenArgs.CLEAN,MavenArgs.COMPILE},
+                                                                                             new HashMap<>(),
+                                                                                             Optional.empty());
         CompilationResponse res = compiler.compileSync(req);
         Assert.assertTrue(res.isSuccessful());
 
@@ -218,7 +222,7 @@ public class InternalNioImplClassLoaderProviderTest {
     @Test
     public void getClassloaderFromAllDependenciesTestSimple() {
         KieClassLoaderProvider kieClazzLoaderProvider = new NIOClassLoaderProviderImpl();
-        Path mavenRepo = Paths.get("src/test/resources/.ignore/m2_repo/");
+        //Path mavenRepo = Paths.get("src/test/resources/.ignore/m2_repo/");
         Optional<ClassLoader> classloaderOptional = kieClazzLoaderProvider.getClassloaderFromAllDependencies("src/test/projects/dummy_deps_simple",
                                                                                                              mavenRepo.toAbsolutePath().toString());
         assertTrue(classloaderOptional.isPresent());
@@ -230,7 +234,7 @@ public class InternalNioImplClassLoaderProviderTest {
     @Test
     public void getClassloaderFromAllDependenciesTestComplex() {
         KieClassLoaderProvider kieClazzLoaderProvider = new NIOClassLoaderProviderImpl();
-        Path mavenRepo = Paths.get("src/test/resources/.ignore/m2_repo/");
+        //Path mavenRepo = Paths.get("src/test/resources/.ignore/m2_repo/");
         Optional<ClassLoader> classloaderOptional = kieClazzLoaderProvider.getClassloaderFromAllDependencies("src/test/projects/dummy_deps_complex",
                                                                                                              mavenRepo.toAbsolutePath().toString());
         assertTrue(classloaderOptional.isPresent());

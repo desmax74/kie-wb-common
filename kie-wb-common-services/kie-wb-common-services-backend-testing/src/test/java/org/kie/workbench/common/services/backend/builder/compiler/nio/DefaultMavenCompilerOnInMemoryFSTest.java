@@ -72,10 +72,8 @@ public class DefaultMavenCompilerOnInMemoryFSTest {
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultMavenCompilerOnInMemoryFSTest.class);
 
-    private final static Path mavenRepo = Paths.get("src/test/resources/.ignore/m2_repo/");
-
+    private Path mavenRepo;
     private int gitSSHPort;
-
     private JGitFileSystemProvider provider;
 
     public static int findFreePort() {
@@ -94,8 +92,11 @@ public class DefaultMavenCompilerOnInMemoryFSTest {
 
     @Before
     public void setUp() throws Exception {
+        mavenRepo = Paths.get(System.getProperty("user.home"),
+                              "/.m2/repository");
+
         if (!Files.exists(mavenRepo)) {
-            System.out.println("Creating a m2_repo into src/test/resources/.ignore/m2_repo/");
+            System.out.println("Creating a m2_repo into " + mavenRepo);
             if (!Files.exists(Files.createDirectories(mavenRepo))) {
                 throw new Exception("Folder not writable in the project");
             }
@@ -115,6 +116,7 @@ public class DefaultMavenCompilerOnInMemoryFSTest {
             FileUtils.delete(provider.getGitRepoContainerDir(),
                              FileUtils.RECURSIVE);
         }
+        TestUtil.rm(new File("src/../.security/"));
     }
 
     @Test
@@ -169,7 +171,6 @@ public class DefaultMavenCompilerOnInMemoryFSTest {
                                          StandardCharsets.UTF_8);
         Assert.assertFalse(pomAsAstring.contains("<artifactId>takari-lifecycle-plugin</artifactId>"));
 
-        //KieCliRequest kcr = new KieCliRequest(prjFolder, new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE});
         NIOWorkspaceCompilationInfo info = new NIOWorkspaceCompilationInfo(prjFolder,
                                                                            compiler);
         NIOCompilationRequest req = new NIODefaultCompilationRequest(info,
@@ -362,7 +363,7 @@ public class DefaultMavenCompilerOnInMemoryFSTest {
                                                                            compiler,
                                                                            cloned);
         NIOCompilationRequest req = new NIODefaultCompilationRequest(info,
-                                                                     new String[]{MavenArgs.COMPILE},
+                                                                     new String[]{MavenArgs.CLEAN,MavenArgs.COMPILE},
                                                                      new HashMap<>(),
                                                                      Optional.empty());
         CompilationResponse res = compiler.compileSync(req);

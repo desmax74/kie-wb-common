@@ -45,12 +45,15 @@ import static org.junit.Assert.*;
 
 public class NIOClassLoaderProviderTest {
 
-    private final Path mavenRepo = Paths.get("src/test/resources/.ignore/m2_repo/");
+    private Path mavenRepo;
 
     @Before
     public void setUp() throws Exception {
+        mavenRepo = Paths.get(System.getProperty("user.home"),
+                              "/.m2/repository");
+
         if (!Files.exists(mavenRepo)) {
-            System.out.println("Creating a m2_repo into src/test/resources/.ignore/m2_repo/");
+            System.out.println("Creating a m2_repo into " + mavenRepo);
             if (!Files.exists(Files.createDirectories(mavenRepo))) {
                 throw new Exception("Folder not writable in the project");
             }
@@ -73,13 +76,13 @@ public class NIOClassLoaderProviderTest {
         NIOWorkspaceCompilationInfo info = new NIOWorkspaceCompilationInfo(tmp,
                                                                            compiler);
         NIOCompilationRequest req = new NIODefaultCompilationRequest(info,
-                                                                     new String[]{MavenArgs.COMPILE, MavenArgs.INSTALL},
+                                                                     new String[]{MavenArgs.CLEAN,MavenArgs.COMPILE, MavenArgs.INSTALL},
                                                                      new HashMap<>(),
                                                                      Optional.empty());
         CompilationResponse res = compiler.compileSync(req);
         Assert.assertTrue(res.isSuccessful());
 
-        Path mavenRepo = Paths.get("src/test/resources/.ignore/m2_repo/");
+        //Path mavenRepo = Paths.get("src/test/resources/.ignore/m2_repo/");
         KieClassLoaderProvider kieClazzLoaderProvider = new NIOClassLoaderProviderImpl();
         List<String> pomList = new ArrayList<>();
         NIOMavenUtils.searchPoms(Paths.get("src/test/projects/dummy_kie_multimodule_classloader/"),
@@ -125,7 +128,7 @@ public class NIOClassLoaderProviderTest {
         NIOWorkspaceCompilationInfo info = new NIOWorkspaceCompilationInfo(tmp,
                                                                            compiler);
         NIOCompilationRequest req = new NIODefaultCompilationRequest(info,
-                                                                     new String[]{MavenArgs.COMPILE, MavenArgs.INSTALL},
+                                                                     new String[]{MavenArgs.CLEAN,MavenArgs.COMPILE, MavenArgs.INSTALL},
                                                                      new HashMap<>(),
                                                                      Optional.empty());
         CompilationResponse res = compiler.compileSync(req);
@@ -173,7 +176,7 @@ public class NIOClassLoaderProviderTest {
         NIOWorkspaceCompilationInfo info = new NIOWorkspaceCompilationInfo(tmp,
                                                                            compiler);
         NIOCompilationRequest req = new NIODefaultCompilationRequest(info,
-                                                                     new String[]{MavenArgs.COMPILE},
+                                                                     new String[]{MavenArgs.CLEAN,MavenArgs.COMPILE},
                                                                      new HashMap<>(),
                                                                      Optional.empty());
         CompilationResponse res = compiler.compileSync(req);

@@ -34,12 +34,15 @@ import org.kie.workbench.common.services.backend.builder.compiler.nio.impl.NIOWo
 
 public class DefaultMavenIncrementalCompilerTest {
 
-    private final Path mavenRepo = Paths.get("src/test/resources/.ignore/m2_repo/");
+    private Path mavenRepo;
 
     @Before
     public void setUp() throws Exception {
+        mavenRepo = Paths.get(System.getProperty("user.home"),
+                              "/.m2/repository");
+
         if (!Files.exists(mavenRepo)) {
-            System.out.println("Creating a m2_repo into src/test/resources/.ignore/m2_repo/");
+            System.out.println("Creating a m2_repo into " + mavenRepo);
             if (!Files.exists(Files.createDirectories(mavenRepo))) {
                 throw new Exception("Folder not writable in the project");
             }
