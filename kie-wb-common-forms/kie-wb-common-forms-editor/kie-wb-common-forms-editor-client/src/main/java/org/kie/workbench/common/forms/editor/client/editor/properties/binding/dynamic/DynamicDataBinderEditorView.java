@@ -22,10 +22,12 @@ public interface DynamicDataBinderEditorView extends UberElement<DynamicDataBind
 
     interface Presenter {
 
-        void onBindingChange(String newBinding);
+        void onBindingChange();
     }
 
     void clear();
 
     void setFieldBinding(String fieldBinding);
+
+    String getFieldBinding();
 }
