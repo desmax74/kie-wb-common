@@ -59,7 +59,7 @@ public class NioKieMetadataTest {
         }
     }
 
-    @Ignore //@Test
+    @Test
     public void compileAndloadKieJarMetadata() throws Exception {
         /**
          * If the test fail check if the Drools core classes used, KieModuleMetaInfo and TypeMetaInfo implements Serializable
@@ -77,7 +77,7 @@ public class NioKieMetadataTest {
         NIOWorkspaceCompilationInfo info = new NIOWorkspaceCompilationInfo(tmp,
                                                                            compiler);
         NIOCompilationRequest req = new NIODefaultCompilationRequest(info,
-                                                                     new String[]{MavenArgs.COMPILE},
+                                                                     new String[]{MavenArgs.INSTALL},
                                                                      new HashMap<>(),
                                                                      Optional.empty());
         CompilationResponse res = compiler.compileSync(req);
@@ -104,6 +104,6 @@ public class NioKieMetadataTest {
 
         TestUtil.rm(tmpRoot.toFile());
 
-        TestUtil.rm(new File("src/../.repositories"));
+        //TestUtil.rm(new File("src/../.repositories"));
     }
 }

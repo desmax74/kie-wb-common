@@ -58,7 +58,7 @@ public class InternalNioImplKieMetadataTest {
         }
     }
 
-    @Ignore //@Test
+    @Test
     public void compileAndloadKieJarMetadata() throws Exception {
         /**
          * If the test fail check if the Drools core classes used, KieModuleMetaInfo and TypeMetaInfo implements Serializable
@@ -82,7 +82,7 @@ public class InternalNioImplKieMetadataTest {
         InternalNioImplWorkspaceCompilationInfo info = new InternalNioImplWorkspaceCompilationInfo(tmp,
                                                                                                    compiler);
         InternalNioImplCompilationRequest req = new InternalNioImplDefaultCompilationRequest(info,
-                                                                                             new String[]{MavenArgs.CLEAN,MavenArgs.COMPILE},
+                                                                                             new String[]{MavenArgs.INSTALL},
                                                                                              new HashMap<>(),
                                                                                              Optional.empty());
         CompilationResponse res = compiler.compileSync(req);
