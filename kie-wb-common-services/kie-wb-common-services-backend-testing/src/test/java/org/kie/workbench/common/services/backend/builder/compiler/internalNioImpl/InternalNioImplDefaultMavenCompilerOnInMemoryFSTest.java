@@ -367,7 +367,7 @@ public class InternalNioImplDefaultMavenCompilerOnInMemoryFSTest {
                                                                                                    compiler,
                                                                                                    cloned);
         InternalNioImplCompilationRequest req = new InternalNioImplDefaultCompilationRequest(info,
-                                                                                             new String[]{MavenArgs.CLEAN,MavenArgs.COMPILE},
+                                                                                             new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE},
                                                                                              new HashMap<>(),
                                                                                              Optional.empty());
         CompilationResponse res = compiler.compileSync(req);

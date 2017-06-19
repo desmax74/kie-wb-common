@@ -82,7 +82,7 @@ public class InternalNioImplDefaultIncrementalCompilerEnablerTest {
                                                                                                                                                    Decorator.NONE));
 
         InternalNioImplCompilationRequest req = new InternalNioImplDefaultCompilationRequest(info,
-                                                                                             new String[]{MavenArgs.CLEAN,MavenArgs.COMPILE},
+                                                                                             new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE},
                                                                                              new HashMap<>(),
                                                                                              Optional.empty());
         InternalNioImplDefaultIncrementalCompilerEnabler enabler = new InternalNioImplDefaultIncrementalCompilerEnabler(Compilers.JAVAC);
@@ -122,7 +122,7 @@ public class InternalNioImplDefaultIncrementalCompilerEnablerTest {
                                                                                                    InternalNioImplMavenCompilerFactory.getCompiler(mavenRepo,
                                                                                                                                                    Decorator.NONE));
         InternalNioImplCompilationRequest req = new InternalNioImplDefaultCompilationRequest(info,
-                                                                                             new String[]{MavenArgs.CLEAN,MavenArgs.COMPILE},
+                                                                                             new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE},
                                                                                              new HashMap<>(),
                                                                                              Optional.empty());
         InternalNioImplDefaultIncrementalCompilerEnabler enabler = new InternalNioImplDefaultIncrementalCompilerEnabler(Compilers.JAVAC);

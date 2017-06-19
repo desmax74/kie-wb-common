@@ -72,7 +72,7 @@ public class DefaultIncrementalCompilerEnablerTest {
                                                                            NIOMavenCompilerFactory.getCompiler(mavenRepo,
                                                                                                                Decorator.NONE));
         NIOCompilationRequest req = new NIODefaultCompilationRequest(info,
-                                                                     new String[]{MavenArgs.CLEAN,MavenArgs.COMPILE},
+                                                                     new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE},
                                                                      new HashMap<>(),
                                                                      Optional.empty());
         NIODefaultIncrementalCompilerEnabler enabler = new NIODefaultIncrementalCompilerEnabler(Compilers.JAVAC);
@@ -106,7 +106,7 @@ public class DefaultIncrementalCompilerEnablerTest {
                                                                            NIOMavenCompilerFactory.getCompiler(mavenRepo,
                                                                                                                Decorator.NONE));
         NIOCompilationRequest req = new NIODefaultCompilationRequest(info,
-                                                                     new String[]{MavenArgs.CLEAN,MavenArgs.COMPILE},
+                                                                     new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE},
                                                                      new HashMap<>(),
                                                                      Optional.empty());
         NIODefaultIncrementalCompilerEnabler enabler = new NIODefaultIncrementalCompilerEnabler(Compilers.JAVAC);

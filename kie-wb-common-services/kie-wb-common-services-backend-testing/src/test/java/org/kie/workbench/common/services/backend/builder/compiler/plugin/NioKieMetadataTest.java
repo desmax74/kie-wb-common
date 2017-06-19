@@ -14,8 +14,11 @@
  * limitations under the License.
  */
 
-package org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl;
+package org.kie.workbench.common.services.backend.builder.compiler.plugin;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -23,6 +26,7 @@ import java.util.Set;
 
 import org.drools.core.rule.KieModuleMetaInfo;
 import org.drools.core.rule.TypeMetaInfo;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -32,16 +36,20 @@ import org.kie.workbench.common.services.backend.builder.compiler.CompilationRes
 import org.kie.workbench.common.services.backend.builder.compiler.TestUtil;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.Decorator;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.MavenArgs;
-import org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.impl.InternalNioImplDefaultCompilationRequest;
-import org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.impl.InternalNioImplMavenCompilerFactory;
-import org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.impl.InternalNioImplWorkspaceCompilationInfo;
-import org.uberfire.java.nio.file.Files;
-import org.uberfire.java.nio.file.Path;
-import org.uberfire.java.nio.file.Paths;
+import org.kie.workbench.common.services.backend.builder.compiler.nio.NIOCompilationRequest;
+import org.kie.workbench.common.services.backend.builder.compiler.nio.NIOMavenCompiler;
+import org.kie.workbench.common.services.backend.builder.compiler.nio.impl.NIODefaultCompilationRequest;
+import org.kie.workbench.common.services.backend.builder.compiler.nio.impl.NIOMavenCompilerFactory;
+import org.kie.workbench.common.services.backend.builder.compiler.nio.impl.NIOWorkspaceCompilationInfo;
 
-public class InternalNioImplKieMetadataTest {
+public class NioKieMetadataTest {
 
     private Path mavenRepo;
+
+    @After
+    public void tearDown(){
+        mavenRepo = null;
+    }
 
     @Before
     public void setUp() throws Exception {
@@ -50,7 +58,7 @@ public class InternalNioImplKieMetadataTest {
 
         if (System.getProperty("M2_REPO") == null) {
             if (!Files.exists(mavenRepo)) {
-                System.out.println("Creating a m2_repo into:" + mavenRepo.toString());
+                System.out.println("Creating a m2_repo into" + mavenRepo);
                 if (!Files.exists(Files.createDirectories(mavenRepo))) {
                     throw new Exception("Folder not writable in the project");
                 }
@@ -63,33 +71,27 @@ public class InternalNioImplKieMetadataTest {
         /**
          * If the test fail check if the Drools core classes used, KieModuleMetaInfo and TypeMetaInfo implements Serializable
          * */
-        //compile and install
         Path tmpRoot = Files.createTempDirectory("repo");
         Path tmp = Files.createDirectories(Paths.get(tmpRoot.toString(),
                                                      "dummy"));
+        TestUtil.copyTree(Paths.get("src/test/projects/kjar-2-all-resources"),
+                          tmp);
 
-        //NIO creation and copy content
-        java.nio.file.Path temp = java.nio.file.Files.createDirectories(java.nio.file.Paths.get(tmpRoot.toString(),
-                                                                                                "dummy"));
-        TestUtil.copyTree(java.nio.file.Paths.get("src/test/projects/kjar-2-all-resources"),
-                          temp);
-        //end NIO
-
-        InternalNioImplMavenCompiler compiler = InternalNioImplMavenCompilerFactory.getCompiler(mavenRepo,
-                                                                                                Decorator.NONE);
+        NIOMavenCompiler compiler = NIOMavenCompilerFactory.getCompiler(mavenRepo,
+                                                                        Decorator.NONE);
         Assert.assertTrue(compiler.isValid());
 
-        InternalNioImplWorkspaceCompilationInfo info = new InternalNioImplWorkspaceCompilationInfo(tmp,
-                                                                                                   compiler);
-        InternalNioImplCompilationRequest req = new InternalNioImplDefaultCompilationRequest(info,
-                                                                                             new String[]{MavenArgs.INSTALL},
-                                                                                             new HashMap<>(),
-                                                                                             Optional.empty());
+        NIOWorkspaceCompilationInfo info = new NIOWorkspaceCompilationInfo(tmp,
+                                                                           compiler);
+        NIOCompilationRequest req = new NIODefaultCompilationRequest(info,
+                                                                     new String[]{MavenArgs.COMPILE},
+                                                                     new HashMap<>(),
+                                                                     Optional.of("log"));
         CompilationResponse res = compiler.compileSync(req);
-
         if (res.getErrorMessage().isPresent()) {
-            System.out.println("Error:" + res.getErrorMessage().get());
+            System.out.println(res.getErrorMessage().get());
         }
+
         Assert.assertTrue(res.isSuccessful());
 
         Optional<KieModuleMetaInfo> metaDataOptional = res.getKieModuleMetaInfo();
@@ -107,8 +109,6 @@ public class InternalNioImplKieMetadataTest {
         Optional<KieModule> kieModuleOptional = res.getKieModule();
         Assert.assertTrue(kieModuleOptional.isPresent());
 
-        InternalNioImplTestUtil.rm(tmpRoot.toFile());
-
+        //TestUtil.rm(tmpRoot.toFile());
     }
 }
-

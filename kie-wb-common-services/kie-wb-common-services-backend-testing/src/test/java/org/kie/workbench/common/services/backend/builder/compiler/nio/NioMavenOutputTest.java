@@ -8,6 +8,7 @@ import java.util.Optional;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.kie.workbench.common.services.backend.builder.compiler.CompilationResponse;
 import org.kie.workbench.common.services.backend.builder.compiler.TestUtil;
@@ -34,30 +35,6 @@ public class NioMavenOutputTest {
         }
     }
 
-    @Test
-    public void testReadMavenHome() throws Exception {
-        Path tmpRoot = Files.createTempDirectory("repo");
-        Path tmp = Files.createDirectories(Paths.get(tmpRoot.toString(),
-                                                     "dummy"));
-        TestUtil.copyTree(Paths.get("src/test/projects/dummy"),
-                          tmp);
-
-        NIOMavenCompiler compiler = NIOMavenCompilerFactory.getCompiler(mavenRepo,
-                                                                        Decorator.NONE);
-        Assert.assertTrue(compiler.isValid());
-
-        NIOWorkspaceCompilationInfo info = new NIOWorkspaceCompilationInfo(tmp,
-                                                                           compiler);
-        NIOCompilationRequest req = new NIODefaultCompilationRequest(info,
-                                                                     new String[]{MavenArgs.CLEAN,MavenArgs.DEBUG, MavenArgs.COMPILE},
-                                                                     new HashMap<>(),
-                                                                     Optional.of("log"));
-        CompilationResponse res = compiler.compileSync(req);
-        Assert.assertTrue(res.isSuccessful());
-        Assert.assertTrue(res.getMavenOutput().isPresent());
-        Assert.assertTrue(res.getMavenOutput().get().size() > 0);
-        TestUtil.rm(tmpRoot.toFile());
-    }
 
     @Test
     public void testOutputWithTakari() throws Exception {
@@ -77,7 +54,7 @@ public class NioMavenOutputTest {
                                                                      new HashMap<>(),
                                                                      Optional.of("log"));
         CompilationResponse res = compiler.compileSync(req);
-
+        Assert.assertTrue(res.isSuccessful());
         Assert.assertTrue(res.getMavenOutput().isPresent());
         Assert.assertTrue(res.getMavenOutput().get().size() > 0);
 
