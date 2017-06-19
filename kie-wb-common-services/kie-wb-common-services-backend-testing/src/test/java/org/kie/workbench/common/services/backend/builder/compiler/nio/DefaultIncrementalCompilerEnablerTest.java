@@ -119,6 +119,8 @@ public class DefaultIncrementalCompilerEnablerTest {
                                   StandardCharsets.UTF_8);
         Assert.assertTrue(pomAsAstring.contains("kie-maven-plugin"));
 
+        Assert.assertTrue(pomAsAstring.contains("<artifactId>takari-lifecycle-plugin</artifactId>"));
+
         TestUtil.rm(tmpRoot.toFile());
     }
 }
