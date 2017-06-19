@@ -32,6 +32,13 @@ public class NIODefaultCompilationRequest implements NIOCompilationRequest {
     private String requestUUID;
     private Map map;
 
+    /***
+     *
+     * @param info
+     * @param args param for maven
+     * @param map to retrieve KieMetaInfo and KieModule when a Kie Plugin is present
+     * @param logFile if is not Optional.empty() the output of the build will be provided as a List<String> in the CompilationResponse you can use a simple Optional.of("log")
+     */
     public NIODefaultCompilationRequest(NIOWorkspaceCompilationInfo info,
                                         String[] args,
                                         Map<String, Object> map,

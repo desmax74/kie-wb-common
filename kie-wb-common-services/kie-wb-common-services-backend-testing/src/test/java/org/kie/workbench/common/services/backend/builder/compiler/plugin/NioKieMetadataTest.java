@@ -109,6 +109,7 @@ public class NioKieMetadataTest {
         Optional<KieModule> kieModuleOptional = res.getKieModule();
         Assert.assertTrue(kieModuleOptional.isPresent());
 
-        //TestUtil.rm(tmpRoot.toFile());
+        //comment if you want read the log file after the test run
+        TestUtil.rm(tmpRoot.toFile());
     }
 }

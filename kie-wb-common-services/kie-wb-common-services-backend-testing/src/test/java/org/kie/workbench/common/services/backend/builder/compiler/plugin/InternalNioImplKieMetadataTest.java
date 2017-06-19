@@ -116,7 +116,8 @@ public class InternalNioImplKieMetadataTest {
         Optional<KieModule> kieModuleOptional = res.getKieModule();
         Assert.assertTrue(kieModuleOptional.isPresent());
 
-        //InternalNioImplTestUtil.rm(tmpRoot.toFile());
+        //comment if you want read the log file after the test run
+        InternalNioImplTestUtil.rm(tmpRoot.toFile());
     }
 }
 
