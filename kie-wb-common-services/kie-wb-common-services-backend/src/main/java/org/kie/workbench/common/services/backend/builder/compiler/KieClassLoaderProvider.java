@@ -16,8 +16,12 @@
 
 package org.kie.workbench.common.services.backend.builder.compiler;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Optional;
+
+import org.kie.workbench.common.services.backend.builder.compiler.nio.NIOMavenCompiler;
+import org.kie.workbench.common.services.backend.builder.compiler.nio.impl.NIOWorkspaceCompilationInfo;
 
 /**
  *
@@ -71,5 +75,12 @@ public interface KieClassLoaderProvider {
      */
     Optional<ClassLoader> getClassloaderFromAllDependencies(String prjPath,
                                                             String localRepo);
+
+
+    Optional<List<URI>> getURISFromAllDependencies(String prjPath, String localRepo);
+
+    Optional<List<URI>> getURISFromAllDependencies(String prjPath,
+                                                   String localRepo, NIOMavenCompiler compiler, NIOWorkspaceCompilationInfo info);
+
 }
 

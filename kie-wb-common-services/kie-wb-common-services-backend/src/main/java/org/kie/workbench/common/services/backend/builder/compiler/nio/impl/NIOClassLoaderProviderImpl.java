@@ -20,6 +20,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.DirectoryStream;
@@ -259,7 +260,7 @@ public class NIOClassLoaderProviderImpl implements KieClassLoaderProvider {
             if (!classPathFiles.isEmpty()) {
                 List<URL> deps = new ArrayList<>();
                 for (String file : classPathFiles) {
-                    deps.addAll(readFile(file));
+                    deps.addAll(readFileAsURL(file));
                 }
                 if (!deps.isEmpty()) {
                     URLClassLoader urlClassLoader = new URLClassLoader(deps.toArray(new URL[deps.size()]));
@@ -270,7 +271,110 @@ public class NIOClassLoaderProviderImpl implements KieClassLoaderProvider {
         return Optional.empty();
     }
 
-    private List<URL> readFile(String filePath) {
+    public Optional<List<URI>> getURISFromAllDependencies(String prjPath,
+                                                                   String localRepo) {
+        NIOMavenCompiler compiler = NIOMavenCompilerFactory.getCompiler(Paths.get(localRepo),
+                                                                        Decorator.NONE);
+        NIOWorkspaceCompilationInfo info = new NIOWorkspaceCompilationInfo(Paths.get(prjPath),
+                                                                           compiler);
+        StringBuilder sb = new StringBuilder(MAVEN_DEP_PLUGING_OUTPUT_FILE).append(CLASSPATH_FILENAME).append(CLASSPATH_EXT);
+        NIOCompilationRequest req = new NIODefaultCompilationRequest(info,
+                                                                     new String[]{MavenArgs.DEPS_BUILD_CLASSPATH, sb.toString()},
+                                                                     new HashMap<>(),
+                                                                     Optional.empty());
+        CompilationResponse res = compiler.compileSync(req);
+        if (res.isSuccessful()) {
+            /** Maven dependency plugin is not able to append the modules' classpath using an absolute path in -Dmdep.outputFile,
+             it override each time and at the end only the last writted is present in  the file,
+             for this reason we use a relative path and then we read each file present in each module to build a unique classpath file
+             * */
+            List<String> classPathFiles = new ArrayList<>();
+            searchCPFiles(Paths.get(prjPath),
+                          classPathFiles);
+            if (!classPathFiles.isEmpty()) {
+                List<URI> deps = new ArrayList<>();
+                for (String file : classPathFiles) {
+                    deps.addAll(readFileAsURI(file));
+                }
+                if (!deps.isEmpty()) {
+                    return Optional.of(deps);
+                }
+            }
+        }
+        return Optional.empty();
+    }
+
+    private List<URI> readFileAsURI(String filePath) {
+
+        BufferedReader br = null;
+        FileReader fr = null;
+        List<URI> urls = new ArrayList<>();
+        try {
+
+            fr = new FileReader(filePath);
+            br = new BufferedReader(fr);
+            String sCurrentLine;
+            br = new BufferedReader(fr);
+
+            while ((sCurrentLine = br.readLine()) != null) {
+                StringTokenizer token = new StringTokenizer(sCurrentLine,
+                                                            ":");
+                while (token.hasMoreTokens()) {
+                    StringBuilder sb = new StringBuilder("file://").append(token.nextToken());
+                    urls.add(new URI(sb.toString()));
+                }
+            }
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+        } finally {
+            try {
+                if (br != null) {
+                    br.close();
+                }
+
+                if (fr != null) {
+                    fr.close();
+                }
+                Files.delete(Paths.get(filePath));
+            } catch (IOException ex) {
+                logger.error(ex.getMessage());
+            }
+        }
+        return urls;
+    }
+
+    public Optional<List<URI>> getURISFromAllDependencies(String prjPath,
+                                                          String localRepo, NIOMavenCompiler compiler, NIOWorkspaceCompilationInfo info) {
+
+        StringBuilder sb = new StringBuilder(MAVEN_DEP_PLUGING_OUTPUT_FILE).append(CLASSPATH_FILENAME).append(CLASSPATH_EXT);
+        NIOCompilationRequest req = new NIODefaultCompilationRequest(info,
+                                                                     new String[]{MavenArgs.DEPS_BUILD_CLASSPATH, sb.toString()},
+                                                                     new HashMap<>(),
+                                                                     Optional.empty());
+        CompilationResponse res = compiler.compileSync(req);
+        if (res.isSuccessful()) {
+            /** Maven dependency plugin is not able to append the modules' classpath using an absolute path in -Dmdep.outputFile,
+             it override each time and at the end only the last writted is present in  the file,
+             for this reason we use a relative path and then we read each file present in each module to build a unique classpath file
+             * */
+            List<String> classPathFiles = new ArrayList<>();
+            searchCPFiles(Paths.get(prjPath),
+                          classPathFiles);
+            if (!classPathFiles.isEmpty()) {
+                List<URI> deps = new ArrayList<>();
+                for (String file : classPathFiles) {
+                    deps.addAll(readFileAsURI(file));
+                }
+                if (!deps.isEmpty()) {
+                    return Optional.of(deps);
+                }
+            }
+        }
+        return Optional.empty();
+    }
+
+
+    private List<URL> readFileAsURL(String filePath) {
 
         BufferedReader br = null;
         FileReader fr = null;

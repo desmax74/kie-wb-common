@@ -37,6 +37,7 @@ import org.drools.compiler.kie.builder.impl.KieBuilderImpl;
 import org.drools.compiler.kie.builder.impl.KieContainerImpl;
 import org.drools.compiler.kie.builder.impl.KieFileSystemImpl;
 import org.drools.compiler.kie.builder.impl.KieModuleKieProject;
+import org.drools.core.rule.KieModuleMetaInfo;
 import org.drools.workbench.models.datamodel.imports.Import;
 import org.drools.workbench.models.datamodel.imports.Imports;
 import org.guvnor.common.services.backend.file.DotFileFilter;
@@ -219,9 +220,14 @@ public class Builder implements Serializable {
     public BuildResults build() {
 
         //@TODO max in this place we run the maven compiler
-        NIOCompilationRequest req = new NIODefaultCompilationRequest(workspaceCompilationInfo, new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE}, new HashMap<>(), Optional.empty());
-        CompilationResponse res = compiler.compileSync(req);
-        res.isSuccessful();
+        //NIOCompilationRequest req = new NIODefaultCompilationRequest(workspaceCompilationInfo, new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE}, new HashMap<>(), Optional.empty());
+        //CompilationResponse res = compiler.compileSync(req);
+        //res.isSuccessful();
+        //KieModule kieModule = res.getKieModule().get();
+        //KieModuleMetaInfo kieModuleMetaInfo =res.getKieModuleMetaInfo().get();
+
+        //KieModuleMetaData kieModuleMetaData = KieModuleMetaData.Factory.newKieModuleMetaData(kieModule);
+
 
         return oldBEhaviour();
     }

@@ -34,12 +34,12 @@
   <dependencyManagement>
     <dependencies>
 
-      <dependency>
+      <!--<dependency>
         <groupId>org.jboss.errai</groupId>
         <artifactId>wildfly-dist</artifactId>
         <version>${version.org.jboss.errai.wildfly}</version>
         <scope>import</scope>
-      </dependency>
+      </dependency>-->
 
       <dependency>
         <groupId>org.jboss.errai.bom</groupId>

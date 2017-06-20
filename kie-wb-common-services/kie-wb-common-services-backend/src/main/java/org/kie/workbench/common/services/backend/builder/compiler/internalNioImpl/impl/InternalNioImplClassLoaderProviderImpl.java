@@ -20,6 +20,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -38,6 +39,11 @@ import org.kie.workbench.common.services.backend.builder.compiler.configuration.
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.MavenArgs;
 import org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.InternalNioImplCompilationRequest;
 import org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.InternalNioImplMavenCompiler;
+import org.kie.workbench.common.services.backend.builder.compiler.nio.NIOCompilationRequest;
+import org.kie.workbench.common.services.backend.builder.compiler.nio.NIOMavenCompiler;
+import org.kie.workbench.common.services.backend.builder.compiler.nio.impl.NIODefaultCompilationRequest;
+import org.kie.workbench.common.services.backend.builder.compiler.nio.impl.NIOMavenCompilerFactory;
+import org.kie.workbench.common.services.backend.builder.compiler.nio.impl.NIOWorkspaceCompilationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.uberfire.java.nio.file.DirectoryStream;
@@ -321,7 +327,7 @@ public class InternalNioImplClassLoaderProviderImpl implements KieClassLoaderPro
         }
         return urls;
     }
-
+/*
     private List<URL> readFile(String filePath,
                                Path tmpFolder) {
 
@@ -356,6 +362,109 @@ public class InternalNioImplClassLoaderProviderImpl implements KieClassLoaderPro
                 }
                 Files.delete(Paths.get(filePath));
                 Files.delete(tmpFolder);
+            } catch (IOException ex) {
+                logger.error(ex.getMessage());
+            }
+        }
+        return urls;
+    }*/
+
+    public Optional<List<URI>> getURISFromAllDependencies(String prjPath,
+                                                          String localRepo) {
+        NIOMavenCompiler compiler = NIOMavenCompilerFactory.getCompiler(java.nio.file.Paths.get(localRepo),
+                                                                        Decorator.NONE);
+        NIOWorkspaceCompilationInfo info = new NIOWorkspaceCompilationInfo(java.nio.file.Paths.get(prjPath),
+                                                                           compiler);
+        StringBuilder sb = new StringBuilder(MAVEN_DEP_PLUGING_OUTPUT_FILE).append(CLASSPATH_FILENAME).append(CLASSPATH_EXT);
+        NIOCompilationRequest req = new NIODefaultCompilationRequest(info,
+                                                                     new String[]{MavenArgs.DEPS_BUILD_CLASSPATH, sb.toString()},
+                                                                     new HashMap<>(),
+                                                                     Optional.empty());
+        CompilationResponse res = compiler.compileSync(req);
+        if (res.isSuccessful()) {
+            /** Maven dependency plugin is not able to append the modules' classpath using an absolute path in -Dmdep.outputFile,
+             it override each time and at the end only the last writted is present in  the file,
+             for this reason we use a relative path and then we read each file present in each module to build a unique classpath file
+             * */
+            List<String> classPathFiles = new ArrayList<>();
+            searchCPFiles(Paths.get(prjPath),
+                          classPathFiles);
+            if (!classPathFiles.isEmpty()) {
+                List<URI> deps = new ArrayList<>();
+                for (String file : classPathFiles) {
+                    deps.addAll(readFileAsURI(file));
+                }
+                if (!deps.isEmpty()) {
+                    return Optional.of(deps);
+                }
+            }
+        }
+        return Optional.empty();
+    }
+
+    public Optional<List<URI>> getURISFromAllDependencies(String prjPath,
+                                                          String localRepo, NIOMavenCompiler compiler, NIOWorkspaceCompilationInfo info) {
+
+        StringBuilder sb = new StringBuilder(MAVEN_DEP_PLUGING_OUTPUT_FILE).append(CLASSPATH_FILENAME).append(CLASSPATH_EXT);
+        NIOCompilationRequest req = new NIODefaultCompilationRequest(info,
+                                                                     new String[]{MavenArgs.DEPS_BUILD_CLASSPATH, sb.toString()},
+                                                                     new HashMap<>(),
+                                                                     Optional.empty());
+        CompilationResponse res = compiler.compileSync(req);
+        if (res.isSuccessful()) {
+            /** Maven dependency plugin is not able to append the modules' classpath using an absolute path in -Dmdep.outputFile,
+             it override each time and at the end only the last writted is present in  the file,
+             for this reason we use a relative path and then we read each file present in each module to build a unique classpath file
+             * */
+            List<String> classPathFiles = new ArrayList<>();
+            searchCPFiles(Paths.get(prjPath),
+                          classPathFiles);
+            if (!classPathFiles.isEmpty()) {
+                List<URI> deps = new ArrayList<>();
+                for (String file : classPathFiles) {
+                    deps.addAll(readFileAsURI(file));
+                }
+                if (!deps.isEmpty()) {
+                    return Optional.of(deps);
+                }
+            }
+        }
+        return Optional.empty();
+    }
+
+
+    private List<URI> readFileAsURI(String filePath) {
+
+        BufferedReader br = null;
+        FileReader fr = null;
+        List<URI> urls = new ArrayList<>();
+        try {
+
+            fr = new FileReader(filePath);
+            br = new BufferedReader(fr);
+            String sCurrentLine;
+            br = new BufferedReader(fr);
+
+            while ((sCurrentLine = br.readLine()) != null) {
+                StringTokenizer token = new StringTokenizer(sCurrentLine,
+                                                            ":");
+                while (token.hasMoreTokens()) {
+                    StringBuilder sb = new StringBuilder("file://").append(token.nextToken());
+                    urls.add(new URI(sb.toString()));
+                }
+            }
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+        } finally {
+            try {
+                if (br != null) {
+                    br.close();
+                }
+
+                if (fr != null) {
+                    fr.close();
+                }
+                Files.delete(Paths.get(filePath));
             } catch (IOException ex) {
                 logger.error(ex.getMessage());
             }
