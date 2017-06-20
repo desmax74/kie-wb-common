@@ -8,7 +8,6 @@ import java.util.Optional;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.kie.workbench.common.services.backend.builder.compiler.CompilationResponse;
 import org.kie.workbench.common.services.backend.builder.compiler.TestUtil;
@@ -34,7 +33,6 @@ public class NioMavenOutputTest {
             }
         }
     }
-
 
     @Test
     public void testOutputWithTakari() throws Exception {

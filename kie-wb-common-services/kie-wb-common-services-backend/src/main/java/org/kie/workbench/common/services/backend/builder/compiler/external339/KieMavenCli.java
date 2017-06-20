@@ -312,7 +312,6 @@ public class KieMavenCli {
         //
         slf4jLogger = new Slf4jStdoutLogger();
 
-
         CLIManager cliManager = new CLIManager();
 
         List<String> args = new ArrayList<String>();

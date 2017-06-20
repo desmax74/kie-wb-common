@@ -403,7 +403,9 @@ public class InternalNioImplClassLoaderProviderImpl implements KieClassLoaderPro
     }
 
     public Optional<List<URI>> getURISFromAllDependencies(String prjPath,
-                                                          String localRepo, NIOMavenCompiler compiler, NIOWorkspaceCompilationInfo info) {
+                                                          String localRepo,
+                                                          NIOMavenCompiler compiler,
+                                                          NIOWorkspaceCompilationInfo info) {
 
         StringBuilder sb = new StringBuilder(MAVEN_DEP_PLUGING_OUTPUT_FILE).append(CLASSPATH_FILENAME).append(CLASSPATH_EXT);
         NIOCompilationRequest req = new NIODefaultCompilationRequest(info,
@@ -432,7 +434,6 @@ public class InternalNioImplClassLoaderProviderImpl implements KieClassLoaderPro
         return Optional.empty();
     }
 
-
     private List<URI> readFileAsURI(String filePath) {
 
         BufferedReader br = null;
@@ -451,6 +452,89 @@ public class InternalNioImplClassLoaderProviderImpl implements KieClassLoaderPro
                 while (token.hasMoreTokens()) {
                     StringBuilder sb = new StringBuilder("file://").append(token.nextToken());
                     urls.add(new URI(sb.toString()));
+                }
+            }
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+        } finally {
+            try {
+                if (br != null) {
+                    br.close();
+                }
+
+                if (fr != null) {
+                    fr.close();
+                }
+                Files.delete(Paths.get(filePath));
+            } catch (IOException ex) {
+                logger.error(ex.getMessage());
+            }
+        }
+        return urls;
+    }
+
+    @Override
+    public Optional<List<URI>> getURISFromAllDependencies(String prjPath) {
+        List<URI> deps = readAllCpFilesAsUris(prjPath);
+        if (deps.isEmpty()) {
+            return Optional.empty();
+        } else {
+            return Optional.of(deps);
+        }
+    }
+
+    private List<URI> readAllCpFilesAsUris(String prjPath) {
+        List<String> classPathFiles = new ArrayList<>();
+        searchCPFiles(Paths.get(prjPath),
+                      classPathFiles);
+        if (!classPathFiles.isEmpty()) {
+            List<URI> deps = new ArrayList<>();
+            for (String file : classPathFiles) {
+                deps.addAll(readFileAsURI(file));
+            }
+            if (!deps.isEmpty()) {
+
+                return deps;
+            }
+        }
+        return Collections.emptyList();
+    }
+
+    private List<URL> readAllCpFilesAsUrls(String prjPath) {
+        List<String> classPathFiles = new ArrayList<>();
+        searchCPFiles(Paths.get(prjPath),
+                      classPathFiles);
+        if (!classPathFiles.isEmpty()) {
+            List<URL> deps = new ArrayList<>();
+            for (String file : classPathFiles) {
+                deps.addAll(readFileAsURL(file));
+            }
+            if (!deps.isEmpty()) {
+
+                return deps;
+            }
+        }
+        return Collections.emptyList();
+    }
+
+    private List<URL> readFileAsURL(String filePath) {
+
+        BufferedReader br = null;
+        FileReader fr = null;
+        List<URL> urls = new ArrayList<>();
+        try {
+
+            fr = new FileReader(filePath);
+            br = new BufferedReader(fr);
+            String sCurrentLine;
+            br = new BufferedReader(fr);
+
+            while ((sCurrentLine = br.readLine()) != null) {
+                StringTokenizer token = new StringTokenizer(sCurrentLine,
+                                                            ":");
+                while (token.hasMoreTokens()) {
+                    StringBuilder sb = new StringBuilder("file://").append(token.nextToken());
+                    urls.add(new URL(sb.toString()));
                 }
             }
         } catch (Exception e) {

@@ -254,25 +254,74 @@ public class NIOClassLoaderProviderImpl implements KieClassLoaderProvider {
              it override each time and at the end only the last writted is present in  the file,
              for this reason we use a relative path and then we read each file present in each module to build a unique classpath file
              * */
-            List<String> classPathFiles = new ArrayList<>();
-            searchCPFiles(Paths.get(prjPath),
-                          classPathFiles);
-            if (!classPathFiles.isEmpty()) {
-                List<URL> deps = new ArrayList<>();
-                for (String file : classPathFiles) {
-                    deps.addAll(readFileAsURL(file));
-                }
-                if (!deps.isEmpty()) {
-                    URLClassLoader urlClassLoader = new URLClassLoader(deps.toArray(new URL[deps.size()]));
-                    return Optional.of(urlClassLoader);
-                }
+            Optional<ClassLoader> urlClassLoader = createClassloaderFromCpFiles(prjPath);
+            if (urlClassLoader != null) {
+                return urlClassLoader;
             }
         }
         return Optional.empty();
     }
 
+    private Optional<ClassLoader> createClassloaderFromCpFiles(String prjPath) {
+       /* List<String> classPathFiles = new ArrayList<>();
+        searchCPFiles(Paths.get(prjPath),
+                      classPathFiles);
+        if (!classPathFiles.isEmpty()) {
+            List<URL> deps = new ArrayList<>();
+            for (String file : classPathFiles) {
+                deps.addAll(readFileAsURL(file));
+            }
+            if (!deps.isEmpty()) {
+                URLClassLoader urlClassLoader = new URLClassLoader(deps.toArray(new URL[deps.size()]));
+                return Optional.of(urlClassLoader);
+            }
+        }
+        return Optional.empty();*/
+        List<URL> deps = readAllCpFilesAsUrls(prjPath);
+        if (deps.isEmpty()) {
+            return Optional.empty();
+        } else {
+            URLClassLoader urlClassLoader = new URLClassLoader(deps.toArray(new URL[deps.size()]));
+            return Optional.of(urlClassLoader);
+        }
+    }
+
+    private List<URL> readAllCpFilesAsUrls(String prjPath) {
+        List<String> classPathFiles = new ArrayList<>();
+        searchCPFiles(Paths.get(prjPath),
+                      classPathFiles);
+        if (!classPathFiles.isEmpty()) {
+            List<URL> deps = new ArrayList<>();
+            for (String file : classPathFiles) {
+                deps.addAll(readFileAsURL(file));
+            }
+            if (!deps.isEmpty()) {
+
+                return deps;
+            }
+        }
+        return Collections.emptyList();
+    }
+
+    private List<URI> readAllCpFilesAsUris(String prjPath) {
+        List<String> classPathFiles = new ArrayList<>();
+        searchCPFiles(Paths.get(prjPath),
+                      classPathFiles);
+        if (!classPathFiles.isEmpty()) {
+            List<URI> deps = new ArrayList<>();
+            for (String file : classPathFiles) {
+                deps.addAll(readFileAsURI(file));
+            }
+            if (!deps.isEmpty()) {
+
+                return deps;
+            }
+        }
+        return Collections.emptyList();
+    }
+
     public Optional<List<URI>> getURISFromAllDependencies(String prjPath,
-                                                                   String localRepo) {
+                                                          String localRepo) {
         NIOMavenCompiler compiler = NIOMavenCompilerFactory.getCompiler(Paths.get(localRepo),
                                                                         Decorator.NONE);
         NIOWorkspaceCompilationInfo info = new NIOWorkspaceCompilationInfo(Paths.get(prjPath),
@@ -344,7 +393,9 @@ public class NIOClassLoaderProviderImpl implements KieClassLoaderProvider {
     }
 
     public Optional<List<URI>> getURISFromAllDependencies(String prjPath,
-                                                          String localRepo, NIOMavenCompiler compiler, NIOWorkspaceCompilationInfo info) {
+                                                          String localRepo,
+                                                          NIOMavenCompiler compiler,
+                                                          NIOWorkspaceCompilationInfo info) {
 
         StringBuilder sb = new StringBuilder(MAVEN_DEP_PLUGING_OUTPUT_FILE).append(CLASSPATH_FILENAME).append(CLASSPATH_EXT);
         NIOCompilationRequest req = new NIODefaultCompilationRequest(info,
@@ -372,7 +423,6 @@ public class NIOClassLoaderProviderImpl implements KieClassLoaderProvider {
         }
         return Optional.empty();
     }
-
 
     private List<URL> readFileAsURL(String filePath) {
 
@@ -411,5 +461,15 @@ public class NIOClassLoaderProviderImpl implements KieClassLoaderProvider {
             }
         }
         return urls;
+    }
+
+    @Override
+    public Optional<List<URI>> getURISFromAllDependencies(String prjPath) {
+        List<URI> deps = readAllCpFilesAsUris(prjPath);
+        if (deps.isEmpty()) {
+            return Optional.empty();
+        } else {
+            return Optional.of(deps);
+        }
     }
 }

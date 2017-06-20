@@ -178,10 +178,11 @@ public class DefaultPomEditor implements PomEditor {
         if (kiePluginPresent && !alternativeCompilerPluginPresent) {
             //if kieplugin is present must be after the alternative compiler
             build.addPlugin(getNewCompilerPlugin());
-            alternativeCompilerPosition = getPluginPosition(build,conf.get(ConfigurationKey.ALTERNATIVE_COMPILER_PLUGIN)) -1;
+            alternativeCompilerPosition = getPluginPosition(build,
+                                                            conf.get(ConfigurationKey.ALTERNATIVE_COMPILER_PLUGIN)) - 1;
             overwritePOM = Boolean.TRUE;
 
-            if (kieMavenPluginPosition <= alternativeCompilerPosition){
+            if (kieMavenPluginPosition <= alternativeCompilerPosition) {
                 //swap the positions
                 Plugin kieMaven = build.getPlugins().get(kieMavenPluginPosition);
                 Plugin alternativeCompiler = build.getPlugins().get(alternativeCompilerPosition);
@@ -204,10 +205,11 @@ public class DefaultPomEditor implements PomEditor {
         return overwritePOM;
     }
 
-    protected int getPluginPosition( Build build , String artifactPlugin){
+    protected int getPluginPosition(Build build,
+                                    String artifactPlugin) {
         int i = 0;
         for (Plugin plugin : build.getPlugins()) {
-            if(plugin.getGroupId().equals(artifactPlugin)){
+            if (plugin.getGroupId().equals(artifactPlugin)) {
                 break;
             }
             i++;

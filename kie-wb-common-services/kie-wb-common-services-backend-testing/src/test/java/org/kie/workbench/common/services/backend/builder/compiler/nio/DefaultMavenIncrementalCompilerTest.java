@@ -106,4 +106,37 @@ public class DefaultMavenIncrementalCompilerTest {
 
         TestUtil.rm(tmpRoot.toFile());
     }
+
+    @Test
+    public void testIncrementalWithPluginEnabledThreeBuild() throws Exception {
+        Path tmpRoot = Files.createTempDirectory("repo");
+        Path tmp = Files.createDirectories(Paths.get(tmpRoot.toString(),
+                                                     "dummy"));
+        TestUtil.copyTree(Paths.get("src/test/projects/dummy"),
+                          tmp);
+
+        NIOMavenCompiler compiler = NIOMavenCompilerFactory.getCompiler(mavenRepo,
+                                                                        Decorator.NONE);
+
+        NIOWorkspaceCompilationInfo info = new NIOWorkspaceCompilationInfo(tmp,
+                                                                           compiler);
+        NIOCompilationRequest req = new NIODefaultCompilationRequest(info,
+                                                                     new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE},
+                                                                     new HashMap<>(),
+                                                                     Optional.empty());
+        CompilationResponse res = compiler.compileSync(req);
+        Assert.assertTrue(res.isSuccessful());
+
+        res = compiler.compileSync(req);
+        Assert.assertTrue(res.isSuccessful());
+
+        res = compiler.compileSync(req);
+        Assert.assertTrue(res.isSuccessful());
+
+        Path incrementalConfiguration = Paths.get(tmp.toAbsolutePath().toString(),
+                                                  "/target/incremental/io.takari.maven.plugins_takari-lifecycle-plugin_compile_compile");
+        Assert.assertTrue(incrementalConfiguration.toFile().exists());
+
+        TestUtil.rm(tmpRoot.toFile());
+    }
 }

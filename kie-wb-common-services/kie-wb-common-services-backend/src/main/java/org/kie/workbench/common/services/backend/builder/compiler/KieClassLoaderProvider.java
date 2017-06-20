@@ -76,11 +76,19 @@ public interface KieClassLoaderProvider {
     Optional<ClassLoader> getClassloaderFromAllDependencies(String prjPath,
                                                             String localRepo);
 
-
-    Optional<List<URI>> getURISFromAllDependencies(String prjPath, String localRepo);
+    /***
+     * Build a list of URL reading the cp file produced by the Maven dependency plugin
+     * @param prjPath
+     * @return
+     */
+    Optional<List<URI>> getURISFromAllDependencies(String prjPath);
 
     Optional<List<URI>> getURISFromAllDependencies(String prjPath,
-                                                   String localRepo, NIOMavenCompiler compiler, NIOWorkspaceCompilationInfo info);
+                                                   String localRepo);
 
+    Optional<List<URI>> getURISFromAllDependencies(String prjPath,
+                                                   String localRepo,
+                                                   NIOMavenCompiler compiler,
+                                                   NIOWorkspaceCompilationInfo info);
 }
 
