@@ -19,6 +19,7 @@ package org.kie.workbench.common.services.backend.builder.core;
 import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.net.URI;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -63,12 +64,15 @@ import org.kie.api.runtime.KieContainer;
 import org.kie.internal.builder.IncrementalResults;
 import org.kie.internal.builder.InternalKieBuilder;
 import org.kie.scanner.KieModuleMetaData;
+import org.kie.scanner.KieModuleMetaDataImpl;
 import org.kie.workbench.common.services.backend.builder.compiler.CompilationResponse;
+import org.kie.workbench.common.services.backend.builder.compiler.KieClassLoaderProvider;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.MavenArgs;
 import org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.InternalNioImplCompilationRequest;
 import org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.impl.InternalNioImplDefaultCompilationRequest;
 import org.kie.workbench.common.services.backend.builder.compiler.nio.NIOCompilationRequest;
 import org.kie.workbench.common.services.backend.builder.compiler.nio.NIOMavenCompiler;
+import org.kie.workbench.common.services.backend.builder.compiler.nio.impl.NIOClassLoaderProviderImpl;
 import org.kie.workbench.common.services.backend.builder.compiler.nio.impl.NIODefaultCompilationRequest;
 import org.kie.workbench.common.services.backend.builder.compiler.nio.impl.NIOWorkspaceCompilationInfo;
 import org.kie.workbench.common.services.shared.project.KieProject;
@@ -219,14 +223,20 @@ public class Builder implements Serializable {
 
     public BuildResults build() {
 
-        //@TODO max in this place we run the maven compiler
-        //NIOCompilationRequest req = new NIODefaultCompilationRequest(workspaceCompilationInfo, new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE}, new HashMap<>(), Optional.empty());
-        //CompilationResponse res = compiler.compileSync(req);
-        //res.isSuccessful();
-        //KieModule kieModule = res.getKieModule().get();
-        //KieModuleMetaInfo kieModuleMetaInfo =res.getKieModuleMetaInfo().get();
-
-        //KieModuleMetaData kieModuleMetaData = KieModuleMetaData.Factory.newKieModuleMetaData(kieModule);
+        /*
+        String prjPath -> retrieve the project path
+        StringBuilder sb = new StringBuilder(MavenArgs.MAVEN_DEP_PLUGING_OUTPUT_FILE).append(MavenArgs.CLASSPATH_FILENAME).append(MavenArgs.CLASSPATH_EXT);
+        NIOCompilationRequest req = new NIODefaultCompilationRequest(workspaceCompilationInfo, new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE, sb.toString()}, new HashMap<>(), Optional.empty());
+        CompilationResponse res = compiler.compileSync(req);
+        if(res.isSuccessful()){
+            KieModule kieModule = res.getKieModule().get();
+            KieClassLoaderProvider provider = new NIOClassLoaderProviderImpl();
+            Optional<List<URI>> optionalUris = provider.getURISFromAllDependencies(tmp.toAbsolutePath().toString());
+            KieModuleMetaData kieModuleMetaData = new KieModuleMetaDataImpl((InternalKieModule) kieModule,
+                                                                            optionalUris.get());
+        }*/
+        
+        //KieModuleMetaData kieModuleMetaData = KieModuleMetaData.Factory.newKieModuleMetaData(kieModule); broken by appformer mavenembedder
 
 
         return oldBEhaviour();
