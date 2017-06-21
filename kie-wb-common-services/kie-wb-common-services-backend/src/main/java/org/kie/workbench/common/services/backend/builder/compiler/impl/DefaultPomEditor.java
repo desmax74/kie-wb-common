@@ -175,7 +175,7 @@ public class DefaultPomEditor implements PomEditor {
             }
         }
 
-        if (kiePluginPresent && !alternativeCompilerPluginPresent) {
+        /*if (kiePluginPresent && !alternativeCompilerPluginPresent) {
             //if kieplugin is present must be after the alternative compiler
             build.addPlugin(getNewCompilerPlugin());
             alternativeCompilerPosition = getPluginPosition(build,
@@ -195,13 +195,13 @@ public class DefaultPomEditor implements PomEditor {
         }
 
         if (!defaultCompilerPluginPresent && kiePluginPresent) {
-            //if default maven compiler is not present we add the skip and phase none  to avoid its use
+            //if default maven compiler is not present and the kieplugin is present we add the default compiler disabled
             Plugin disabledDefaultCompiler = new Plugin();
             disabledDefaultCompiler.setArtifactId(conf.get(ConfigurationKey.MAVEN_COMPILER_PLUGIN));
             disableMavenCompilerAlreadyPresent(disabledDefaultCompiler);
             build.addPlugin(disabledDefaultCompiler);
             overwritePOM = Boolean.TRUE;
-        }
+        }*/
         return overwritePOM;
     }
 

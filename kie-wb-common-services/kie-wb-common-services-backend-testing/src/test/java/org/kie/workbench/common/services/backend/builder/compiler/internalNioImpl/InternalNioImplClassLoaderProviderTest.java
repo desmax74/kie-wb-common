@@ -50,7 +50,6 @@ public class InternalNioImplClassLoaderProviderTest {
 
     @Before
     public void setUp() throws Exception {
-        //Path mavenRepo = Paths.get("src/test/resources/.ignore/m2_repo/");
         mavenRepo = Paths.get(System.getProperty("user.home"),
                               "/.m2/repository");
 
@@ -222,7 +221,6 @@ public class InternalNioImplClassLoaderProviderTest {
     @Test
     public void getClassloaderFromAllDependenciesTestSimple() {
         KieClassLoaderProvider kieClazzLoaderProvider = new NIOClassLoaderProviderImpl();
-        //Path mavenRepo = Paths.get("src/test/resources/.ignore/m2_repo/");
         Optional<ClassLoader> classloaderOptional = kieClazzLoaderProvider.getClassloaderFromAllDependencies("src/test/projects/dummy_deps_simple",
                                                                                                              mavenRepo.toAbsolutePath().toString());
         assertTrue(classloaderOptional.isPresent());
@@ -234,7 +232,6 @@ public class InternalNioImplClassLoaderProviderTest {
     @Test
     public void getClassloaderFromAllDependenciesTestComplex() {
         KieClassLoaderProvider kieClazzLoaderProvider = new NIOClassLoaderProviderImpl();
-        //Path mavenRepo = Paths.get("src/test/resources/.ignore/m2_repo/");
         Optional<ClassLoader> classloaderOptional = kieClazzLoaderProvider.getClassloaderFromAllDependencies("src/test/projects/dummy_deps_complex",
                                                                                                              mavenRepo.toAbsolutePath().toString());
         assertTrue(classloaderOptional.isPresent());

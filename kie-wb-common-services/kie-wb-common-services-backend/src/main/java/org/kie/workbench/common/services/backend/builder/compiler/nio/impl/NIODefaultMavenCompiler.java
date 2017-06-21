@@ -32,6 +32,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import org.codehaus.plexus.classworlds.ClassWorld;
 import org.drools.compiler.kie.builder.impl.FileKieModule;
 import org.drools.core.rule.KieModuleMetaInfo;
 import org.kie.api.builder.KieModule;
@@ -114,8 +115,8 @@ public class NIODefaultMavenCompiler implements NIOMavenCompiler {
             }
         }
         req.getKieCliRequest().getRequest().setLocalRepositoryPath(mavenRepo.toAbsolutePath().toString());
-
-        int exitCode = cli.doMain(req.getKieCliRequest());
+        ClassWorld myClassWorld = new ClassWorld("plexus.core", getClass().getClassLoader() );
+        int exitCode = cli.doMain(req.getKieCliRequest(), myClassWorld);
         if (exitCode == 0) {
 
             if (req.getInfo().isKiePluginPresent()) {

@@ -113,9 +113,6 @@ public class InternalNioImplDefaultMavenCompilerOnInMemoryFSTest {
     public void buildWithCloneTest() throws IOException {
 
         Path tmpRoot = Files.createTempDirectory("repo");
-        Path tmp = Files.createDirectories(Paths.get(tmpRoot.toString(),
-                                                     "dummy"));
-        //File temp = tmp.toFile();
 
         //NIO creation and copy content
         java.nio.file.Path temp = java.nio.file.Files.createDirectories(java.nio.file.Paths.get(tmpRoot.toString(),

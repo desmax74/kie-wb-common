@@ -235,7 +235,7 @@ public class Builder implements Serializable {
             KieModuleMetaData kieModuleMetaData = new KieModuleMetaDataImpl((InternalKieModule) kieModule,
                                                                             optionalUris.get());
         }*/
-        
+
         //KieModuleMetaData kieModuleMetaData = KieModuleMetaData.Factory.newKieModuleMetaData(kieModule); broken by appformer mavenembedder
 
 

@@ -183,6 +183,7 @@ public class KieMavenCli {
     static void populateProperties(CommandLine commandLine,
                                    Properties systemProperties,
                                    Properties userProperties) {
+
         EnvironmentUtils.addEnvVars(systemProperties);
 
         // ----------------------------------------------------------------------
@@ -222,6 +223,7 @@ public class KieMavenCli {
 
     protected static void setCliProperty(String property,
                                          Properties properties) {
+
         String name;
 
         String value;
@@ -243,9 +245,11 @@ public class KieMavenCli {
                                value);
         System.setProperty(name,
                            value);
+
     }
 
-    public int doMain(KieCliRequest cliRequest) {
+    public int doMain(KieCliRequest cliRequest, ClassWorld classWorld) {
+
         PlexusContainer localContainer = null;
         try {
             initialize(cliRequest);
@@ -253,7 +257,7 @@ public class KieMavenCli {
             logging(cliRequest);
             version(cliRequest);
             properties(cliRequest);
-            localContainer = container(cliRequest);
+            localContainer = container(cliRequest, classWorld);
             commands(cliRequest);
             configure(cliRequest);
             toolchains(cliRequest);
@@ -261,10 +265,13 @@ public class KieMavenCli {
             repository(cliRequest);
             return execute(cliRequest);
         } catch (ExitException e) {
+            e.getStackTrace();
             return e.exitCode;
         } catch (UnrecognizedOptionException e) {
+            e.getStackTrace();
             return 1;
         } catch (BuildAbort e) {
+            e.getStackTrace();
             KieCLIReportingUtils.showError(slf4jLogger,
                                            "ABORTED",
                                            e,
@@ -281,12 +288,14 @@ public class KieMavenCli {
         } finally {
             if (localContainer != null) {
                 localContainer.dispose();
+                localContainer = null;
             }
         }
     }
 
     protected void initialize(KieCliRequest cliRequest)
             throws ExitException {
+
         if (cliRequest.getWorkingDirectory() == null) {
             cliRequest.setWorkingDirectory(System.getProperty("user.dir"));
         }
@@ -310,6 +319,7 @@ public class KieMavenCli {
         // Parsing errors can happen during the processing of the arguments and we prefer not having to check if
         // the logger is null and construct this so we can use an SLF4J logger everywhere.
         //
+
         slf4jLogger = new Slf4jStdoutLogger();
 
         CLIManager cliManager = new CLIManager();
@@ -426,11 +436,19 @@ public class KieMavenCli {
                            cliRequest.getUserProperties());
     }
 
-    protected PlexusContainer container(KieCliRequest cliRequest)
+    protected PlexusContainer container(KieCliRequest cliRequest, ClassWorld classWorld)
             throws Exception {
+
         if (cliRequest.getClassWorld() == null) {
-            cliRequest.setClassWorld(new ClassWorld("plexus.core",
-                                                    Thread.currentThread().getContextClassLoader()));
+            /*
+            The classworld is now Created in the NioMavenCompiler and in the InternalNioDefaultMaven compielr for this reasons:
+            problem: https://stackoverflow.com/questions/22410706/error-when-execute-mavencli-in-the-loop-maven-embedder
+            problem:https://stackoverflow.com/questions/40587683/invocation-of-mavencli-fails-within-a-maven-plugin
+            solution:https://dev.eclipse.org/mhonarc/lists/sisu-users/msg00063.html
+
+            cliRequest.setClassWorld(new ClassWorld("plexus.core",Thread.currentThread().getContextClassLoader()));*/
+
+            cliRequest.setClassWorld(classWorld);
         }
 
         ClassRealm coreRealm = cliRequest.getClassWorld().getClassRealm("plexus.core");
@@ -439,7 +457,6 @@ public class KieMavenCli {
         }
 
         List<File> extClassPath = parseExtClasspath(cliRequest);
-
         CoreExtensionEntry coreEntry = CoreExtensionEntry.discoverFrom(coreRealm);
         List<CoreExtensionEntry> extensions =
                 loadCoreExtensions(cliRequest,
@@ -450,14 +467,12 @@ public class KieMavenCli {
                                                         coreRealm,
                                                         extClassPath,
                                                         extensions);
-
         ContainerConfiguration cc = new DefaultContainerConfiguration()
                 .setClassWorld(cliRequest.getClassWorld())
                 .setRealm(containerRealm)
                 .setClassPathScanning(PlexusConstants.SCANNING_INDEX)
                 .setAutoWiring(true)
                 .setName("maven");
-
         Set<String> exportedArtifacts = new HashSet<String>(coreEntry.getExportedArtifacts());
         Set<String> exportedPackages = new HashSet<String>(coreEntry.getExportedPackages());
         for (CoreExtensionEntry extension : extensions) {
@@ -478,9 +493,8 @@ public class KieMavenCli {
                                                                           }
                                                                       });
 
-        container.addComponent(cliRequest.getMap(),
-                               HashMap.class,
-                               "kieMap");//@MAX
+        //This is used to share informations at runtime between Maven plugins and our compiler
+        container.addComponent(cliRequest.getMap(), HashMap.class, "kieMap");
 
         // NOTE: To avoid inconsistencies, we'll use the TCCL exclusively for lookups
         container.setLookupRealm(null);
@@ -494,11 +508,8 @@ public class KieMavenCli {
         customizeContainer(container);
 
         container.getLoggerManager().setThresholds(cliRequest.getRequest().getLoggingLevel());
-
         Thread.currentThread().setContextClassLoader(container.getContainerRealm());
-
         eventSpyDispatcher = container.lookup(EventSpyDispatcher.class);
-
         DefaultEventSpyContext eventSpyContext = new DefaultEventSpyContext();
         Map<String, Object> data = eventSpyContext.getData();
         data.put("plexus",
@@ -528,7 +539,6 @@ public class KieMavenCli {
 
         dispatcher = (DefaultSecDispatcher) container.lookup(SecDispatcher.class,
                                                              "maven");
-
         return container;
     }
 
@@ -746,7 +756,6 @@ public class KieMavenCli {
 
             if (MavenExecutionRequest.REACTOR_FAIL_NEVER.equals(cliRequest.getRequest().getReactorFailureBehavior())) {
                 slf4jLogger.info("Build failures were ignored.");
-                //@TODO Max
                 return 0;
             } else {
                 return 1;
@@ -844,6 +853,7 @@ public class KieMavenCli {
     @SuppressWarnings("checkstyle:methodlength")
     protected void toolchains(KieCliRequest cliRequest)
             throws Exception {
+
         Path userToolchainsFile;
 
         if (cliRequest.getCommandLine().hasOption(CLIManager.ALTERNATE_USER_TOOLCHAINS)) {
@@ -934,6 +944,7 @@ public class KieMavenCli {
 
     protected MavenExecutionRequest populateRequest(KieCliRequest cliRequest,
                                                     MavenExecutionRequest request) {
+
         CommandLine commandLine = cliRequest.getCommandLine();
         String workingDirectory = cliRequest.getWorkingDirectory();
         boolean quiet = cliRequest.isQuiet();
