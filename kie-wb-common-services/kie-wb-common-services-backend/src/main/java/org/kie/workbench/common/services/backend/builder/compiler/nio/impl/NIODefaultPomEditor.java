@@ -23,12 +23,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.Arrays;
 import java.util.Set;
 
 import org.apache.maven.model.Model;
 import org.kie.workbench.common.services.backend.builder.compiler.PluginPresents;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.Compilers;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.ConfigurationProvider;
+import org.kie.workbench.common.services.backend.builder.compiler.configuration.MavenArgs;
 import org.kie.workbench.common.services.backend.builder.compiler.impl.DefaultPomEditor;
 import org.kie.workbench.common.services.backend.builder.compiler.impl.PomPlaceHolder;
 import org.kie.workbench.common.services.backend.builder.compiler.nio.NIOCompilationRequest;
@@ -80,7 +82,11 @@ public class NIODefaultPomEditor extends DefaultPomEditor {
 
                 PluginPresents plugs = updatePom(model);
                 request.getInfo().lateAdditionKiePluginPresent(plugs.isKiePluginPresent());
-                if (plugs.getOverwritePOM()) {
+                if (plugs.isKiePluginPresent()) {
+                    String args[] = addCreateClasspathMavenArgs(request.getKieCliRequest().getArgs());
+                    request.getKieCliRequest().setArgs(args);
+                }
+                if (plugs.overwritePOM()) {
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
                     writer.write(baos,
                                  model);
@@ -101,5 +107,14 @@ public class NIODefaultPomEditor extends DefaultPomEditor {
         } catch (Exception e) {
             logger.error(e.getMessage());
         }
+    }
+
+    private String[] addCreateClasspathMavenArgs(String[] args) {
+        StringBuilder sb = new StringBuilder(MavenArgs.MAVEN_DEP_PLUGING_OUTPUT_FILE).append(MavenArgs.CLASSPATH_FILENAME).append(MavenArgs.CLASSPATH_EXT);
+        String[] newArgs = Arrays.copyOf(args,
+                                         args.length + 2);
+        newArgs[args.length] = MavenArgs.DEPS_BUILD_CLASSPATH;
+        newArgs[args.length + 1] = sb.toString();
+        return newArgs;
     }
 }

@@ -25,7 +25,6 @@ import java.util.Optional;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.kie.workbench.common.services.backend.builder.compiler.TestUtil;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.Compilers;
@@ -87,7 +86,7 @@ public class DefaultIncrementalCompilerEnablerTest {
         TestUtil.rm(tmpRoot.toFile());
     }
 
-    @Ignore //@Test
+    @Test
     public void testReadKiePluginTest() throws Exception {
         Path tmpRoot = Files.createTempDirectory("repo");
         Path tmp = Files.createDirectories(Paths.get(tmpRoot.toString(),

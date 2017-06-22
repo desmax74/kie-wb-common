@@ -16,12 +16,10 @@
 
 package org.kie.workbench.common.services.backend.builder.compiler.plugin;
 
-import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -32,19 +30,16 @@ import org.drools.core.rule.TypeMetaInfo;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.kie.api.builder.KieModule;
 import org.kie.scanner.KieModuleMetaData;
 import org.kie.scanner.KieModuleMetaDataImpl;
 import org.kie.workbench.common.services.backend.builder.compiler.CompilationResponse;
-import org.kie.workbench.common.services.backend.builder.compiler.KieClassLoaderProvider;
 import org.kie.workbench.common.services.backend.builder.compiler.TestUtil;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.Decorator;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.MavenArgs;
 import org.kie.workbench.common.services.backend.builder.compiler.nio.NIOCompilationRequest;
 import org.kie.workbench.common.services.backend.builder.compiler.nio.NIOMavenCompiler;
-import org.kie.workbench.common.services.backend.builder.compiler.nio.impl.NIOClassLoaderProviderImpl;
 import org.kie.workbench.common.services.backend.builder.compiler.nio.impl.NIODefaultCompilationRequest;
 import org.kie.workbench.common.services.backend.builder.compiler.nio.impl.NIOMavenCompilerFactory;
 import org.kie.workbench.common.services.backend.builder.compiler.nio.impl.NIOWorkspaceCompilationInfo;
@@ -55,7 +50,7 @@ public class NioKieMetadataTest {
 
     private Path mavenRepo;
 
-    private  Path tmpRoot;
+    private Path tmpRoot;
 
     @After
     public void tearDown() {
@@ -97,19 +92,14 @@ public class NioKieMetadataTest {
 
         NIOWorkspaceCompilationInfo info = new NIOWorkspaceCompilationInfo(tmp,
                                                                            compiler);
-
-        StringBuilder sb = new StringBuilder(MavenArgs.MAVEN_DEP_PLUGING_OUTPUT_FILE).append(MavenArgs.CLASSPATH_FILENAME).append(MavenArgs.CLASSPATH_EXT);
         NIOCompilationRequest req = new NIODefaultCompilationRequest(info,
-                                                                     new String[]{MavenArgs.COMPILE, MavenArgs.DEPS_BUILD_CLASSPATH, sb.toString()},
+                                                                     new String[]{MavenArgs.COMPILE/*, MavenArgs.DEPS_BUILD_CLASSPATH, sb.toString()*/},
                                                                      new HashMap<>(),
                                                                      Optional.empty());
         CompilationResponse res = compiler.compileSync(req);
         if (res.getErrorMessage().isPresent()) {
             System.out.println(res.getErrorMessage().get());
         }
-
-        KieClassLoaderProvider provider = new NIOClassLoaderProviderImpl();
-        Optional<List<URI>> optionalUris = provider.getURISFromAllDependencies(tmp.toAbsolutePath().toString());
 
         Assert.assertTrue(res.isSuccessful());
 
@@ -128,10 +118,10 @@ public class NioKieMetadataTest {
         Optional<KieModule> kieModuleOptional = res.getKieModule();
         Assert.assertTrue(kieModuleOptional.isPresent());
         KieModule kModule = kieModuleOptional.get();
-        Assert.assertTrue(optionalUris.isPresent());
+        Assert.assertTrue(res.getProjectDependencies().isPresent());
         KieModuleMetaData kieModuleMetaData = new KieModuleMetaDataImpl((InternalKieModule) kModule,
-                                                                        optionalUris.get());
-        //KieModuleMetaData kieModuleMetaData = KieModuleMetaData.Factory.newKieModuleMetaData(kModule);
+                                                                        res.getProjectDependencies().get());
+        //KieModuleMetaData kieModuleMetaData = KieModuleMetaData.Factory.newKieModuleMetaData(kModule); broken with maven embedder used into appformer
         Assert.assertNotNull(kieModuleMetaData);
         //comment if you want read the log file after the test run
         TestUtil.rm(tmpRoot.toFile());
@@ -154,9 +144,9 @@ public class NioKieMetadataTest {
         NIOWorkspaceCompilationInfo info = new NIOWorkspaceCompilationInfo(tmp,
                                                                            compiler);
 
-        StringBuilder sb = new StringBuilder(MavenArgs.MAVEN_DEP_PLUGING_OUTPUT_FILE).append(MavenArgs.CLASSPATH_FILENAME).append(MavenArgs.CLASSPATH_EXT);
+        //StringBuilder sb = new StringBuilder(MavenArgs.MAVEN_DEP_PLUGING_OUTPUT_FILE).append(MavenArgs.CLASSPATH_FILENAME).append(MavenArgs.CLASSPATH_EXT);
         NIOCompilationRequest req = new NIODefaultCompilationRequest(info,
-                                                                     new String[]{MavenArgs.COMPILE, MavenArgs.DEPS_BUILD_CLASSPATH, sb.toString()},
+                                                                     new String[]{MavenArgs.COMPILE/*, MavenArgs.DEPS_BUILD_CLASSPATH, sb.toString()*/},
                                                                      new HashMap<>(),
                                                                      Optional.empty());
         CompilationResponse res = compiler.compileSync(req);
@@ -164,8 +154,8 @@ public class NioKieMetadataTest {
             System.out.println(res.getErrorMessage().get());
         }
 
-        KieClassLoaderProvider provider = new NIOClassLoaderProviderImpl();
-        Optional<List<URI>> optionalUris = provider.getURISFromAllDependencies(tmp.toAbsolutePath().toString());
+        //  KieClassLoaderProvider provider = new NIOClassLoaderProviderImpl();
+        // Optional<List<URI>> optionalUris = provider.getURISFromAllDependencies(tmp.toAbsolutePath().toString());
 
         Assert.assertTrue(res.isSuccessful());
 
@@ -182,9 +172,10 @@ public class NioKieMetadataTest {
         Assert.assertTrue(kieModuleOptional.isPresent());
         KieModule kModule = kieModuleOptional.get();
 
-        Assert.assertTrue(optionalUris.isPresent());
+        //Assert.assertTrue(optionalUris.isPresent());
+        Assert.assertTrue(res.getProjectDependencies().isPresent());
         KieModuleMetaData kieModuleMetaData = new KieModuleMetaDataImpl((InternalKieModule) kModule,
-                                                                        optionalUris.get());
+                                                                        res.getProjectDependencies().get());
 
         //KieModuleMetaData kieModuleMetaData = KieModuleMetaData.Factory.newKieModuleMetaData(kModule); // broken
         Assert.assertNotNull(kieModuleMetaData);

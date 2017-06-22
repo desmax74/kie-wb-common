@@ -35,7 +35,5 @@ public enum ConfigurationKey {
     MAVEN_PHASE_NONE,
 
     KIE_MAVEN_PLUGINS,
-    KIE_MAVEN_PLUGIN,
-
-    GLOBAL_MAP;
+    KIE_MAVEN_PLUGIN;
 }

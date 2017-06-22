@@ -13,11 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.impl;
 
-package org.kie.workbench.common.services.backend.builder.compiler.nio.decorators;
+import org.uberfire.java.nio.file.DirectoryStream;
+import org.uberfire.java.nio.file.Path;
 
-import org.kie.workbench.common.services.backend.builder.compiler.nio.NIOMavenCompiler;
+public class DotFileFilter implements DirectoryStream.Filter<Path> {
+    public DotFileFilter() {
+    }
 
-public abstract class CompilerDecorator implements NIOMavenCompiler {
-
+    public boolean accept(Path path) {
+        String fileName = path.getFileName().toString();
+        return fileName.startsWith(".");
+    }
 }

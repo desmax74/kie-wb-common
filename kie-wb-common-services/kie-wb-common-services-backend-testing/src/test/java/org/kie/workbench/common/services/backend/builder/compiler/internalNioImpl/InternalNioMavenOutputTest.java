@@ -35,7 +35,6 @@ public class InternalNioMavenOutputTest {
         }
     }
 
-
     @Test
     public void testOutputWithTakari() throws Exception {
         java.nio.file.Path tmpRoot = java.nio.file.Files.createTempDirectory("repo");

@@ -44,8 +44,8 @@ public class NIODefaultCompilationRequest implements NIOCompilationRequest {
                                         Map<String, Object> map,
                                         Optional<String> logFile) {
         this.info = info;
-        this.requestUUID = UUID.randomUUID().toString();
         this.map = map;
+        this.requestUUID = UUID.randomUUID().toString();
         String[] internalArgs = getInternalArgs(args,
                                                 logFile);
         this.req = new KieCliRequest(info.getPrjPath().toAbsolutePath().toString(),
@@ -57,6 +57,7 @@ public class NIODefaultCompilationRequest implements NIOCompilationRequest {
 
     private String[] getInternalArgs(String[] args,
                                      Optional<String> logFile) {
+
         String[] internalArgs;
         StringBuilder sbCompilationID = new StringBuilder().append("-Dcompilation.ID=").append(requestUUID);
 

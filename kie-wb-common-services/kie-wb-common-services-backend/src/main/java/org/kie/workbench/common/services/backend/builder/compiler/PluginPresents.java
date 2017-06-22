@@ -24,5 +24,5 @@ public interface PluginPresents {
 
     Boolean isKiePluginPresent();
 
-    Boolean getOverwritePOM();
+    Boolean overwritePOM();
 }

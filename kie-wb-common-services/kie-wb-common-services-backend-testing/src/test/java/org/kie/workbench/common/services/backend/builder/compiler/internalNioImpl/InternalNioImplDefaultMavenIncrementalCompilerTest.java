@@ -116,7 +116,6 @@ public class InternalNioImplDefaultMavenIncrementalCompilerTest {
         InternalNioImplTestUtil.rm(tmpRoot.toFile());
     }
 
-
     @Test
     public void testIncrementalWithPluginEnabledThreeTime() throws Exception {
         Path tmpRoot = Files.createTempDirectory("repo");

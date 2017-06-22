@@ -21,6 +21,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.DirectoryStream;
@@ -47,12 +48,8 @@ import org.slf4j.LoggerFactory;
 public class NIOClassLoaderProviderImpl implements KieClassLoaderProvider {
 
     protected static final Logger logger = LoggerFactory.getLogger(NIOClassLoaderProviderImpl.class);
+    private final DirectoryStream.Filter<Path> dotFileFilter = new DotFileFilter();
 
-    private static String CLASSPATH_FILENAME = "module";
-
-    private static String CLASSPATH_EXT = ".cpath";
-
-    private static String MAVEN_DEP_PLUGING_OUTPUT_FILE = "-Dmdep.outputFile=";
 
     public static void searchCPFiles(Path file,
                                      List<String> classPathFiles) {
@@ -61,7 +58,7 @@ public class NIOClassLoaderProviderImpl implements KieClassLoaderProvider {
                 if (Files.isDirectory(p)) {
                     searchCPFiles(p,
                                   classPathFiles);
-                } else if (p.toString().endsWith(CLASSPATH_EXT)) {
+                } else if (p.toString().endsWith(MavenArgs.CLASSPATH_EXT)) {
                     classPathFiles.add(p.toAbsolutePath().toString());
                 }
             }
@@ -70,7 +67,6 @@ public class NIOClassLoaderProviderImpl implements KieClassLoaderProvider {
         }
     }
 
-    @Override
     public Optional<ClassLoader> loadDependenciesClassloaderFromProject(String prjPath,
                                                                         String localRepo,
                                                                         ClassLoader parent) {
@@ -83,7 +79,6 @@ public class NIOClassLoaderProviderImpl implements KieClassLoaderProvider {
                            parent);
     }
 
-    @Override
     public Optional<ClassLoader> loadDependenciesClassloaderFromProject(String prjPath,
                                                                         String localRepo) {
         List<String> poms = new ArrayList<>();
@@ -94,49 +89,32 @@ public class NIOClassLoaderProviderImpl implements KieClassLoaderProvider {
         return buildResult(urls);
     }
 
-    @Override
     public Optional<ClassLoader> loadDependenciesClassloaderFromProject(List<String> poms,
                                                                         String localRepo) {
-        List<URL> urls = loadCompilationOutputFiles(poms);
+        List<URL> urls = getTargetModulesURL(poms);
         return buildResult(urls);
     }
 
-    @Override
     public Optional<ClassLoader> loadDependenciesClassloaderFromProject(List<String> poms,
                                                                         String localRepo,
                                                                         ClassLoader parent) {
-        List<URL> urls = loadCompilationOutputFiles(poms);
+        List<URL> urls = getTargetModulesURL(poms);
         return buildResult(urls,
                            parent);
     }
 
-    @Override
     public Optional<ClassLoader> getClassloaderFromProjectTargets(List<String> targets,
                                                                   Boolean loadIntoClassloader) {
-        List<URL> urls = loadIntoClassloader ? loadCompilationOutputFiles(targets) : loadCompilationFolders(targets);
+        List<URL> urls = loadIntoClassloader ? getTargetModulesURL(targets) : loadCompilationFolders(targets);
         return buildResult(urls);
     }
 
-    @Override
     public Optional<ClassLoader> getClassloaderFromProjectTargets(List<String> targets,
                                                                   Boolean loadIntoClassloader,
                                                                   ClassLoader parent) {
-        List<URL> urls = loadIntoClassloader ? loadCompilationOutputFiles(targets) : loadCompilationFolders(targets);
+        List<URL> urls = loadIntoClassloader ? getTargetModulesURL(targets) : loadCompilationFolders(targets);
         return buildResult(urls,
                            parent);
-    }
-
-    private List<URL> getDependenciesURL(List<String> poms,
-                                         String localRepo) {
-        List<Artifact> artifacts = NIOMavenUtils.resolveDependenciesFromMultimodulePrj(poms);
-        List<URL> urls = Collections.emptyList();
-        try {
-            urls = buildUrlsFromArtifacts(localRepo,
-                                          artifacts);
-        } catch (MalformedURLException ex) {
-            logger.error(ex.getMessage());
-        }
-        return urls;
     }
 
     private List<URL> buildUrlsFromArtifacts(String localRepo,
@@ -149,6 +127,19 @@ public class NIOClassLoaderProviderImpl implements KieClassLoaderProvider {
                     append("-").append(artifact.getVersion()).append(".").append(artifact.getType());
             URL url = new URL(sb.toString());
             urls.add(url);
+        }
+        return urls;
+    }
+
+    private List<URL> getDependenciesURL(List<String> poms,
+                                         String localRepo) {
+        List<Artifact> artifacts = NIOMavenUtils.resolveDependenciesFromMultimodulePrj(poms);
+        List<URL> urls = Collections.emptyList();
+        try {
+            urls = buildUrlsFromArtifacts(localRepo,
+                                          artifacts);
+        } catch (MalformedURLException ex) {
+            logger.error(ex.getMessage());
         }
         return urls;
     }
@@ -169,7 +160,7 @@ public class NIOClassLoaderProviderImpl implements KieClassLoaderProvider {
         return buildResult(urls);
     }
 
-    private Optional<ClassLoader> loadFiles(List<String> pomsPaths) {
+    /*private Optional<ClassLoader> loadFiles(List<String> pomsPaths) {
         List<URL> urls = new ArrayList();
         try {
             for (String pomPath : pomsPaths) {
@@ -183,7 +174,7 @@ public class NIOClassLoaderProviderImpl implements KieClassLoaderProvider {
             logger.error(ex.getMessage());
         }
         return buildResult(urls);
-    }
+    }*/
 
     private List<URL> loadCompilationFolders(List<String> pomsPaths) {
         List<URL> urls = new ArrayList();
@@ -201,20 +192,24 @@ public class NIOClassLoaderProviderImpl implements KieClassLoaderProvider {
         return urls;
     }
 
-    private List<URL> loadCompilationOutputFiles(List<String> pomsPaths) {
-        List<URL> urls = new ArrayList();
-        try {
-            for (String pomPath : pomsPaths) {
-                Path path = Paths.get(pomPath);
-                StringBuilder sb = new StringBuilder("file://")
-                        .append(path.getParent().toAbsolutePath().toString())
-                        .append("/target/classes/");
-                urls.add(new URL(sb.toString()));
+    private List<URL> getTargetModulesURL(List<String> pomsPaths) {
+        if (pomsPaths != null && pomsPaths.size() > 0) {
+            List<URL> urls = new ArrayList();
+            try {
+                for (String pomPath : pomsPaths) {
+                    Path path = Paths.get(pomPath);
+                    StringBuilder sb = new StringBuilder("file://")
+                            .append(path.getParent().toAbsolutePath().toString())
+                            .append("/target/classes/");
+                    urls.add(new URL(sb.toString()));
+                }
+            } catch (MalformedURLException ex) {
+                logger.error(ex.getMessage());
             }
-        } catch (MalformedURLException ex) {
-            logger.error(ex.getMessage());
+            return urls;
+        } else {
+            return Collections.emptyList();
         }
-        return urls;
     }
 
     private Optional<ClassLoader> buildResult(List<URL> urls) {
@@ -243,7 +238,7 @@ public class NIOClassLoaderProviderImpl implements KieClassLoaderProvider {
                                                                         Decorator.NONE);
         NIOWorkspaceCompilationInfo info = new NIOWorkspaceCompilationInfo(Paths.get(prjPath),
                                                                            compiler);
-        StringBuilder sb = new StringBuilder(MAVEN_DEP_PLUGING_OUTPUT_FILE).append(CLASSPATH_FILENAME).append(CLASSPATH_EXT);
+        StringBuilder sb = new StringBuilder(MavenArgs.MAVEN_DEP_PLUGING_OUTPUT_FILE).append(MavenArgs.CLASSPATH_FILENAME).append(MavenArgs.CLASSPATH_EXT);
         NIOCompilationRequest req = new NIODefaultCompilationRequest(info,
                                                                      new String[]{MavenArgs.DEPS_BUILD_CLASSPATH, sb.toString()},
                                                                      new HashMap<>(),
@@ -263,20 +258,6 @@ public class NIOClassLoaderProviderImpl implements KieClassLoaderProvider {
     }
 
     private Optional<ClassLoader> createClassloaderFromCpFiles(String prjPath) {
-       /* List<String> classPathFiles = new ArrayList<>();
-        searchCPFiles(Paths.get(prjPath),
-                      classPathFiles);
-        if (!classPathFiles.isEmpty()) {
-            List<URL> deps = new ArrayList<>();
-            for (String file : classPathFiles) {
-                deps.addAll(readFileAsURL(file));
-            }
-            if (!deps.isEmpty()) {
-                URLClassLoader urlClassLoader = new URLClassLoader(deps.toArray(new URL[deps.size()]));
-                return Optional.of(urlClassLoader);
-            }
-        }
-        return Optional.empty();*/
         List<URL> deps = readAllCpFilesAsUrls(prjPath);
         if (deps.isEmpty()) {
             return Optional.empty();
@@ -326,7 +307,7 @@ public class NIOClassLoaderProviderImpl implements KieClassLoaderProvider {
                                                                         Decorator.NONE);
         NIOWorkspaceCompilationInfo info = new NIOWorkspaceCompilationInfo(Paths.get(prjPath),
                                                                            compiler);
-        StringBuilder sb = new StringBuilder(MAVEN_DEP_PLUGING_OUTPUT_FILE).append(CLASSPATH_FILENAME).append(CLASSPATH_EXT);
+        StringBuilder sb = new StringBuilder(MavenArgs.MAVEN_DEP_PLUGING_OUTPUT_FILE).append(MavenArgs.CLASSPATH_FILENAME).append(MavenArgs.CLASSPATH_EXT);
         NIOCompilationRequest req = new NIODefaultCompilationRequest(info,
                                                                      new String[]{MavenArgs.DEPS_BUILD_CLASSPATH, sb.toString()},
                                                                      new HashMap<>(),
@@ -397,7 +378,7 @@ public class NIOClassLoaderProviderImpl implements KieClassLoaderProvider {
                                                           NIOMavenCompiler compiler,
                                                           NIOWorkspaceCompilationInfo info) {
 
-        StringBuilder sb = new StringBuilder(MAVEN_DEP_PLUGING_OUTPUT_FILE).append(CLASSPATH_FILENAME).append(CLASSPATH_EXT);
+        StringBuilder sb = new StringBuilder(MavenArgs.MAVEN_DEP_PLUGING_OUTPUT_FILE).append(MavenArgs.CLASSPATH_FILENAME).append(MavenArgs.CLASSPATH_EXT);
         NIOCompilationRequest req = new NIODefaultCompilationRequest(info,
                                                                      new String[]{MavenArgs.DEPS_BUILD_CLASSPATH, sb.toString()},
                                                                      new HashMap<>(),
@@ -422,6 +403,15 @@ public class NIOClassLoaderProviderImpl implements KieClassLoaderProvider {
             }
         }
         return Optional.empty();
+    }
+
+    public Optional<List<URI>> getURISFromAllDependencies(String prjPath) {
+        List<URI> deps = readAllCpFilesAsUris(prjPath);
+        if (deps.isEmpty()) {
+            return Optional.empty();
+        } else {
+            return Optional.of(deps);
+        }
     }
 
     private List<URL> readFileAsURL(String filePath) {
@@ -463,13 +453,49 @@ public class NIOClassLoaderProviderImpl implements KieClassLoaderProvider {
         return urls;
     }
 
-    @Override
-    public Optional<List<URI>> getURISFromAllDependencies(String prjPath) {
-        List<URI> deps = readAllCpFilesAsUris(prjPath);
-        if (deps.isEmpty()) {
-            return Optional.empty();
-        } else {
-            return Optional.of(deps);
+    private List<URL> loadFiles(List<String> pomsPaths) {
+        List<URL> targetModulesUrls = getTargetModulesURL(pomsPaths);
+        if (!targetModulesUrls.isEmpty()) {
+            List<URL> targetFiles = addFilesURL(targetModulesUrls);
+            return targetFiles;
         }
+        return Collections.emptyList();
+    }
+
+    private List<URL> addFilesURL(List<URL> targetModulesUrls) {
+        List<URL> targetFiles = new ArrayList<>(targetModulesUrls.size());
+        for (URL url : targetModulesUrls) {
+            try {
+                targetFiles.addAll(visitFolders(Files.newDirectoryStream(Paths.get(url.toURI()))));
+            } catch (IOException ioe) {
+                logger.error(ioe.getMessage());
+            }catch (URISyntaxException ex) {
+                logger.error(ex.getMessage());
+            }
+        }
+        return targetFiles;
+    }
+
+    private List<URL> visitFolders(final DirectoryStream<Path> directoryStream) {
+        List<URL> urls = new ArrayList<>();
+        try{
+        for (final Path path : directoryStream) {
+            if (Files.isDirectory(path)) {
+                visitFolders(Files.newDirectoryStream(path));
+            } else {
+                //Don't process dotFiles
+                if (!dotFileFilter.accept(path)) {
+                    try {
+                        urls.add(path.toUri().toURL());
+                    } catch (MalformedURLException ex) {
+                        logger.error(ex.getMessage());
+                    }
+                }
+            }
+        }
+        }catch (IOException ioe){
+            logger.error(ioe.getMessage());
+        }
+        return urls;
     }
 }

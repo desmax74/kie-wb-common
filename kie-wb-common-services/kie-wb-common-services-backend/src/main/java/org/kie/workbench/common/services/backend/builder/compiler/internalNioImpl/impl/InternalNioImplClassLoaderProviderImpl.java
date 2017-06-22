@@ -32,7 +32,6 @@ import java.util.Optional;
 import java.util.StringTokenizer;
 
 import org.apache.maven.artifact.Artifact;
-import org.guvnor.common.services.backend.file.DotFileFilter;
 import org.kie.workbench.common.services.backend.builder.compiler.CompilationResponse;
 import org.kie.workbench.common.services.backend.builder.compiler.KieClassLoaderProvider;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.Decorator;
@@ -54,9 +53,6 @@ import org.uberfire.java.nio.file.Paths;
 public class InternalNioImplClassLoaderProviderImpl implements KieClassLoaderProvider {
 
     protected static final Logger logger = LoggerFactory.getLogger(InternalNioImplClassLoaderProviderImpl.class);
-    private static String CLASSPATH_FILENAME = "module";
-    private static String CLASSPATH_EXT = ".cpath";
-    private static String MAVEN_DEP_PLUGING_OUTPUT_FILE = "-Dmdep.outputFile=";
     private final DirectoryStream.Filter<Path> dotFileFilter = new DotFileFilter();
 
     public static void searchCPFiles(Path file,
@@ -66,14 +62,13 @@ public class InternalNioImplClassLoaderProviderImpl implements KieClassLoaderPro
                 if (Files.isDirectory(p)) {
                     searchCPFiles(p,
                                   classPathFiles);
-                } else if (p.toString().endsWith(CLASSPATH_EXT)) {
+                } else if (p.toString().endsWith(MavenArgs.CLASSPATH_EXT)) {
                     classPathFiles.add(p.toAbsolutePath().toString());
                 }
             }
         }
     }
 
-    @Override
     public Optional<ClassLoader> loadDependenciesClassloaderFromProject(String prjPath,
                                                                         String localRepo) {
         List<String> poms = new ArrayList<>();
@@ -84,7 +79,6 @@ public class InternalNioImplClassLoaderProviderImpl implements KieClassLoaderPro
         return buildResult(urls);
     }
 
-    @Override
     public Optional<ClassLoader> loadDependenciesClassloaderFromProject(String prjPath,
                                                                         String localRepo,
                                                                         ClassLoader parent) {
@@ -97,7 +91,6 @@ public class InternalNioImplClassLoaderProviderImpl implements KieClassLoaderPro
                            parent);
     }
 
-    @Override
     public Optional<ClassLoader> loadDependenciesClassloaderFromProject(List<String> poms,
                                                                         String localRepo) {
         List<URL> urls = getDependenciesURL(poms,
@@ -105,7 +98,6 @@ public class InternalNioImplClassLoaderProviderImpl implements KieClassLoaderPro
         return buildResult(urls);
     }
 
-    @Override
     public Optional<ClassLoader> loadDependenciesClassloaderFromProject(List<String> poms,
                                                                         String localRepo,
                                                                         ClassLoader parent) {
@@ -115,14 +107,12 @@ public class InternalNioImplClassLoaderProviderImpl implements KieClassLoaderPro
                            parent);
     }
 
-    @Override
     public Optional<ClassLoader> getClassloaderFromProjectTargets(List<String> pomsPaths,
                                                                   Boolean loadIntoClassloader) {
         List<URL> urls = loadIntoClassloader ? loadFiles(pomsPaths) : loadOnlyFolderNames(pomsPaths);
         return buildResult(urls);
     }
 
-    @Override
     public Optional<ClassLoader> getClassloaderFromProjectTargets(List<String> pomsPaths,
                                                                   Boolean loadIntoClassloader,
                                                                   ClassLoader parent) {
@@ -150,9 +140,8 @@ public class InternalNioImplClassLoaderProviderImpl implements KieClassLoaderPro
         List<Artifact> artifacts = InternalNioImplMavenUtils.resolveDependenciesFromMultimodulePrj(poms);
         List<URL> urls = Collections.emptyList();
         try {
-            urls =
-                    buildUrlsFromArtifacts(localRepo,
-                                           artifacts);
+            urls = buildUrlsFromArtifacts(localRepo,
+                                          artifacts);
         } catch (MalformedURLException ex) {
             logger.error(ex.getMessage());
         }
@@ -162,25 +151,13 @@ public class InternalNioImplClassLoaderProviderImpl implements KieClassLoaderPro
     private List<URL> loadFiles(List<String> pomsPaths) {
         List<URL> targetModulesUrls = getTargetModulesURL(pomsPaths);
         if (!targetModulesUrls.isEmpty()) {
-            List<URL> targetFiles = addFIlesURL(targetModulesUrls);
+            List<URL> targetFiles = addFilesURL(targetModulesUrls);
             return targetFiles;
         }
         return Collections.emptyList();
     }
 
-    private List<URL> loadFiles(List<String> pomsPaths,
-                                ClassLoader parent) {
-        List<URL> targetModulesUrls = getTargetModulesURL(pomsPaths);
-        if (!targetModulesUrls.isEmpty()) {
-            List<URL> targetFiles = addFIlesURL(targetModulesUrls);
-            if (!targetFiles.isEmpty()) {
-                return targetFiles;
-            }
-        }
-        return Collections.emptyList();
-    }
-
-    private List<URL> addFIlesURL(List<URL> targetModulesUrls) {
+    private List<URL> addFilesURL(List<URL> targetModulesUrls) {
         List<URL> targetFiles = new ArrayList<>(targetModulesUrls.size());
         for (URL url : targetModulesUrls) {
             try {
@@ -204,6 +181,26 @@ public class InternalNioImplClassLoaderProviderImpl implements KieClassLoaderPro
                     targetModulesUrls.add(new URL(sb.toString()));
                 }
             } catch (MalformedURLException ex) {
+                logger.error(ex.getMessage());
+            }
+            return targetModulesUrls;
+        } else {
+            return Collections.emptyList();
+        }
+    }
+
+    private List<URI> getTargetModulesURI(List<String> pomsPaths) {
+        if (pomsPaths != null && pomsPaths.size() > 0) {
+            List<URI> targetModulesUrls = new ArrayList(pomsPaths.size());
+            try {
+                for (String pomPath : pomsPaths) {
+                    Path path = Paths.get(pomPath);
+                    StringBuilder sb = new StringBuilder("file://")
+                            .append(path.getParent().toAbsolutePath().toString())
+                            .append("/target/classes/");
+                    targetModulesUrls.add(new URI(sb.toString()));
+                }
+            } catch (URISyntaxException ex) {
                 logger.error(ex.getMessage());
             }
             return targetModulesUrls;
@@ -261,7 +258,7 @@ public class InternalNioImplClassLoaderProviderImpl implements KieClassLoaderPro
                                                                                                 Decorator.NONE);
         InternalNioImplWorkspaceCompilationInfo info = new InternalNioImplWorkspaceCompilationInfo(Paths.get(prjPath),
                                                                                                    compiler);
-        StringBuilder sb = new StringBuilder(MAVEN_DEP_PLUGING_OUTPUT_FILE).append(CLASSPATH_FILENAME).append(CLASSPATH_EXT);
+        StringBuilder sb = new StringBuilder(MavenArgs.MAVEN_DEP_PLUGING_OUTPUT_FILE).append(MavenArgs.CLASSPATH_FILENAME).append(MavenArgs.CLASSPATH_EXT);
         InternalNioImplCompilationRequest req = new InternalNioImplDefaultCompilationRequest(info,
                                                                                              new String[]{MavenArgs.DEPS_BUILD_CLASSPATH, sb.toString()},
                                                                                              new HashMap<>(),
@@ -327,47 +324,6 @@ public class InternalNioImplClassLoaderProviderImpl implements KieClassLoaderPro
         }
         return urls;
     }
-/*
-    private List<URL> readFile(String filePath,
-                               Path tmpFolder) {
-
-        BufferedReader br = null;
-        FileReader fr = null;
-        List<URL> urls = new ArrayList<>();
-        try {
-
-            fr = new FileReader(filePath);
-            br = new BufferedReader(fr);
-            String sCurrentLine;
-            br = new BufferedReader(fr);
-
-            while ((sCurrentLine = br.readLine()) != null) {
-                StringTokenizer token = new StringTokenizer(sCurrentLine,
-                                                            ":");
-                while (token.hasMoreTokens()) {
-                    StringBuilder sb = new StringBuilder("file://").append(token.nextToken());
-                    urls.add(new URL(sb.toString()));
-                }
-            }
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-        } finally {
-            try {
-                if (br != null) {
-                    br.close();
-                }
-
-                if (fr != null) {
-                    fr.close();
-                }
-                Files.delete(Paths.get(filePath));
-                Files.delete(tmpFolder);
-            } catch (IOException ex) {
-                logger.error(ex.getMessage());
-            }
-        }
-        return urls;
-    }*/
 
     public Optional<List<URI>> getURISFromAllDependencies(String prjPath,
                                                           String localRepo) {
@@ -375,7 +331,7 @@ public class InternalNioImplClassLoaderProviderImpl implements KieClassLoaderPro
                                                                         Decorator.NONE);
         NIOWorkspaceCompilationInfo info = new NIOWorkspaceCompilationInfo(java.nio.file.Paths.get(prjPath),
                                                                            compiler);
-        StringBuilder sb = new StringBuilder(MAVEN_DEP_PLUGING_OUTPUT_FILE).append(CLASSPATH_FILENAME).append(CLASSPATH_EXT);
+        StringBuilder sb = new StringBuilder(MavenArgs.MAVEN_DEP_PLUGING_OUTPUT_FILE).append(MavenArgs.CLASSPATH_FILENAME).append(MavenArgs.CLASSPATH_EXT);
         NIOCompilationRequest req = new NIODefaultCompilationRequest(info,
                                                                      new String[]{MavenArgs.DEPS_BUILD_CLASSPATH, sb.toString()},
                                                                      new HashMap<>(),
@@ -407,7 +363,7 @@ public class InternalNioImplClassLoaderProviderImpl implements KieClassLoaderPro
                                                           NIOMavenCompiler compiler,
                                                           NIOWorkspaceCompilationInfo info) {
 
-        StringBuilder sb = new StringBuilder(MAVEN_DEP_PLUGING_OUTPUT_FILE).append(CLASSPATH_FILENAME).append(CLASSPATH_EXT);
+        StringBuilder sb = new StringBuilder(MavenArgs.MAVEN_DEP_PLUGING_OUTPUT_FILE).append(MavenArgs.CLASSPATH_FILENAME).append(MavenArgs.CLASSPATH_EXT);
         NIOCompilationRequest req = new NIODefaultCompilationRequest(info,
                                                                      new String[]{MavenArgs.DEPS_BUILD_CLASSPATH, sb.toString()},
                                                                      new HashMap<>(),

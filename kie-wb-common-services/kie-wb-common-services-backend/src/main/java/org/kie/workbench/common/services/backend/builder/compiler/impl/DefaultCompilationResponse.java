@@ -15,6 +15,7 @@
  */
 package org.kie.workbench.common.services.backend.builder.compiler.impl;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,12 +30,14 @@ public class DefaultCompilationResponse implements CompilationResponse {
     private Optional<KieModuleMetaInfo> kieModuleMetaInfo;
     private Optional<KieModule> kieModule;
     private Optional<List<String>> mavenOutput;
+    private Optional<List<URI>> projectDependencies;
 
     public DefaultCompilationResponse(Boolean successful) {
         this.successful = successful;
         this.errorMessage = Optional.empty();
         this.kieModuleMetaInfo = Optional.empty();
         this.mavenOutput = Optional.empty();
+        this.projectDependencies = Optional.empty();
     }
 
     public DefaultCompilationResponse(Boolean successful,
@@ -43,16 +46,8 @@ public class DefaultCompilationResponse implements CompilationResponse {
         this.errorMessage = Optional.empty();
         this.kieModuleMetaInfo = Optional.empty();
         this.mavenOutput = mavenOutput;
-    }
-
-    public DefaultCompilationResponse(Boolean successful,
-                                      KieModuleMetaInfo kieModuleMetaInfo,
-                                      KieModule kieModule) {
-        this.successful = successful;
-        this.errorMessage = Optional.empty();
-        this.kieModuleMetaInfo = Optional.of(kieModuleMetaInfo);
-        this.kieModule = Optional.of(kieModule);
-        this.mavenOutput = Optional.empty();
+        this.projectDependencies = Optional.empty();
+        this.projectDependencies = Optional.empty();
     }
 
     public DefaultCompilationResponse(Boolean successful,
@@ -62,6 +57,7 @@ public class DefaultCompilationResponse implements CompilationResponse {
         this.errorMessage = errorMessage;
         this.kieModuleMetaInfo = Optional.empty();
         this.mavenOutput = mavenOutput;
+        this.projectDependencies = Optional.empty();
     }
 
     public DefaultCompilationResponse(Boolean successful,
@@ -73,13 +69,25 @@ public class DefaultCompilationResponse implements CompilationResponse {
         this.kieModuleMetaInfo = Optional.of(kieModuleMetaInfo);
         this.kieModule = Optional.of(kieModule);
         this.mavenOutput = mavenOutput;
+        this.projectDependencies = Optional.empty();
+    }
+
+    public DefaultCompilationResponse(Boolean successful,
+                                      KieModuleMetaInfo kieModuleMetaInfo,
+                                      KieModule kieModule,
+                                      Optional<List<String>> mavenOutput, Optional<List<URI>> projectDependencies) {
+        this.successful = successful;
+        this.errorMessage = Optional.empty();
+        this.kieModuleMetaInfo = Optional.of(kieModuleMetaInfo);
+        this.kieModule = Optional.of(kieModule);
+        this.mavenOutput = mavenOutput;
+        this.projectDependencies = projectDependencies;
     }
 
     public Boolean isSuccessful() {
         return successful;
     }
 
-    @Override
     public Optional<String> getErrorMessage() {
         return errorMessage;
     }
@@ -94,5 +102,9 @@ public class DefaultCompilationResponse implements CompilationResponse {
 
     public Optional<List<String>> getMavenOutput() {
         return mavenOutput;
+    }
+
+    public Optional<List<URI>> getProjectDependencies() {
+        return projectDependencies;
     }
 }

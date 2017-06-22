@@ -19,12 +19,14 @@ package org.kie.workbench.common.services.backend.builder.compiler.internalNioIm
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Set;
 
 import org.apache.maven.model.Model;
 import org.kie.workbench.common.services.backend.builder.compiler.PluginPresents;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.Compilers;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.ConfigurationProvider;
+import org.kie.workbench.common.services.backend.builder.compiler.configuration.MavenArgs;
 import org.kie.workbench.common.services.backend.builder.compiler.impl.DefaultPomEditor;
 import org.kie.workbench.common.services.backend.builder.compiler.impl.PomPlaceHolder;
 import org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.InternalNioImplCompilationRequest;
@@ -81,22 +83,39 @@ public class InternalNioImplDefaultPomEditor extends DefaultPomEditor {
                 PluginPresents plugs = updatePom(model);
                 request.getInfo().lateAdditionKiePluginPresent(plugs.isKiePluginPresent());
 
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                writer.write(baos,
-                             model);
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Pom changed:{}",
-                                 new String(baos.toByteArray(),
-                                            StandardCharsets.UTF_8));
+                if (plugs.isKiePluginPresent()) {
+                    String args[] = addCreateClasspathMavenArgs(request.getKieCliRequest().getArgs());
+                    request.getKieCliRequest().setArgs(args);
                 }
-                Files.write(Paths.get(pom.getParent().toAbsolutePath().toString(),
-                                      POM_NAME),
-                            baos.toByteArray(),
-                            StandardOpenOption.WRITE);//enhanced pom
+                if (plugs.overwritePOM()) {
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    writer.write(baos,
+                                 model);
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("Pom changed:{}",
+                                     new String(baos.toByteArray(),
+                                                StandardCharsets.UTF_8));
+                    }
+                    Files.delete(Paths.get(pom.getParent().toAbsolutePath().toString(),
+                                           POM_NAME));
+                    Files.write(Paths.get(pom.getParent().toAbsolutePath().toString(),
+                                          POM_NAME),
+                                baos.toByteArray(),
+                                StandardOpenOption.CREATE_NEW);//enhanced pom
+                }
                 history.add(pomPH);
             }
         } catch (Exception e) {
             logger.error(e.getMessage());
         }
+    }
+
+    private String[] addCreateClasspathMavenArgs(String[] args) {
+        StringBuilder sb = new StringBuilder(MavenArgs.MAVEN_DEP_PLUGING_OUTPUT_FILE).append(MavenArgs.CLASSPATH_FILENAME).append(MavenArgs.CLASSPATH_EXT);
+        String[] newArgs = Arrays.copyOf(args,
+                                         args.length + 2);
+        newArgs[args.length] = MavenArgs.DEPS_BUILD_CLASSPATH;
+        newArgs[args.length + 1] = sb.toString();
+        return newArgs;
     }
 }

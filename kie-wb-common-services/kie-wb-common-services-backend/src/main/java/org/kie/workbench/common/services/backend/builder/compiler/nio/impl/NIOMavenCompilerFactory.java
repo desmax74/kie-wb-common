@@ -57,14 +57,6 @@ public class NIOMavenCompilerFactory {
                               new JGITCompilerBeforeDecorator(new NIODefaultMavenCompiler(mavenRepo)));
                 break;
 
-            /*case JGIT_AFTER:
-                compilers.put(mavenRepo, new JGitCompilerAfterDecorator(new NIODefaultMavenCompiler(mavenRepo)));
-                break;
-
-            case JGIT_BEFORE_AND_AFTER:
-                compilers.put(mavenRepo, new JGITCompilerBeforeDecorator(new JGitCompilerAfterDecorator(new NIODefaultMavenCompiler(mavenRepo))));
-                break;*/
-
             default:
                 compilers.put(mavenRepo,
                               new NIODefaultMavenCompiler(mavenRepo));

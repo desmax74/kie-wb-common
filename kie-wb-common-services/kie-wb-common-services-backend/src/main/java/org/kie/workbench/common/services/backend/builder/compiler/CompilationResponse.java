@@ -16,6 +16,7 @@
 
 package org.kie.workbench.common.services.backend.builder.compiler;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,17 +24,34 @@ import org.drools.core.rule.KieModuleMetaInfo;
 import org.kie.api.builder.KieModule;
 
 /**
- * Wrapper of the result of a compilation execution
+ * Wrapper of the result of a compilation
  */
 public interface CompilationResponse {
 
     Boolean isSuccessful();
 
+    /**
+     * Provides error messages
+     */
     Optional<String> getErrorMessage();
 
+    /**
+     * Provides a KieModuleMetaInfo if a kie maven plugin is used in the project
+     */
     Optional<KieModuleMetaInfo> getKieModuleMetaInfo();
 
+    /**
+     * Provides a KieModule if a kie maven plugin is used in the project
+     */
     Optional<KieModule> getKieModule();
 
+    /**
+     * Provides Maven output
+     */
     Optional<List<String>> getMavenOutput();
+
+    /**
+     * Provides the list of all dependencies used by the project, included transitive
+     */
+    Optional<List<URI>> getProjectDependencies();
 }

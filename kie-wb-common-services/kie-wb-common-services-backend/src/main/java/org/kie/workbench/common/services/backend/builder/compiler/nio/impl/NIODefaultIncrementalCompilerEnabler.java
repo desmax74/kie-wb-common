@@ -42,7 +42,7 @@ public class NIODefaultIncrementalCompilerEnabler implements NIOIncrementalCompi
     private NIODefaultPomEditor editor;
 
     public NIODefaultIncrementalCompilerEnabler(Compilers compiler) {
-        editor = new NIODefaultPomEditor(new HashSet<PomPlaceHolder>(),
+        editor = new NIODefaultPomEditor(new HashSet<>(),
                                          new ConfigurationContextProvider(),
                                          compiler);
     }

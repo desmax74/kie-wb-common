@@ -23,6 +23,7 @@ import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
+import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -37,6 +38,7 @@ import org.drools.compiler.kie.builder.impl.FileKieModule;
 import org.drools.core.rule.KieModuleMetaInfo;
 import org.kie.api.builder.KieModule;
 import org.kie.workbench.common.services.backend.builder.compiler.CompilationResponse;
+import org.kie.workbench.common.services.backend.builder.compiler.KieClassLoaderProvider;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.Compilers;
 import org.kie.workbench.common.services.backend.builder.compiler.configuration.FileSystemImpl;
 import org.kie.workbench.common.services.backend.builder.compiler.external339.KieMavenCli;
@@ -106,6 +108,8 @@ public class NIODefaultMavenCompiler implements NIOMavenCompiler {
             logger.debug("KieCompilationRequest:{}",
                          req);
         }
+
+        //Check if the pom are already processed
         if (!req.getInfo().getEnhancedMainPomFile().isPresent()) {
             ProcessedPoms processedPoms = enabler.process(req);
             if (!processedPoms.getResult()) {
@@ -114,9 +118,20 @@ public class NIODefaultMavenCompiler implements NIOMavenCompiler {
                                                       Optional.empty());
             }
         }
+
+        // set the maven repo used in this compilation
         req.getKieCliRequest().getRequest().setLocalRepositoryPath(mavenRepo.toAbsolutePath().toString());
-        ClassWorld myClassWorld = new ClassWorld("plexus.core", getClass().getClassLoader() );
-        int exitCode = cli.doMain(req.getKieCliRequest(), myClassWorld);
+
+        /**
+         The classworld is now Created in the NioMavenCompiler and in the InternalNioDefaultMaven compielr for this reasons:
+         problem: https://stackoverflow.com/questions/22410706/error-when-execute-mavencli-in-the-loop-maven-embedder
+         problem:https://stackoverflow.com/questions/40587683/invocation-of-mavencli-fails-within-a-maven-plugin
+         solution:https://dev.eclipse.org/mhonarc/lists/sisu-users/msg00063.html
+         */
+        ClassWorld kieClassWorld = new ClassWorld("plexus.core",
+                                                  getClass().getClassLoader());
+        int exitCode = cli.doMain(req.getKieCliRequest(),
+                                  kieClassWorld);
         if (exitCode == 0) {
 
             if (req.getInfo().isKiePluginPresent()) {
@@ -140,12 +155,16 @@ public class NIODefaultMavenCompiler implements NIOMavenCompiler {
         KieTuple kieModuleMetaInfoTuple = readKieModuleMetaInfo(req);
         KieTuple kieModuleTuple = readKieModule(req);
         if (kieModuleMetaInfoTuple.getOptionalObject().isPresent() && kieModuleTuple.getOptionalObject().isPresent()) {
+            //@TODO load the dependencies from target/classes
+            KieClassLoaderProvider provider = new NIOClassLoaderProviderImpl();
+            Optional<List<URI>> optionalDeps = provider.getURISFromAllDependencies(req.getInfo().getPrjPath().toAbsolutePath().toString());
             return new DefaultCompilationResponse(Boolean.TRUE,
                                                   (KieModuleMetaInfo) kieModuleMetaInfoTuple.getOptionalObject().get(),
                                                   (KieModule) kieModuleTuple.getOptionalObject().get(),
                                                   getOutput(req.getInfo().getPrjPath(),
                                                             req.getKieCliRequest().getLogFile(),
-                                                            req.getKieCliRequest().getRequestUUID()));
+                                                            req.getKieCliRequest().getRequestUUID()),
+                                                 optionalDeps);
         } else {
             StringBuilder sb = new StringBuilder();
             if (kieModuleMetaInfoTuple.getErrorMsg().isPresent()) {

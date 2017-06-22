@@ -88,9 +88,9 @@ public class PomPlaceHolder {
         return packaging;
     }
 
-    public byte[] getRawContent() {
+    /*public byte[] getRawContent() {
         return rawContent.clone();
-    }
+    }*/
 
     @Override
     public String toString() {

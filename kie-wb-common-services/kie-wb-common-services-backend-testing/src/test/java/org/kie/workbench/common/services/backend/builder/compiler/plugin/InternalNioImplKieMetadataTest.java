@@ -29,7 +29,6 @@ import org.drools.core.rule.TypeMetaInfo;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.kie.api.builder.KieModule;
 import org.kie.scanner.KieModuleMetaData;
@@ -45,12 +44,7 @@ import org.kie.workbench.common.services.backend.builder.compiler.internalNioImp
 import org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.impl.InternalNioImplDefaultCompilationRequest;
 import org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.impl.InternalNioImplMavenCompilerFactory;
 import org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.impl.InternalNioImplWorkspaceCompilationInfo;
-import org.kie.workbench.common.services.backend.builder.compiler.nio.NIOCompilationRequest;
-import org.kie.workbench.common.services.backend.builder.compiler.nio.NIOMavenCompiler;
 import org.kie.workbench.common.services.backend.builder.compiler.nio.impl.NIOClassLoaderProviderImpl;
-import org.kie.workbench.common.services.backend.builder.compiler.nio.impl.NIODefaultCompilationRequest;
-import org.kie.workbench.common.services.backend.builder.compiler.nio.impl.NIOMavenCompilerFactory;
-import org.kie.workbench.common.services.backend.builder.compiler.nio.impl.NIOWorkspaceCompilationInfo;
 import org.uberfire.java.nio.file.Files;
 import org.uberfire.java.nio.file.Path;
 import org.uberfire.java.nio.file.Paths;
@@ -79,7 +73,7 @@ public class InternalNioImplKieMetadataTest {
         }
     }
 
-    @Ignore //@Test
+    @Test
     public void compileAndLoadKieJarMetadata() throws Exception {
         /**
          * If the test fail check if the Drools core classes used, KieModuleMetaInfo and TypeMetaInfo implements Serializable
@@ -104,7 +98,6 @@ public class InternalNioImplKieMetadataTest {
                                                                                                    compiler);
         InternalNioImplCompilationRequest req = new InternalNioImplDefaultCompilationRequest(info,
                                                                                              new String[]{MavenArgs.COMPILE},
-                                                                                             //with MavenArgs.INSTALL fail the kie maven plugin
                                                                                              new HashMap<>(),
                                                                                              Optional.empty());
         CompilationResponse res = compiler.compileSync(req);
@@ -112,6 +105,7 @@ public class InternalNioImplKieMetadataTest {
         if (res.getErrorMessage().isPresent()) {
             System.out.println("Error:" + res.getErrorMessage().get());
         }
+
         Assert.assertTrue(res.isSuccessful());
 
         Optional<KieModuleMetaInfo> metaDataOptional = res.getKieModuleMetaInfo();
@@ -129,6 +123,12 @@ public class InternalNioImplKieMetadataTest {
         Optional<KieModule> kieModuleOptional = res.getKieModule();
         Assert.assertTrue(kieModuleOptional.isPresent());
 
+        Assert.assertTrue(res.getProjectDependencies().isPresent());
+        KieModule kModule = kieModuleOptional.get();
+
+        KieModuleMetaData kieModuleMetaData = new KieModuleMetaDataImpl((InternalKieModule) kModule,
+                                                                        res.getProjectDependencies().get());
+        Assert.assertNotNull(kieModuleMetaData);
         //comment if you want read the log file after the test run
         InternalNioImplTestUtil.rm(tmpRoot.toFile());
     }
@@ -145,17 +145,17 @@ public class InternalNioImplKieMetadataTest {
                           tmp);
 
         InternalNioImplMavenCompiler compiler = InternalNioImplMavenCompilerFactory.getCompiler(mavenRepo,
-                                                                        Decorator.NONE);
+                                                                                                Decorator.NONE);
         Assert.assertTrue(compiler.isValid());
 
         InternalNioImplWorkspaceCompilationInfo info = new InternalNioImplWorkspaceCompilationInfo(Paths.get(tmp.toUri()),
-                                                                           compiler);
+                                                                                                   compiler);
 
-        StringBuilder sb = new StringBuilder(MavenArgs.MAVEN_DEP_PLUGING_OUTPUT_FILE).append(MavenArgs.CLASSPATH_FILENAME).append(MavenArgs.CLASSPATH_EXT);
+        //StringBuilder sb = new StringBuilder(MavenArgs.MAVEN_DEP_PLUGING_OUTPUT_FILE).append(MavenArgs.CLASSPATH_FILENAME).append(MavenArgs.CLASSPATH_EXT);
         InternalNioImplCompilationRequest req = new InternalNioImplDefaultCompilationRequest(info,
-                                                                     new String[]{MavenArgs.COMPILE, MavenArgs.DEPS_BUILD_CLASSPATH, sb.toString()},
-                                                                     new HashMap<>(),
-                                                                     Optional.empty());
+                                                                                             new String[]{MavenArgs.COMPILE},
+                                                                                             new HashMap<>(),
+                                                                                             Optional.empty());
         CompilationResponse res = compiler.compileSync(req);
         if (res.getErrorMessage().isPresent()) {
             System.out.println(res.getErrorMessage().get());

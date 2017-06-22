@@ -13,12 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.kie.workbench.common.services.backend.builder.compiler.nio.impl;
 
-package org.kie.workbench.common.services.backend.builder.compiler;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Path;
 
-import org.kie.scanner.KieModuleMetaData;
+public class DotFileFilter implements DirectoryStream.Filter<Path> {
 
-public interface KieArtifactScanner {
+    public DotFileFilter() {
+    }
 
-    KieModuleMetaData loadMetaData(String prjPath);
+    public boolean accept(Path path) {
+        String fileName = path.getFileName().toString();
+        return fileName.startsWith(".");
+    }
 }

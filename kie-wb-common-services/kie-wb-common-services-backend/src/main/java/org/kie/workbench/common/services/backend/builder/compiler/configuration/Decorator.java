@@ -19,7 +19,5 @@ package org.kie.workbench.common.services.backend.builder.compiler.configuration
 public enum Decorator {
 
     JGIT_BEFORE,
-    //JGIT_AFTER,
-    //JGIT_BEFORE_AND_AFTER,
     NONE
 }

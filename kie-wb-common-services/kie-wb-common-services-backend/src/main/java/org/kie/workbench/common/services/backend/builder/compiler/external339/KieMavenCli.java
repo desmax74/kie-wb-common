@@ -245,10 +245,10 @@ public class KieMavenCli {
                                value);
         System.setProperty(name,
                            value);
-
     }
 
-    public int doMain(KieCliRequest cliRequest, ClassWorld classWorld) {
+    public int doMain(KieCliRequest cliRequest,
+                      ClassWorld classWorld) {
 
         PlexusContainer localContainer = null;
         try {
@@ -257,7 +257,8 @@ public class KieMavenCli {
             logging(cliRequest);
             version(cliRequest);
             properties(cliRequest);
-            localContainer = container(cliRequest, classWorld);
+            localContainer = container(cliRequest,
+                                       classWorld);
             commands(cliRequest);
             configure(cliRequest);
             toolchains(cliRequest);
@@ -436,17 +437,18 @@ public class KieMavenCli {
                            cliRequest.getUserProperties());
     }
 
-    protected PlexusContainer container(KieCliRequest cliRequest, ClassWorld classWorld)
+    protected PlexusContainer container(KieCliRequest cliRequest,
+                                        ClassWorld classWorld)
             throws Exception {
 
         if (cliRequest.getClassWorld() == null) {
-            /*
-            The classworld is now Created in the NioMavenCompiler and in the InternalNioDefaultMaven compielr for this reasons:
-            problem: https://stackoverflow.com/questions/22410706/error-when-execute-mavencli-in-the-loop-maven-embedder
-            problem:https://stackoverflow.com/questions/40587683/invocation-of-mavencli-fails-within-a-maven-plugin
-            solution:https://dev.eclipse.org/mhonarc/lists/sisu-users/msg00063.html
-
-            cliRequest.setClassWorld(new ClassWorld("plexus.core",Thread.currentThread().getContextClassLoader()));*/
+            /**
+             The classworld is now Created in the NioMavenCompiler and in the InternalNioDefaultMaven compielr for this reasons:
+             problem: https://stackoverflow.com/questions/22410706/error-when-execute-mavencli-in-the-loop-maven-embedder
+             problem:https://stackoverflow.com/questions/40587683/invocation-of-mavencli-fails-within-a-maven-plugin
+             solution:https://dev.eclipse.org/mhonarc/lists/sisu-users/msg00063.html
+             original version:
+             cliRequest.setClassWorld(new ClassWorld("plexus.core",Thread.currentThread().getContextClassLoader()));*/
 
             cliRequest.setClassWorld(classWorld);
         }
@@ -494,7 +496,9 @@ public class KieMavenCli {
                                                                       });
 
         //This is used to share informations at runtime between Maven plugins and our compiler
-        container.addComponent(cliRequest.getMap(), HashMap.class, "kieMap");
+        container.addComponent(cliRequest.getMap(),
+                               HashMap.class,
+                               "kieMap");
 
         // NOTE: To avoid inconsistencies, we'll use the TCCL exclusively for lookups
         container.setLookupRealm(null);

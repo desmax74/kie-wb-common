@@ -81,32 +81,22 @@ public class DefaultPomEditor implements PomEditor {
         }
 
         Boolean defaultCompilerPluginPresent = Boolean.FALSE;
-        //int defaultCompilerPosition = 0;
         Boolean alternativeCompilerPluginPresent = Boolean.FALSE;
-        int alternativeCompilerPosition = 0;
         Boolean kiePluginPresent = Boolean.FALSE;
+        int alternativeCompilerPosition = 0;
+        int defaultMavenCompilerPosition = 0;
         int kieMavenPluginPosition = 0;
 
         int i = 0;
-        Boolean disableMavenCompiler = Boolean.TRUE;
         for (Plugin plugin : build.getPlugins()) {
-
-            // Check if is present the default maven compiler
+            // check if is present the default maven compiler
             if (plugin.getGroupId().equals(conf.get(ConfigurationKey.MAVEN_PLUGINS)) &&
                     plugin.getArtifactId().equals(conf.get(ConfigurationKey.MAVEN_COMPILER_PLUGIN))) {
-                defaultCompilerPluginPresent = Boolean.TRUE;
 
-                List<PluginExecution> executions = plugin.getExecutions();
-                for (PluginExecution exec : executions) {
-                    if (exec.getId().equals(MAVEN_COMPILER_EXECUTION_ID) && exec.getPhase().equals(MAVEN_COMPILER_EXECUTION_PHASE)) {
-                        disableMavenCompiler = Boolean.FALSE;
-                    }
-                }
-                //defaultCompilerPosition = i;
-                if (disableMavenCompiler) {
-                    disableMavenCompilerAlreadyPresent(plugin); // disable the maven compiler if present
-                }
+                defaultCompilerPluginPresent = Boolean.TRUE;
+                defaultMavenCompilerPosition = i;
             }
+
             //check if is present the alternative maven compiler
             if (plugin.getGroupId().equals(conf.get(ConfigurationKey.ALTERNATIVE_COMPILER_PLUGINS)) &&
                     plugin.getArtifactId().equals(conf.get(ConfigurationKey.ALTERNATIVE_COMPILER_PLUGIN))) {
@@ -114,7 +104,7 @@ public class DefaultPomEditor implements PomEditor {
                 alternativeCompilerPosition = i;
             }
 
-            //check if is present the kie plugin and move after takari
+            //check if is present the kie maven plugin
             if (plugin.getGroupId().equals(conf.get(ConfigurationKey.KIE_MAVEN_PLUGINS)) &&
                     plugin.getArtifactId().equals(conf.get(ConfigurationKey.KIE_MAVEN_PLUGIN))) {
                 kiePluginPresent = Boolean.TRUE;
@@ -126,10 +116,10 @@ public class DefaultPomEditor implements PomEditor {
         Boolean overwritePOM = updatePOMModel(build,
                                               defaultCompilerPluginPresent,
                                               alternativeCompilerPluginPresent,
-                                              alternativeCompilerPosition,
                                               kiePluginPresent,
-                                              kieMavenPluginPosition,
-                                              i);
+                                              defaultMavenCompilerPosition,
+                                              alternativeCompilerPosition,
+                                              kieMavenPluginPosition);
 
         return new DefaultPluginPresents(defaultCompilerPluginPresent,
                                          alternativeCompilerPluginPresent,
@@ -140,68 +130,43 @@ public class DefaultPomEditor implements PomEditor {
     private Boolean updatePOMModel(Build build,
                                    Boolean defaultCompilerPluginPresent,
                                    Boolean alternativeCompilerPluginPresent,
-                                   int alternativeCompilerPosition,
                                    Boolean kiePluginPresent,
-                                   int kieMavenPluginPosition,
-                                   int i) {
+                                   int defaultMavenCompilerPosition,
+                                   int alternativeCompilerPosition,
+                                   int kieMavenPluginPosition) {
+
         Boolean overwritePOM = Boolean.FALSE;
 
-        if (!alternativeCompilerPluginPresent && !kiePluginPresent) {
+        if (!alternativeCompilerPluginPresent) {
+            //add alternative compiler and disable the default compiler
             build.addPlugin(getNewCompilerPlugin());
-            alternativeCompilerPosition = i;
+            alternativeCompilerPluginPresent = Boolean.TRUE;
             overwritePOM = Boolean.TRUE;
         }
 
-        if (!defaultCompilerPluginPresent && !kiePluginPresent) {
+        //@TODO check about the precedence of kie maven during the compile
+        if (!defaultCompilerPluginPresent) {
             //if default maven compiler is not present we add the skip and phase none  to avoid its use
             Plugin disabledDefaultCompiler = new Plugin();
             disabledDefaultCompiler.setArtifactId(conf.get(ConfigurationKey.MAVEN_COMPILER_PLUGIN));
             disableMavenCompilerAlreadyPresent(disabledDefaultCompiler);
             build.addPlugin(disabledDefaultCompiler);
+            defaultCompilerPluginPresent = Boolean.TRUE;
             overwritePOM = Boolean.TRUE;
         }
 
-        if (kiePluginPresent && alternativeCompilerPluginPresent) {
-            //if kieplugin is present must be after the alternative compiler
-            if (kieMavenPluginPosition <= alternativeCompilerPosition) {
+        if (defaultCompilerPluginPresent && alternativeCompilerPluginPresent) {
+            if (defaultMavenCompilerPosition <= alternativeCompilerPosition) {
                 //swap the positions
-                Plugin kieMaven = build.getPlugins().get(kieMavenPluginPosition);
+                Plugin defaultMavenCompiler = build.getPlugins().get(defaultMavenCompilerPosition);
                 Plugin alternativeCompiler = build.getPlugins().get(alternativeCompilerPosition);
-                build.getPlugins().set(kieMavenPluginPosition,
+                build.getPlugins().set(defaultMavenCompilerPosition,
                                        alternativeCompiler);
                 build.getPlugins().set(alternativeCompilerPosition,
-                                       kieMaven);
+                                       defaultMavenCompiler);
                 overwritePOM = Boolean.TRUE;
             }
         }
-
-        /*if (kiePluginPresent && !alternativeCompilerPluginPresent) {
-            //if kieplugin is present must be after the alternative compiler
-            build.addPlugin(getNewCompilerPlugin());
-            alternativeCompilerPosition = getPluginPosition(build,
-                                                            conf.get(ConfigurationKey.ALTERNATIVE_COMPILER_PLUGIN)) - 1;
-            overwritePOM = Boolean.TRUE;
-
-            if (kieMavenPluginPosition <= alternativeCompilerPosition) {
-                //swap the positions
-                Plugin kieMaven = build.getPlugins().get(kieMavenPluginPosition);
-                Plugin alternativeCompiler = build.getPlugins().get(alternativeCompilerPosition);
-                build.getPlugins().set(kieMavenPluginPosition,
-                                       alternativeCompiler);
-                build.getPlugins().set(alternativeCompilerPosition,
-                                       kieMaven);
-                overwritePOM = Boolean.TRUE;
-            }
-        }
-
-        if (!defaultCompilerPluginPresent && kiePluginPresent) {
-            //if default maven compiler is not present and the kieplugin is present we add the default compiler disabled
-            Plugin disabledDefaultCompiler = new Plugin();
-            disabledDefaultCompiler.setArtifactId(conf.get(ConfigurationKey.MAVEN_COMPILER_PLUGIN));
-            disableMavenCompilerAlreadyPresent(disabledDefaultCompiler);
-            build.addPlugin(disabledDefaultCompiler);
-            overwritePOM = Boolean.TRUE;
-        }*/
         return overwritePOM;
     }
 
