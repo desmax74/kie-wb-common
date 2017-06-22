@@ -154,9 +154,6 @@ public class NioKieMetadataTest {
             System.out.println(res.getErrorMessage().get());
         }
 
-        //  KieClassLoaderProvider provider = new NIOClassLoaderProviderImpl();
-        // Optional<List<URI>> optionalUris = provider.getURISFromAllDependencies(tmp.toAbsolutePath().toString());
-
         Assert.assertTrue(res.isSuccessful());
 
         Optional<KieModuleMetaInfo> metaDataOptional = res.getKieModuleMetaInfo();
@@ -172,7 +169,6 @@ public class NioKieMetadataTest {
         Assert.assertTrue(kieModuleOptional.isPresent());
         KieModule kModule = kieModuleOptional.get();
 
-        //Assert.assertTrue(optionalUris.isPresent());
         Assert.assertTrue(res.getProjectDependencies().isPresent());
         KieModuleMetaData kieModuleMetaData = new KieModuleMetaDataImpl((InternalKieModule) kModule,
                                                                         res.getProjectDependencies().get());
