@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Red Hat, Inc. and/or its affiliates.
+ * Copyright 2017 Red Hat, Inc. and/or its affiliates.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,34 @@
  * limitations under the License.
  */
 
-package org.kie.workbench.common.services.shared.service;
+.pm-container {
+    background-color: #f5f5f5;
+}
+.pm-container #row1 {
+    margin-left: -10px;
+}
 
-import java.util.List;
+.pm-container #row2 {
+    margin-left: 10px;
+}
 
-import org.jboss.errai.bus.server.annotations.Remote;
+.pm-container #row3 {
+    margin-left: 10px;
+}
 
-@Remote
-public interface PlaceManagerActivityService {
+.pm-time-div {
+    float: left;
+    margin-right: 70px;
+}
 
-    void initActivities( List<String> activities );
+.pm-container .label-title {
+    font-size: large;
+    font-weight: 500;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
 
-    List<String> getAllActivities();
+.pm-container .card-pf-title {
+    font-size: 12px;
+    font-weight: 600;
 }
