@@ -210,27 +210,6 @@ public class Builder implements Serializable {
     }
 
     public BuildResults build() {
-
-        /*
-        String prjPath -> retrieve the project path
-        StringBuilder sb = new StringBuilder(MavenArgs.MAVEN_DEP_PLUGING_OUTPUT_FILE).append(MavenArgs.CLASSPATH_FILENAME).append(MavenArgs.CLASSPATH_EXT);
-        NIOCompilationRequest req = new NIODefaultCompilationRequest(workspaceCompilationInfo, new String[]{MavenArgs.CLEAN, MavenArgs.COMPILE, sb.toString()}, new HashMap<>(), Optional.empty());
-        CompilationResponse res = compiler.compileSync(req);
-        if(res.isSuccessful()){
-            KieModule kieModule = res.getKieModule().get();
-            KieClassLoaderProvider provider = new NIOClassLoaderProviderImpl();
-            Optional<List<URI>> optionalUris = provider.getURISFromAllDependencies(tmp.toAbsolutePath().toString());
-            KieModuleMetaData kieModuleMetaData = new KieModuleMetaDataImpl((InternalKieModule) kieModule,
-                                                                            optionalUris.get());
-        }*/
-
-        //KieModuleMetaData kieModuleMetaData = KieModuleMetaData.Factory.newKieModuleMetaData(kieModule); broken by appformer mavenembedder
-
-
-        return oldBEhaviour();
-    }
-
-    private BuildResults oldBEhaviour(){
         synchronized ( kieFileSystem ) {
 
             //KieBuilder is not re-usable for successive "full" builds
