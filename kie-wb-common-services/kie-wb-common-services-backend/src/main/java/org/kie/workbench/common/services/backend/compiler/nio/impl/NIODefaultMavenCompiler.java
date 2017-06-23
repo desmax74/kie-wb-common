@@ -272,7 +272,9 @@ public class NIODefaultMavenCompiler implements NIOMavenCompiler {
                                 Optional.of(sb.toString()));
         } finally {
             try {
-                bos.close();
+                if(bos != null) {
+                    bos.close();
+                }
                 if (in != null) {
                     in.close();
                 }
@@ -310,7 +312,7 @@ public class NIODefaultMavenCompiler implements NIOMavenCompiler {
         return Collections.emptyList();
     }
 
-    class KieTuple {
+    static class KieTuple {
 
         private Optional<Object> optionalObj;
         private Optional<String> errorMsg;

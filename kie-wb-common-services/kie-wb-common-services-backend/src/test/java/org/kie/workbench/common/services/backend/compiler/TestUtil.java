@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package org.kie.workbench.common.services.backend.builder.compiler;
+package org.kie.workbench.common.services.backend.compiler;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import org.kie.workbench.common.services.backend.builder.compiler.nio.CopyFileVisitor;
+import org.kie.workbench.common.services.backend.compiler.nio.CopyFileVisitor;
 
 public class TestUtil {
 

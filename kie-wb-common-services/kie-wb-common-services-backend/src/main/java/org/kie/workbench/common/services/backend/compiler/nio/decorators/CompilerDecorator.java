@@ -14,20 +14,10 @@
  * limitations under the License.
  */
 
-package org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl;
+package org.kie.workbench.common.services.backend.compiler.nio.decorators;
 
-import java.io.File;
+import org.kie.workbench.common.services.backend.compiler.nio.NIOMavenCompiler;
 
-public class InternalNioImplTestUtil {
+public abstract class CompilerDecorator implements NIOMavenCompiler {
 
-    public static void rm(File f) {
-        if (f.isDirectory()) {
-            for (File c : f.listFiles()) {
-                rm(c);
-            }
-        }
-        if (!f.delete()) {
-            System.err.println("Couldn't delete file " + f);
-        }
-    }
 }

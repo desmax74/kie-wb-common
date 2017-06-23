@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.kie.workbench.common.services.backend.builder.compiler.plugin;
+package org.kie.workbench.common.services.backend.compiler.plugin;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -31,13 +31,13 @@ import org.junit.Test;
 import org.kie.api.builder.KieModule;
 import org.kie.scanner.KieModuleMetaData;
 import org.kie.scanner.KieModuleMetaDataImpl;
+import org.kie.workbench.common.services.backend.compiler.TestUtil;
+import org.kie.workbench.common.services.backend.compiler.internalNioImpl.InternalNioImplTestUtil;
 import org.kie.workbench.common.services.backend.compiler.CompilationResponse;
-import org.kie.workbench.common.services.backend.builder.compiler.TestUtil;
 import org.kie.workbench.common.services.backend.compiler.configuration.Decorator;
 import org.kie.workbench.common.services.backend.compiler.configuration.MavenArgs;
 import org.kie.workbench.common.services.backend.compiler.internalNioImpl.InternalNioImplCompilationRequest;
 import org.kie.workbench.common.services.backend.compiler.internalNioImpl.InternalNioImplMavenCompiler;
-import org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.InternalNioImplTestUtil;
 import org.kie.workbench.common.services.backend.compiler.internalNioImpl.impl.InternalNioImplDefaultCompilationRequest;
 import org.kie.workbench.common.services.backend.compiler.internalNioImpl.impl.InternalNioImplMavenCompilerFactory;
 import org.kie.workbench.common.services.backend.compiler.internalNioImpl.impl.InternalNioImplWorkspaceCompilationInfo;
@@ -70,7 +70,7 @@ public class InternalNioImplKieMetadataTest {
     }
 
     @Test
-    public void compileAndLoadKieJarMetadata() throws Exception {
+    public void compileAndLoadKieJarMetadataPackagedJar() throws Exception {
         /**
          * If the test fail check if the Drools core classes used, KieModuleMetaInfo and TypeMetaInfo implements Serializable
          * */
@@ -179,7 +179,7 @@ public class InternalNioImplKieMetadataTest {
     }
 
     @Test
-    public void compileAndloadKieJarSingleMetadataWithPackage() throws Exception {
+    public void compileAndloadKieJarSingleMetadataWithPackagedJar() throws Exception {
         /**
          * If the test fail check if the Drools core classes used, KieModuleMetaInfo and TypeMetaInfo implements Serializable
          * */

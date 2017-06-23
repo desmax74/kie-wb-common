@@ -17,8 +17,10 @@
 package org.kie.workbench.common.services.backend.compiler.nio.impl;
 
 import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -195,10 +197,12 @@ public class NIOClassLoaderProviderImpl implements KieClassLoaderProvider {
             try {
                 for (String pomPath : pomsPaths) {
                     Path path = Paths.get(pomPath);
-                    StringBuilder sb = new StringBuilder("file://")
-                            .append(path.getParent().toAbsolutePath().toString())
-                            .append("/target/classes/");
-                    urls.add(new URL(sb.toString()));
+                    if(path != null) {
+                        StringBuilder sb = new StringBuilder("file://")
+                                .append(path.getParent().toAbsolutePath().toString())
+                                .append("/target/classes/");
+                        urls.add(new URL(sb.toString()));
+                    }
                 }
             } catch (MalformedURLException ex) {
                 logger.error(ex.getMessage());
@@ -290,14 +294,14 @@ public class NIOClassLoaderProviderImpl implements KieClassLoaderProvider {
     private List<URI> readFileAsURI(String filePath) {
 
         BufferedReader br = null;
-        FileReader fr = null;
+        //FileReader fr = null;
         List<URI> urls = new ArrayList<>();
         try {
 
-            fr = new FileReader(filePath);
-            br = new BufferedReader(fr);
+            //fr = new FileReader(filePath);
+            br = new BufferedReader(new InputStreamReader(new FileInputStream(filePath), "UTF-8"));
             String sCurrentLine;
-            br = new BufferedReader(fr);
+            //br = new BufferedReader(fr);
 
             while ((sCurrentLine = br.readLine()) != null) {
                 StringTokenizer token = new StringTokenizer(sCurrentLine,
@@ -315,9 +319,9 @@ public class NIOClassLoaderProviderImpl implements KieClassLoaderProvider {
                     br.close();
                 }
 
-                if (fr != null) {
+               /* if (fr != null) {
                     fr.close();
-                }
+                }*/
                 Files.delete(Paths.get(filePath));
             } catch (IOException ex) {
                 logger.error(ex.getMessage());
@@ -329,14 +333,11 @@ public class NIOClassLoaderProviderImpl implements KieClassLoaderProvider {
     private List<URL> readFileAsURL(String filePath) {
 
         BufferedReader br = null;
-        FileReader fr = null;
         List<URL> urls = new ArrayList<>();
         try {
 
-            fr = new FileReader(filePath);
-            br = new BufferedReader(fr);
+            br = new BufferedReader(new InputStreamReader(new FileInputStream(filePath), "UTF-8"));
             String sCurrentLine;
-            br = new BufferedReader(fr);
 
             while ((sCurrentLine = br.readLine()) != null) {
                 StringTokenizer token = new StringTokenizer(sCurrentLine,
@@ -354,9 +355,6 @@ public class NIOClassLoaderProviderImpl implements KieClassLoaderProvider {
                     br.close();
                 }
 
-                if (fr != null) {
-                    fr.close();
-                }
                 Files.delete(Paths.get(filePath));
             } catch (IOException ex) {
                 logger.error(ex.getMessage());

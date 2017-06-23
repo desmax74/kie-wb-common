@@ -265,7 +265,9 @@ public class InternalNioImplDefaultMavenCompiler implements InternalNioImplMaven
                                 Optional.of(sb.toString()));
         } finally {
             try {
-                bos.close();
+                if(bos != null) {
+                    bos.close();
+                }
                 if (in != null) {
                     in.close();
                 }
@@ -299,7 +301,7 @@ public class InternalNioImplDefaultMavenCompiler implements InternalNioImplMaven
         return Collections.emptyList();
     }
 
-    class KieTuple {
+    static class KieTuple {
 
         private Optional<Object> optionalObj;
         private Optional<String> errorMsg;

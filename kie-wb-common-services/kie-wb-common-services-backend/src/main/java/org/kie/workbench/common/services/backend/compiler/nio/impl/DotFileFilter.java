@@ -24,7 +24,10 @@ public class DotFileFilter implements DirectoryStream.Filter<Path> {
     }
 
     public boolean accept(Path path) {
-        String fileName = path.getFileName().toString();
-        return fileName.startsWith(".");
+        if(path != null ){
+            return path.getFileName().toString().startsWith(".");
+        }else {
+            return false;
+        }
     }
 }

@@ -17,8 +17,10 @@
 package org.kie.workbench.common.services.backend.compiler.internalNioImpl.impl;
 
 import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -278,15 +280,11 @@ public class InternalNioImplClassLoaderProviderImpl implements KieClassLoaderPro
     private List<URI> readFileAsURI(String filePath) {
 
         BufferedReader br = null;
-        FileReader fr = null;
         List<URI> urls = new ArrayList<>();
         try {
 
-            fr = new FileReader(filePath);
-            br = new BufferedReader(fr);
+            br = new BufferedReader(new InputStreamReader(new FileInputStream(filePath), "UTF-8"));
             String sCurrentLine;
-            br = new BufferedReader(fr);
-
             while ((sCurrentLine = br.readLine()) != null) {
                 StringTokenizer token = new StringTokenizer(sCurrentLine,
                                                             ":");
@@ -302,10 +300,6 @@ public class InternalNioImplClassLoaderProviderImpl implements KieClassLoaderPro
                 if (br != null) {
                     br.close();
                 }
-
-                if (fr != null) {
-                    fr.close();
-                }
                 Files.delete(Paths.get(filePath));
             } catch (IOException ex) {
                 logger.error(ex.getMessage());
@@ -317,14 +311,11 @@ public class InternalNioImplClassLoaderProviderImpl implements KieClassLoaderPro
     private List<URL> readFileAsURL(String filePath) {
 
         BufferedReader br = null;
-        FileReader fr = null;
         List<URL> urls = new ArrayList<>();
         try {
 
-            fr = new FileReader(filePath);
-            br = new BufferedReader(fr);
+            br = new BufferedReader(new InputStreamReader(new FileInputStream(filePath), "UTF-8"));
             String sCurrentLine;
-            br = new BufferedReader(fr);
 
             while ((sCurrentLine = br.readLine()) != null) {
                 StringTokenizer token = new StringTokenizer(sCurrentLine,
@@ -340,10 +331,6 @@ public class InternalNioImplClassLoaderProviderImpl implements KieClassLoaderPro
             try {
                 if (br != null) {
                     br.close();
-                }
-
-                if (fr != null) {
-                    fr.close();
                 }
                 Files.delete(Paths.get(filePath));
             } catch (IOException ex) {

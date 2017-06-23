@@ -47,7 +47,7 @@ public class ConfigurationEnvironmentStrategy implements ConfigurationStrategy,
 
     @Override
     public Integer getOrder() {
-        return new Integer(0);
+        return Integer.valueOf(0);
     }
 
     @Override

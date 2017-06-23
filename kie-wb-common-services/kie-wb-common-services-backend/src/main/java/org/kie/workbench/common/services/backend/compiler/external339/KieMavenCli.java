@@ -839,17 +839,17 @@ public class KieMavenCli {
             }
         } else if (userSuppliedConfigurationProcessorCount > 1) {
             StringBuffer sb = new StringBuffer(
-                    String.format("\nThere can only be one user supplied ConfigurationProcessor, there are %s:\n\n",
+                    String.format("%nThere can only be one user supplied ConfigurationProcessor, there are %s:%n%n",
                                   userSuppliedConfigurationProcessorCount));
             for (Entry<String, KieConfigurationProcessor> entry : configurationProcessors.entrySet()) {
                 String hint = entry.getKey();
                 if (!hint.equals(KieConfigurationProcessor.HINT)) {
                     KieConfigurationProcessor configurationProcessor = entry.getValue();
-                    sb.append(String.format("%s\n",
+                    sb.append(String.format("%s%n",
                                             configurationProcessor.getClass().getName()));
                 }
             }
-            sb.append(String.format("\n"));
+            sb.append(String.format("%nn"));
             throw new Exception(sb.toString());
         }
     }
