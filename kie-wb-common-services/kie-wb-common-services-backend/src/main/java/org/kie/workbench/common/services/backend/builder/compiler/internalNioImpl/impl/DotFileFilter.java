@@ -19,6 +19,7 @@ import org.uberfire.java.nio.file.DirectoryStream;
 import org.uberfire.java.nio.file.Path;
 
 public class DotFileFilter implements DirectoryStream.Filter<Path> {
+
     public DotFileFilter() {
     }
 

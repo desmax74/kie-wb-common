@@ -164,7 +164,7 @@ public class NIODefaultMavenCompiler implements NIOMavenCompiler {
                                                   getOutput(req.getInfo().getPrjPath(),
                                                             req.getKieCliRequest().getLogFile(),
                                                             req.getKieCliRequest().getRequestUUID()),
-                                                 optionalDeps);
+                                                  optionalDeps);
         } else {
             StringBuilder sb = new StringBuilder();
             if (kieModuleMetaInfoTuple.getErrorMsg().isPresent()) {

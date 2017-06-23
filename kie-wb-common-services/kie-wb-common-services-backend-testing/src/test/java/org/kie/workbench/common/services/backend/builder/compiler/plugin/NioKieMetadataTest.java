@@ -77,7 +77,7 @@ public class NioKieMetadataTest {
     }
 
     @Test
-    public void compileAndloadKieJarMetadata() throws Exception {
+    public void compileAndLoadKieJarMetadata() throws Exception {
         /**
          * If the test fail check if the Drools core classes used, KieModuleMetaInfo and TypeMetaInfo implements Serializable
          * */
@@ -128,7 +128,7 @@ public class NioKieMetadataTest {
     }
 
     @Test
-    public void compileAndloadKieJarSingleMetadata() throws Exception {
+    public void compileAndLoadKieJarSingleMetadata() throws Exception {
         /**
          * If the test fail check if the Drools core classes used, KieModuleMetaInfo and TypeMetaInfo implements Serializable
          * */

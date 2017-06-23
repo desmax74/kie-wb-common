@@ -75,7 +75,8 @@ public class DefaultCompilationResponse implements CompilationResponse {
     public DefaultCompilationResponse(Boolean successful,
                                       KieModuleMetaInfo kieModuleMetaInfo,
                                       KieModule kieModule,
-                                      Optional<List<String>> mavenOutput, Optional<List<URI>> projectDependencies) {
+                                      Optional<List<String>> mavenOutput,
+                                      Optional<List<URI>> projectDependencies) {
         this.successful = successful;
         this.errorMessage = Optional.empty();
         this.kieModuleMetaInfo = Optional.of(kieModuleMetaInfo);
