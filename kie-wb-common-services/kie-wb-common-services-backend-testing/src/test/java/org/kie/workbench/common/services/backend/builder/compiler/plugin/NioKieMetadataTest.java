@@ -34,15 +34,15 @@ import org.junit.Test;
 import org.kie.api.builder.KieModule;
 import org.kie.scanner.KieModuleMetaData;
 import org.kie.scanner.KieModuleMetaDataImpl;
-import org.kie.workbench.common.services.backend.builder.compiler.CompilationResponse;
+import org.kie.workbench.common.services.backend.compiler.CompilationResponse;
 import org.kie.workbench.common.services.backend.builder.compiler.TestUtil;
-import org.kie.workbench.common.services.backend.builder.compiler.configuration.Decorator;
-import org.kie.workbench.common.services.backend.builder.compiler.configuration.MavenArgs;
-import org.kie.workbench.common.services.backend.builder.compiler.nio.NIOCompilationRequest;
-import org.kie.workbench.common.services.backend.builder.compiler.nio.NIOMavenCompiler;
-import org.kie.workbench.common.services.backend.builder.compiler.nio.impl.NIODefaultCompilationRequest;
-import org.kie.workbench.common.services.backend.builder.compiler.nio.impl.NIOMavenCompilerFactory;
-import org.kie.workbench.common.services.backend.builder.compiler.nio.impl.NIOWorkspaceCompilationInfo;
+import org.kie.workbench.common.services.backend.compiler.configuration.Decorator;
+import org.kie.workbench.common.services.backend.compiler.configuration.MavenArgs;
+import org.kie.workbench.common.services.backend.compiler.nio.NIOCompilationRequest;
+import org.kie.workbench.common.services.backend.compiler.nio.NIOMavenCompiler;
+import org.kie.workbench.common.services.backend.compiler.nio.impl.NIODefaultCompilationRequest;
+import org.kie.workbench.common.services.backend.compiler.nio.impl.NIOMavenCompilerFactory;
+import org.kie.workbench.common.services.backend.compiler.nio.impl.NIOWorkspaceCompilationInfo;
 import org.uberfire.java.nio.file.api.FileSystemProviders;
 import org.uberfire.java.nio.file.spi.FileSystemProvider;
 
@@ -77,7 +77,7 @@ public class NioKieMetadataTest {
     }
 
     @Test
-    public void compileAndLoadKieJarMetadata() throws Exception {
+    public void compileAndLoadKieJarMetadataWithPAckagedJar() throws Exception {
         /**
          * If the test fail check if the Drools core classes used, KieModuleMetaInfo and TypeMetaInfo implements Serializable
          * */
@@ -93,7 +93,7 @@ public class NioKieMetadataTest {
         NIOWorkspaceCompilationInfo info = new NIOWorkspaceCompilationInfo(tmp,
                                                                            compiler);
         NIOCompilationRequest req = new NIODefaultCompilationRequest(info,
-                                                                     new String[]{MavenArgs.COMPILE/*, MavenArgs.DEPS_BUILD_CLASSPATH, sb.toString()*/},
+                                                                     new String[]{MavenArgs.INSTALL},
                                                                      new HashMap<>(),
                                                                      Optional.empty());
         CompilationResponse res = compiler.compileSync(req);
@@ -119,6 +119,8 @@ public class NioKieMetadataTest {
         Assert.assertTrue(kieModuleOptional.isPresent());
         KieModule kModule = kieModuleOptional.get();
         Assert.assertTrue(res.getProjectDependencies().isPresent());
+        Assert.assertTrue(res.getProjectDependencies().get().size()==5);
+
         KieModuleMetaData kieModuleMetaData = new KieModuleMetaDataImpl((InternalKieModule) kModule,
                                                                         res.getProjectDependencies().get());
         //KieModuleMetaData kieModuleMetaData = KieModuleMetaData.Factory.newKieModuleMetaData(kModule); broken with maven embedder used into appformer
@@ -144,9 +146,56 @@ public class NioKieMetadataTest {
         NIOWorkspaceCompilationInfo info = new NIOWorkspaceCompilationInfo(tmp,
                                                                            compiler);
 
-        //StringBuilder sb = new StringBuilder(MavenArgs.MAVEN_DEP_PLUGING_OUTPUT_FILE).append(MavenArgs.CLASSPATH_FILENAME).append(MavenArgs.CLASSPATH_EXT);
         NIOCompilationRequest req = new NIODefaultCompilationRequest(info,
-                                                                     new String[]{MavenArgs.COMPILE/*, MavenArgs.DEPS_BUILD_CLASSPATH, sb.toString()*/},
+                                                                     new String[]{MavenArgs.COMPILE},
+                                                                     new HashMap<>(),
+                                                                     Optional.empty());
+        CompilationResponse res = compiler.compileSync(req);
+        if (res.getErrorMessage().isPresent()) {
+            System.out.println(res.getErrorMessage().get());
+        }
+
+        Assert.assertTrue(res.isSuccessful());
+
+        Optional<KieModuleMetaInfo> metaDataOptional = res.getKieModuleMetaInfo();
+        Assert.assertTrue(metaDataOptional.isPresent());
+        KieModuleMetaInfo kieModuleMetaInfo = metaDataOptional.get();
+        Assert.assertNotNull(kieModuleMetaInfo);
+
+        Map<String, Set<String>> rulesBP = kieModuleMetaInfo.getRulesByPackage();
+        Assert.assertEquals(rulesBP.size(),
+                            1);
+
+        Optional<KieModule> kieModuleOptional = res.getKieModule();
+        Assert.assertTrue(kieModuleOptional.isPresent());
+        KieModule kModule = kieModuleOptional.get();
+
+        Assert.assertTrue(res.getProjectDependencies().get().size()==4);
+
+        //comment if you want read the log file after the test run
+        TestUtil.rm(tmpRoot.toFile());
+    }
+
+    @Test
+    public void compileAndLoadKieJarSingleMetadataWithPackagedJar() throws Exception {
+        /**
+         * If the test fail check if the Drools core classes used, KieModuleMetaInfo and TypeMetaInfo implements Serializable
+         * */
+        Path tmp = Files.createDirectories(Paths.get(tmpRoot.toString(),
+                                                     "dummy"));
+        TestUtil.copyTree(Paths.get("src/test/projects/kjar-2-single-resources"),
+                          tmp);
+
+        NIOMavenCompiler compiler = NIOMavenCompilerFactory.getCompiler(mavenRepo,
+                                                                        Decorator.NONE);
+        Assert.assertTrue(compiler.isValid());
+
+        NIOWorkspaceCompilationInfo info = new NIOWorkspaceCompilationInfo(tmp,
+                                                                           compiler);
+
+
+        NIOCompilationRequest req = new NIODefaultCompilationRequest(info,
+                                                                     new String[]{MavenArgs.INSTALL},
                                                                      new HashMap<>(),
                                                                      Optional.empty());
         CompilationResponse res = compiler.compileSync(req);
@@ -170,6 +219,7 @@ public class NioKieMetadataTest {
         KieModule kModule = kieModuleOptional.get();
 
         Assert.assertTrue(res.getProjectDependencies().isPresent());
+        Assert.assertTrue(res.getProjectDependencies().get().size()==5);
         KieModuleMetaData kieModuleMetaData = new KieModuleMetaDataImpl((InternalKieModule) kModule,
                                                                         res.getProjectDependencies().get());
 

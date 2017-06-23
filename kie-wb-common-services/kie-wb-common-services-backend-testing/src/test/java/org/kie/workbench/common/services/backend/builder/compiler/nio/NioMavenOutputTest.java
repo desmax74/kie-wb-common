@@ -9,13 +9,15 @@ import java.util.Optional;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.kie.workbench.common.services.backend.builder.compiler.CompilationResponse;
+import org.kie.workbench.common.services.backend.compiler.CompilationResponse;
 import org.kie.workbench.common.services.backend.builder.compiler.TestUtil;
-import org.kie.workbench.common.services.backend.builder.compiler.configuration.Decorator;
-import org.kie.workbench.common.services.backend.builder.compiler.configuration.MavenArgs;
-import org.kie.workbench.common.services.backend.builder.compiler.nio.impl.NIODefaultCompilationRequest;
-import org.kie.workbench.common.services.backend.builder.compiler.nio.impl.NIOMavenCompilerFactory;
-import org.kie.workbench.common.services.backend.builder.compiler.nio.impl.NIOWorkspaceCompilationInfo;
+import org.kie.workbench.common.services.backend.compiler.configuration.Decorator;
+import org.kie.workbench.common.services.backend.compiler.configuration.MavenArgs;
+import org.kie.workbench.common.services.backend.compiler.nio.NIOCompilationRequest;
+import org.kie.workbench.common.services.backend.compiler.nio.NIOMavenCompiler;
+import org.kie.workbench.common.services.backend.compiler.nio.impl.NIODefaultCompilationRequest;
+import org.kie.workbench.common.services.backend.compiler.nio.impl.NIOMavenCompilerFactory;
+import org.kie.workbench.common.services.backend.compiler.nio.impl.NIOWorkspaceCompilationInfo;
 
 public class NioMavenOutputTest {
 

@@ -31,16 +31,16 @@ import org.junit.Test;
 import org.kie.api.builder.KieModule;
 import org.kie.scanner.KieModuleMetaData;
 import org.kie.scanner.KieModuleMetaDataImpl;
-import org.kie.workbench.common.services.backend.builder.compiler.CompilationResponse;
+import org.kie.workbench.common.services.backend.compiler.CompilationResponse;
 import org.kie.workbench.common.services.backend.builder.compiler.TestUtil;
-import org.kie.workbench.common.services.backend.builder.compiler.configuration.Decorator;
-import org.kie.workbench.common.services.backend.builder.compiler.configuration.MavenArgs;
-import org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.InternalNioImplCompilationRequest;
-import org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.InternalNioImplMavenCompiler;
+import org.kie.workbench.common.services.backend.compiler.configuration.Decorator;
+import org.kie.workbench.common.services.backend.compiler.configuration.MavenArgs;
+import org.kie.workbench.common.services.backend.compiler.internalNioImpl.InternalNioImplCompilationRequest;
+import org.kie.workbench.common.services.backend.compiler.internalNioImpl.InternalNioImplMavenCompiler;
 import org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.InternalNioImplTestUtil;
-import org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.impl.InternalNioImplDefaultCompilationRequest;
-import org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.impl.InternalNioImplMavenCompilerFactory;
-import org.kie.workbench.common.services.backend.builder.compiler.internalNioImpl.impl.InternalNioImplWorkspaceCompilationInfo;
+import org.kie.workbench.common.services.backend.compiler.internalNioImpl.impl.InternalNioImplDefaultCompilationRequest;
+import org.kie.workbench.common.services.backend.compiler.internalNioImpl.impl.InternalNioImplMavenCompilerFactory;
+import org.kie.workbench.common.services.backend.compiler.internalNioImpl.impl.InternalNioImplWorkspaceCompilationInfo;
 import org.uberfire.java.nio.file.Files;
 import org.uberfire.java.nio.file.Path;
 import org.uberfire.java.nio.file.Paths;
@@ -93,7 +93,7 @@ public class InternalNioImplKieMetadataTest {
         InternalNioImplWorkspaceCompilationInfo info = new InternalNioImplWorkspaceCompilationInfo(tmp,
                                                                                                    compiler);
         InternalNioImplCompilationRequest req = new InternalNioImplDefaultCompilationRequest(info,
-                                                                                             new String[]{MavenArgs.COMPILE},
+                                                                                             new String[]{MavenArgs.INSTALL},
                                                                                              new HashMap<>(),
                                                                                              Optional.empty());
         CompilationResponse res = compiler.compileSync(req);
@@ -120,6 +120,7 @@ public class InternalNioImplKieMetadataTest {
         Assert.assertTrue(kieModuleOptional.isPresent());
 
         Assert.assertTrue(res.getProjectDependencies().isPresent());
+        Assert.assertTrue(res.getProjectDependencies().get().size() == 5);
         KieModule kModule = kieModuleOptional.get();
 
         KieModuleMetaData kieModuleMetaData = new KieModuleMetaDataImpl((InternalKieModule) kModule,
@@ -171,6 +172,56 @@ public class InternalNioImplKieMetadataTest {
         KieModule kModule = kieModuleOptional.get();
 
         Assert.assertTrue(res.getProjectDependencies().isPresent());
+        Assert.assertTrue(res.getProjectDependencies().get().size() == 4);
+
+        //comment if you want read the log file after the test run
+        TestUtil.rm(tmpRoot.toFile());
+    }
+
+    @Test
+    public void compileAndloadKieJarSingleMetadataWithPackage() throws Exception {
+        /**
+         * If the test fail check if the Drools core classes used, KieModuleMetaInfo and TypeMetaInfo implements Serializable
+         * */
+        java.nio.file.Path tmpRoot = java.nio.file.Files.createTempDirectory("repo");
+        java.nio.file.Path tmp = java.nio.file.Files.createDirectories(java.nio.file.Paths.get(tmpRoot.toString(),
+                                                                                               "dummy"));
+        TestUtil.copyTree(java.nio.file.Paths.get("src/test/projects/kjar-2-single-resources"),
+                          tmp);
+
+        InternalNioImplMavenCompiler compiler = InternalNioImplMavenCompilerFactory.getCompiler(mavenRepo,
+                                                                                                Decorator.NONE);
+        Assert.assertTrue(compiler.isValid());
+
+        InternalNioImplWorkspaceCompilationInfo info = new InternalNioImplWorkspaceCompilationInfo(Paths.get(tmp.toUri()),
+                                                                                                   compiler);
+        InternalNioImplCompilationRequest req = new InternalNioImplDefaultCompilationRequest(info,
+                                                                                             new String[]{MavenArgs.INSTALL},
+                                                                                             new HashMap<>(),
+                                                                                             Optional.empty());
+        CompilationResponse res = compiler.compileSync(req);
+        if (res.getErrorMessage().isPresent()) {
+            System.out.println(res.getErrorMessage().get());
+        }
+
+        Assert.assertTrue(res.isSuccessful());
+
+        Optional<KieModuleMetaInfo> metaDataOptional = res.getKieModuleMetaInfo();
+        Assert.assertTrue(metaDataOptional.isPresent());
+        KieModuleMetaInfo kieModuleMetaInfo = metaDataOptional.get();
+        Assert.assertNotNull(kieModuleMetaInfo);
+
+        Map<String, Set<String>> rulesBP = kieModuleMetaInfo.getRulesByPackage();
+        Assert.assertEquals(rulesBP.size(),
+                            1);
+
+        Optional<KieModule> kieModuleOptional = res.getKieModule();
+        Assert.assertTrue(kieModuleOptional.isPresent());
+        KieModule kModule = kieModuleOptional.get();
+
+        Assert.assertTrue(res.getProjectDependencies().isPresent());
+        Assert.assertTrue(res.getProjectDependencies().get().size() == 5);
+
         KieModuleMetaData kieModuleMetaData = new KieModuleMetaDataImpl((InternalKieModule) kModule,
                                                                         res.getProjectDependencies().get());
 
