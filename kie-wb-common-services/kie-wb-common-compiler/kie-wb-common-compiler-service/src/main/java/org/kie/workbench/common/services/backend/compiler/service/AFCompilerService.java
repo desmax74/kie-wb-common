@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 import org.kie.workbench.common.services.backend.compiler.impl.kie.KieCompilationResponse;
+import org.kie.workbench.common.services.backend.compiler.service.executors.CompilerLogLevel;
 import org.uberfire.java.nio.file.Path;
 
 /**
@@ -34,14 +35,14 @@ public interface AFCompilerService {
      * a new CompilationRequest will be created at every invocation, useful if the project folder and maven repo changes
      * between compilation Requests
      */
-    CompletableFuture<KieCompilationResponse> build(Path projectPath, String mavenRepo);
+    CompletableFuture<KieCompilationResponse> build(Path projectPath, String mavenRepo, CompilerLogLevel logLevel);
 
     /**
      * Run a mvn compile on the projectPath with mavenRepo specified, overriding the content contained in the Map, maven output provided in the CompilationResponse
      * a new CompilationRequest will be created at every invocation, useful if the project folder and maven repo changes
      * between compilation Requests
      */
-    CompletableFuture<KieCompilationResponse> build(Path projectPath, String mavenRepo, Map<Path, InputStream> override);
+    CompletableFuture<KieCompilationResponse> build(Path projectPath, String mavenRepo, Map<Path, InputStream> override, CompilerLogLevel logLevel);
 
     /**
      * Run a mvn compile on the projectPath with mavenRepo specified, maven output provided in the CompilationResponse
@@ -49,14 +50,14 @@ public interface AFCompilerService {
      * between compilation Requests
      */
     CompletableFuture<KieCompilationResponse> build(Path projectPath, String mavenRepo,
-                                                    Boolean skipPrjDependenciesCreationList);
+                                                    Boolean skipPrjDependenciesCreationList, CompilerLogLevel logLevel);
 
     /**
      * Run a mvn install on the projectPath, maven output provided in the CompilationResponse
      * a new CompilationRequest will be created at every invocation, useful if the project folder and maven repo changes
      * between compilation Requests
      */
-    CompletableFuture<KieCompilationResponse> buildAndInstall(Path projectPath, String mavenRepo);
+    CompletableFuture<KieCompilationResponse> buildAndInstall(Path projectPath, String mavenRepo, CompilerLogLevel logLevel);
 
     /**
      * Run a mvn install on the projectPath, maven output provided in the CompilationResponse
@@ -64,7 +65,7 @@ public interface AFCompilerService {
      * between compilation Requests
      */
     CompletableFuture<KieCompilationResponse> buildAndInstall(Path projectPath, String mavenRepo,
-                                                              Boolean skipPrjDependenciesCreationList);
+                                                              Boolean skipPrjDependenciesCreationList, CompilerLogLevel logLevel);
 
     /**
      * Run a mvn {args}, maven output provided in the CompilationResponse
@@ -89,28 +90,28 @@ public interface AFCompilerService {
      * a new CompilationRequest will be created at every invocation, useful if the project folder and maven repo changes
      * between compilation Requests
      */
-    CompletableFuture<KieCompilationResponse> build(String projectPath, String mavenRepo);
+    CompletableFuture<KieCompilationResponse> build(String projectPath, String mavenRepo, CompilerLogLevel logLevel);
 
     /**
      * When a HTTP call asks a build this method run a mvn compile on the projectPath with mavenRepo specified, maven output provided in the CompilationResponse
      * a new CompilationRequest will be created at every invocation, useful if the project folder and maven repo changes
      * between compilation Requests
      */
-    CompletableFuture<KieCompilationResponse> build(String projectPath, String mavenRepo, Boolean skipPrjDependenciesCreationList);
+    CompletableFuture<KieCompilationResponse> build(String projectPath, String mavenRepo, Boolean skipPrjDependenciesCreationList, CompilerLogLevel logLevel);
 
     /**
      * When a HTTP call asks a build this method run a mvn install on the projectPath, maven output provided in the CompilationResponse
      * a new CompilationRequest will be created at every invocation, useful if the project folder and maven repo changes
      * between compilation Requests
      */
-    CompletableFuture<KieCompilationResponse> buildAndInstall(String projectPath, String mavenRepo);
+    CompletableFuture<KieCompilationResponse> buildAndInstall(String projectPath, String mavenRepo, CompilerLogLevel logLevel);
 
     /**
      * When a HTTP call asks a build this method run a mvn install on the projectPath, maven output provided in the CompilationResponse
      * a new CompilationRequest will be created at every invocation, useful if the project folder and maven repo changes
      * between compilation Requests
      */
-    CompletableFuture<KieCompilationResponse> buildAndInstall(String projectPath, String mavenRepo, Boolean skipPrjDependenciesCreationList);
+    CompletableFuture<KieCompilationResponse> buildAndInstall(String projectPath, String mavenRepo, Boolean skipPrjDependenciesCreationList, CompilerLogLevel logLevel);
 
     /**
      * When a HTTP call asks a build this method run a mvn {args}, maven output provided in the CompilationResponse

@@ -25,6 +25,7 @@ import org.guvnor.common.services.project.model.Module;
 import org.guvnor.common.services.project.service.DeploymentMode;
 import org.jboss.errai.bus.server.annotations.Service;
 import org.kie.workbench.common.services.backend.builder.cache.ModuleCache;
+import org.kie.workbench.common.services.backend.compiler.service.executors.CompilerLogLevel;
 
 @Service
 @ApplicationScoped
@@ -44,15 +45,15 @@ public class BuildServiceImpl
 
     @Override
     public BuildResults build(final Module module) {
-        return buildInternal(module);
+        return buildInternal(module, CompilerLogLevel.STANDARD);
     }
 
     private BuildResults buildAndDeployInternal(final Module module) {
-        return moduleCache.getOrCreateEntry(module).buildAndInstall();
+        return moduleCache.getOrCreateEntry(module).buildAndInstall(CompilerLogLevel.STANDARD);
     }
 
-    private BuildResults buildInternal(final Module module) {
-        return moduleCache.getOrCreateEntry(module).build();
+    private BuildResults buildInternal(final Module module, CompilerLogLevel logLevel) {
+        return moduleCache.getOrCreateEntry(module).build(logLevel);
     }
 
     @Override

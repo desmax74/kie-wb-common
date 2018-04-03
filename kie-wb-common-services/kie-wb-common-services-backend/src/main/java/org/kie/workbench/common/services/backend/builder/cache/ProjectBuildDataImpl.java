@@ -55,6 +55,7 @@ import org.kie.workbench.common.services.backend.compiler.impl.classloader.Compi
 import org.kie.workbench.common.services.backend.compiler.impl.classloader.MapClassLoader;
 import org.kie.workbench.common.services.backend.compiler.impl.kie.KieCompilationResponse;
 import org.kie.workbench.common.services.backend.compiler.service.AFCompilerService;
+import org.kie.workbench.common.services.backend.compiler.service.executors.CompilerLogLevel;
 import org.kie.workbench.common.services.backend.file.EnumerationsFileFilter;
 import org.kie.workbench.common.services.backend.file.GlobalsFileFilter;
 import org.kie.workbench.common.services.datamodel.backend.server.builder.packages.PackageDataModelOracleBuilder;
@@ -151,10 +152,10 @@ public class ProjectBuildDataImpl implements ProjectBuildData {
 
     @Override
     public List<BuildMessage> validate(final Path resourcePath,
-                                       final InputStream inputStream) {
+                                       final InputStream inputStream, CompilerLogLevel logLevel) {
         lock.lock();
         try {
-            final KieCompilationResponse res = compilerService.build(convert(module.getRootPath()), mavenRepo, Collections.singletonMap(resourcePath, inputStream)).get();
+            final KieCompilationResponse res = compilerService.build(convert(module.getRootPath()), mavenRepo, Collections.singletonMap(resourcePath, inputStream), logLevel).get();
 
             final BuildResults br = convertIntoBuildResults(res.getMavenOutput(),
                                                             convert(module.getRootPath()),
@@ -169,10 +170,10 @@ public class ProjectBuildDataImpl implements ProjectBuildData {
     }
 
     @Override
-    public BuildResults build() {
+    public BuildResults build(CompilerLogLevel logLevel) {
         lock.lock();
         try {
-            final KieCompilationResponse res = getCompilationResponse();
+            final KieCompilationResponse res = getCompilationResponse(logLevel);
             final BuildResults br = convertIntoBuildResults(res.getMavenOutput(),
                                                             convert(module.getRootPath()),
                                                             res.getWorkingDir().get().getParent().toString());
@@ -184,10 +185,10 @@ public class ProjectBuildDataImpl implements ProjectBuildData {
     }
 
     @Override
-    public BuildResults buildAndInstall() {
+    public BuildResults buildAndInstall(CompilerLogLevel logLevel) {
         lock.lock();
         try {
-            final KieCompilationResponse res = compilerService.buildAndInstall(convert(module.getRootPath()), mavenRepo).get();
+            final KieCompilationResponse res = compilerService.buildAndInstall(convert(module.getRootPath()), mavenRepo, logLevel).get();
 
             return convertIntoBuildResults(res.getMavenOutput(),
                                            convert(module.getRootPath()),
@@ -227,7 +228,7 @@ public class ProjectBuildDataImpl implements ProjectBuildData {
     private MapClassLoader buildClassLoader() {
         lock.lock();
         try {
-            final KieCompilationResponse res = getCompilationResponse();
+            final KieCompilationResponse res = getCompilationResponse(CompilerLogLevel.STANDARD);
 
             if (res.isSuccessful()) {
 
@@ -410,10 +411,10 @@ public class ProjectBuildDataImpl implements ProjectBuildData {
         return packages;
     }
 
-    private KieCompilationResponse getCompilationResponse() {
+    private KieCompilationResponse getCompilationResponse(CompilerLogLevel logLevel) {
         if (response == null || isReBuild.get()) {
             try {
-                response = compilerService.build(convert(module.getRootPath()), mavenRepo).get();
+                response = compilerService.build(convert(module.getRootPath()), mavenRepo, logLevel).get();
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }

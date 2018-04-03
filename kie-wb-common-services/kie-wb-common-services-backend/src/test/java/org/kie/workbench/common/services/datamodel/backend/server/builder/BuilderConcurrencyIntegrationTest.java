@@ -27,6 +27,7 @@ import javax.inject.Inject;
 import org.guvnor.common.services.project.builder.model.BuildResults;
 import org.junit.Test;
 import org.kie.workbench.common.services.backend.builder.cache.ModuleCache;
+import org.kie.workbench.common.services.backend.compiler.service.executors.CompilerLogLevel;
 import org.kie.workbench.common.services.shared.project.KieModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -112,7 +113,7 @@ public class BuilderConcurrencyIntegrationTest extends AbstractWeldBuilderIntegr
                         public void run() {
                             try {
                                 logger.debug("Thread " + Thread.currentThread().getName() + " has started: LRUBuilderCache.assertBuilder( module ).getKieModuleIgnoringErrors();");
-                                moduleCache.getOrCreateEntry(module).build();
+                                moduleCache.getOrCreateEntry(module).build(CompilerLogLevel.STANDARD);
                                 logger.debug("Thread " + Thread.currentThread().getName() + " has completed.");
                             } catch (Throwable e) {
                                 result.setFailed(true);

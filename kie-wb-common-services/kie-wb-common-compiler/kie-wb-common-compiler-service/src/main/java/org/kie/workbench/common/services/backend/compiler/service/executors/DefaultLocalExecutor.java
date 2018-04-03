@@ -89,56 +89,58 @@ public class DefaultLocalExecutor implements CompilerExecutor {
     }
 
     private CompletableFuture<KieCompilationResponse> internalBuild(Path projectPath, String mavenRepo,
-                                                                    boolean skipProjectDepCreation, String goal, Map<Path, InputStream> override) {
+                                                                    boolean skipProjectDepCreation, String[] goals, Map<Path, InputStream> override) {
         WorkspaceCompilationInfo info = new WorkspaceCompilationInfo(projectPath);
         AFCompiler compiler = getCompiler(projectPath);
         CompilationRequest req = new DefaultCompilationRequest(mavenRepo,
                                                                info,
-                                                               new String[]{goal},
+                                                               goals,
                                                                skipProjectDepCreation);
         return CompletableFuture.supplyAsync(() -> ((KieCompilationResponse) compiler.compile(req, override)), executor);
     }
 
+    private String[] getArgsWithDebug(CompilerLogLevel logLevel, String goal){
+        return (logLevel.name().equals(CompilerLogLevel.DEBUG) ? new String[]{goal, MavenCLIArgs.DEBUG} : new String[]{goal});
+    }
+
     /************************************ Suitable for the Local Builds ***********************************************/
     @Override
-    public CompletableFuture<KieCompilationResponse> build(Path projectPath, String mavenRepo) {
-        return internalBuild(projectPath, mavenRepo, Boolean.FALSE, MavenCLIArgs.COMPILE);
+    public CompletableFuture<KieCompilationResponse> build(Path projectPath, String mavenRepo, CompilerLogLevel logLevel) {
+        return internalBuild(projectPath, mavenRepo, Boolean.FALSE, getArgsWithDebug(logLevel, MavenCLIArgs.COMPILE));
     }
 
     @Override
-    public CompletableFuture<KieCompilationResponse> build(Path projectPath, String mavenRepo, Map<Path, InputStream> override) {
-        return internalBuild(projectPath, mavenRepo, Boolean.FALSE, MavenCLIArgs.COMPILE, override);
+    public CompletableFuture<KieCompilationResponse> build(Path projectPath, String mavenRepo, Map<Path, InputStream> override, CompilerLogLevel logLevel) {
+        return internalBuild(projectPath, mavenRepo, Boolean.FALSE, getArgsWithDebug(logLevel, MavenCLIArgs.COMPILE), override);
     }
 
     @Override
     public CompletableFuture<KieCompilationResponse> build(Path projectPath, String mavenRepo,
-                                                           Boolean skipPrjDependenciesCreationList) {
-        return internalBuild(projectPath, mavenRepo, skipPrjDependenciesCreationList, MavenCLIArgs.COMPILE);
+                                                           Boolean skipPrjDependenciesCreationList, CompilerLogLevel logLevel) {
+        return internalBuild(projectPath, mavenRepo, skipPrjDependenciesCreationList, getArgsWithDebug(logLevel, MavenCLIArgs.COMPILE));
     }
 
     @Override
-    public CompletableFuture<KieCompilationResponse> buildAndInstall(Path projectPath, String mavenRepo) {
-        return internalBuild(projectPath, mavenRepo, Boolean.FALSE, MavenCLIArgs.INSTALL);
+    public CompletableFuture<KieCompilationResponse> buildAndInstall(Path projectPath, String mavenRepo, CompilerLogLevel logLevel) {
+        return internalBuild(projectPath, mavenRepo, Boolean.FALSE, getArgsWithDebug(logLevel, MavenCLIArgs.INSTALL));
     }
 
     @Override
     public CompletableFuture<KieCompilationResponse> buildAndInstall(Path projectPath, String mavenRepo,
-                                                                     Boolean skipPrjDependenciesCreationList) {
-        return internalBuild(projectPath, mavenRepo, skipPrjDependenciesCreationList, MavenCLIArgs.INSTALL);
+                                                                     Boolean skipPrjDependenciesCreationList, CompilerLogLevel logLevel) {
+        return internalBuild(projectPath, mavenRepo, skipPrjDependenciesCreationList, getArgsWithDebug(logLevel, MavenCLIArgs.INSTALL));
     }
 
     @Override
     public CompletableFuture<KieCompilationResponse> buildSpecialized(Path projectPath, String mavenRepo,
                                                                       String[] args) {
-        return internalBuild(projectPath, mavenRepo, Boolean.FALSE,
-                             args);
+        return internalBuild(projectPath, mavenRepo, Boolean.FALSE, args);
     }
 
     @Override
     public CompletableFuture<KieCompilationResponse> buildSpecialized(Path projectPath, String mavenRepo,
                                                                       String[] args,
                                                                       Boolean skipPrjDependenciesCreationList) {
-        return internalBuild(projectPath, mavenRepo, skipPrjDependenciesCreationList,
-                             args);
+        return internalBuild(projectPath, mavenRepo, skipPrjDependenciesCreationList, args);
     }
 }

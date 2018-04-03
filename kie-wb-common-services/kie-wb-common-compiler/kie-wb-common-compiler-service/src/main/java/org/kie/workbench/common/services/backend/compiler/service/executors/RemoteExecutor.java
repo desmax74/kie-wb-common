@@ -32,7 +32,7 @@ public interface RemoteExecutor {
      * a new CompilationRequest will be created at every invocation, useful if the project folder and maven repo changes
      * between compilation Requests
      */
-    CompletableFuture<KieCompilationResponse> build(String projectPath, String mavenRepo);
+    CompletableFuture<KieCompilationResponse> build(String projectPath, String mavenRepo, CompilerLogLevel logLevel);
 
 
     /**
@@ -40,7 +40,7 @@ public interface RemoteExecutor {
      * a new CompilationRequest will be created at every invocation, useful if the project folder and maven repo changes
      * between compilation Requests
      */
-    CompletableFuture<KieCompilationResponse> build(String projectPath, String mavenRepo, Boolean skipPrjDependenciesCreationList);
+    CompletableFuture<KieCompilationResponse> build(String projectPath, String mavenRepo, Boolean skipPrjDependenciesCreationList, CompilerLogLevel logLevel);
 
 
     /**
@@ -48,7 +48,7 @@ public interface RemoteExecutor {
      * a new CompilationRequest will be created at every invocation, useful if the project folder and maven repo changes
      * between compilation Requests
      */
-    CompletableFuture<KieCompilationResponse> buildAndInstall(String projectPath, String mavenRepo);
+    CompletableFuture<KieCompilationResponse> buildAndInstall(String projectPath, String mavenRepo, CompilerLogLevel logLevel);
 
 
     /**
@@ -56,7 +56,7 @@ public interface RemoteExecutor {
      * a new CompilationRequest will be created at every invocation, useful if the project folder and maven repo changes
      * between compilation Requests
      */
-    CompletableFuture<KieCompilationResponse> buildAndInstall(String projectPath, String mavenRepo, Boolean skipPrjDependenciesCreationList);
+    CompletableFuture<KieCompilationResponse> buildAndInstall(String projectPath, String mavenRepo, Boolean skipPrjDependenciesCreationList, CompilerLogLevel logLevel);
 
 
     /**

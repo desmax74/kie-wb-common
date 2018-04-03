@@ -43,7 +43,7 @@ public class DefaultLocalExecutorTest extends BaseCompilerTest {
 
         DefaultLocalExecutor executor = new DefaultLocalExecutor(executorService);
         CompletableFuture<KieCompilationResponse> futureRes = executor.build(tmpRoot,
-                                                                             mavenRepo.toString());
+                                                                             mavenRepo.toString(), CompilerLogLevel.STANDARD);
         KieCompilationResponse res = futureRes.get();
         assertThat(res.isSuccessful()).isFalse();
     }
@@ -53,7 +53,7 @@ public class DefaultLocalExecutorTest extends BaseCompilerTest {
         DefaultLocalExecutor executor = new DefaultLocalExecutor(executorService);
         CompletableFuture<KieCompilationResponse> futureRes = executor.build(tmpRoot,
                                                                              mavenRepo.toString(),
-                                                                             Boolean.FALSE);
+                                                                             CompilerLogLevel.STANDARD);
         KieCompilationResponse res = futureRes.get();
         assertThat(res.isSuccessful()).isFalse();
         assertThat(res.getDependencies().isEmpty()).isTrue();
@@ -63,7 +63,7 @@ public class DefaultLocalExecutorTest extends BaseCompilerTest {
     @Test
     public void buildAndInstallNonExistentProject() throws Exception{
         DefaultLocalExecutor executor = new DefaultLocalExecutor(executorService);
-        CompletableFuture<KieCompilationResponse> futureRes = executor.buildAndInstall(tmpRoot, mavenRepo.toString());
+        CompletableFuture<KieCompilationResponse> futureRes = executor.buildAndInstall(tmpRoot, mavenRepo.toString(), CompilerLogLevel.STANDARD);
         KieCompilationResponse res = futureRes.get();
         assertThat(res.isSuccessful()).isFalse();
     }
@@ -73,7 +73,7 @@ public class DefaultLocalExecutorTest extends BaseCompilerTest {
         DefaultLocalExecutor executor = new DefaultLocalExecutor(executorService);
         CompletableFuture<KieCompilationResponse> futureRes = executor.buildAndInstall(tmpRoot,
                                                                                        mavenRepo.toString(),
-                                                                                       Boolean.FALSE);
+                                                                                       CompilerLogLevel.STANDARD);
         KieCompilationResponse res = futureRes.get();
         assertThat(res.isSuccessful()).isFalse();
         assertThat(res.getDependencies().isEmpty()).isTrue();
@@ -84,7 +84,7 @@ public class DefaultLocalExecutorTest extends BaseCompilerTest {
     public void buildExistentProject() throws Exception{
         DefaultLocalExecutor executor = new DefaultLocalExecutor(executorService);
         CompletableFuture<KieCompilationResponse> futureRes = executor.build(Paths.get(tmpRoot.toAbsolutePath()+"/dummy"),
-                                                                             mavenRepo.toString());
+                                                                             mavenRepo.toString(), CompilerLogLevel.STANDARD);
         KieCompilationResponse res = futureRes.get();
         assertThat(res.isSuccessful()).isTrue();
     }
@@ -95,7 +95,7 @@ public class DefaultLocalExecutorTest extends BaseCompilerTest {
     public void buildAndInstallExistentProject() throws Exception{
         DefaultLocalExecutor executor = new DefaultLocalExecutor(executorService);
         CompletableFuture<KieCompilationResponse> futureRes = executor.buildAndInstall(Paths.get(tmpRoot.toAbsolutePath()+"/dummy"),
-                                                                                       mavenRepo.toString());
+                                                                                       mavenRepo.toString(), CompilerLogLevel.STANDARD);
         KieCompilationResponse res = futureRes.get();
         assertThat(res.isSuccessful()).isTrue();
         assertThat(res.getDependencies().isEmpty()).isFalse();
@@ -107,7 +107,7 @@ public class DefaultLocalExecutorTest extends BaseCompilerTest {
         DefaultLocalExecutor executor = new DefaultLocalExecutor(executorService);
         CompletableFuture<KieCompilationResponse> futureRes = executor.buildAndInstall(Paths.get(tmpRoot.toAbsolutePath()+"/dummy"),
                                                                                        mavenRepo.toString(),
-                                                                                       Boolean.TRUE);
+                                                                                       Boolean.TRUE, CompilerLogLevel.STANDARD);
         KieCompilationResponse res = futureRes.get();
         assertThat(res.isSuccessful()).isTrue();
         assertThat(res.getDependencies().isEmpty()).isTrue();
@@ -160,7 +160,7 @@ public class DefaultLocalExecutorTest extends BaseCompilerTest {
 
         DefaultLocalExecutor executor = new DefaultLocalExecutor(executorService);
         CompletableFuture<KieCompilationResponse> futureRes = executor.build(tmpRoot,
-                                                                             mavenRepo.toString(), override);
+                                                                             mavenRepo.toString(), override, CompilerLogLevel.STANDARD);
         KieCompilationResponse res = futureRes.get();
         assertThat(res.isSuccessful()).isFalse();
     }
@@ -178,7 +178,7 @@ public class DefaultLocalExecutorTest extends BaseCompilerTest {
         DefaultLocalExecutor executor = new DefaultLocalExecutor(executorService);
         CompletableFuture<KieCompilationResponse> futureRes = executor.build(Paths.get(tmpRoot.toAbsolutePath()+"/dummy"),
                                                                              mavenRepo.toString(),
-                                                                             override);
+                                                                             override, CompilerLogLevel.STANDARD);
         KieCompilationResponse res = futureRes.get();
         assertThat(res.isSuccessful()).isTrue();
     }

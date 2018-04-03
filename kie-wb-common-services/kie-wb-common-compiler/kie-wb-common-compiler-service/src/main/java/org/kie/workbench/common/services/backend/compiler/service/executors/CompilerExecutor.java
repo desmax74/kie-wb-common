@@ -35,14 +35,14 @@ public interface CompilerExecutor {
      * a new CompilationRequest will be created at every invocation, useful if the project folder and maven repo changes
      * between compilation Requests
      */
-    CompletableFuture<KieCompilationResponse> build(Path projectPath, String mavenRepo);
+    CompletableFuture<KieCompilationResponse> build(Path projectPath, String mavenRepo, CompilerLogLevel logLevel);
 
     /**
      * Run a mvn compile on the projectPath with mavenRepo specified changing the content with the override contents, maven output provided in the CompilationResponse
      * a new CompilationRequest will be created at every invocation, useful if the project folder and maven repo changes
      * between compilation Requests
      */
-    CompletableFuture<KieCompilationResponse> build(Path projectPath, String mavenRepo, Map<Path, InputStream> override);
+    CompletableFuture<KieCompilationResponse> build(Path projectPath, String mavenRepo, Map<Path, InputStream> override, CompilerLogLevel logLevel);
 
 
     /**
@@ -51,7 +51,7 @@ public interface CompilerExecutor {
      * between compilation Requests
      */
     CompletableFuture<KieCompilationResponse> build(Path projectPath, String mavenRepo,
-                                                    Boolean skipPrjDependenciesCreationList);
+                                                    Boolean skipPrjDependenciesCreationList, CompilerLogLevel logLevel);
 
 
     /**
@@ -59,7 +59,7 @@ public interface CompilerExecutor {
      * a new CompilationRequest will be created at every invocation, useful if the project folder and maven repo changes
      * between compilation Requests
      */
-    CompletableFuture<KieCompilationResponse> buildAndInstall(Path projectPath, String mavenRepo);
+    CompletableFuture<KieCompilationResponse> buildAndInstall(Path projectPath, String mavenRepo, CompilerLogLevel logLevel);
 
 
     /**
@@ -68,7 +68,7 @@ public interface CompilerExecutor {
      * between compilation Requests
      */
     CompletableFuture<KieCompilationResponse> buildAndInstall(Path projectPath, String mavenRepo,
-                                                              Boolean skipPrjDependenciesCreationList);
+                                                              Boolean skipPrjDependenciesCreationList, CompilerLogLevel logLevel);
 
 
     /**

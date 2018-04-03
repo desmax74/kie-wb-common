@@ -28,16 +28,17 @@ import org.guvnor.common.services.shared.builder.model.BuildMessage;
 import org.kie.api.runtime.KieContainer;
 import org.kie.soup.project.datamodel.oracle.ModuleDataModelOracle;
 import org.kie.soup.project.datamodel.oracle.PackageDataModelOracle;
+import org.kie.workbench.common.services.backend.compiler.service.executors.CompilerLogLevel;
 import org.uberfire.java.nio.file.Path;
 
 public interface ProjectBuildData {
 
     List<BuildMessage> validate(final Path resourcePath,
-                                final InputStream inputStream);
+                                final InputStream inputStream, CompilerLogLevel logLevel);
 
-    BuildResults build();
+    BuildResults build(CompilerLogLevel logLevel);
 
-    BuildResults buildAndInstall();
+    BuildResults buildAndInstall(CompilerLogLevel logLevel);
 
     boolean isBuilt();
 

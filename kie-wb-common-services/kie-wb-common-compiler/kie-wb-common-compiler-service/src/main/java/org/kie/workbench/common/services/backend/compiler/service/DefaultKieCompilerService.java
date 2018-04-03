@@ -22,7 +22,9 @@ import java.util.concurrent.Executors;
 
 import javax.enterprise.context.ApplicationScoped;
 
+import org.kie.workbench.common.services.backend.compiler.configuration.MavenCLIArgs;
 import org.kie.workbench.common.services.backend.compiler.impl.kie.KieCompilationResponse;
+import org.kie.workbench.common.services.backend.compiler.service.executors.CompilerLogLevel;
 import org.kie.workbench.common.services.backend.compiler.service.executors.DefaultLocalExecutor;
 import org.kie.workbench.common.services.backend.compiler.service.executors.DefaultRemoteExecutor;
 import org.uberfire.java.nio.file.Path;
@@ -40,33 +42,35 @@ public class DefaultKieCompilerService implements AFCompilerService {
         remoteExecutor = new DefaultRemoteExecutor(Executors.newCachedThreadPool());
     }
 
-
+    private String[] getArgsWithDebug(CompilerLogLevel logLevel, String goal){
+        return (logLevel.name().equals(CompilerLogLevel.DEBUG) ? new String[]{goal, MavenCLIArgs.DEBUG} : new String[]{goal});
+    }
 
     /************************************ Suitable for the Local Builds ***********************************************/
 
     @Override
-    public CompletableFuture<KieCompilationResponse> build(Path projectPath, String mavenRepo) {
-        return localExecutor.build(projectPath, mavenRepo);
+    public CompletableFuture<KieCompilationResponse> build(Path projectPath, String mavenRepo, CompilerLogLevel logLevel) {
+        return localExecutor.build(projectPath, mavenRepo, logLevel);
     }
 
     @Override
-    public CompletableFuture<KieCompilationResponse> build(Path projectPath, String mavenRepo, Map<Path, InputStream> override) {
-        return localExecutor.build(projectPath, mavenRepo, override);
+    public CompletableFuture<KieCompilationResponse> build(Path projectPath, String mavenRepo, Map<Path, InputStream> override, CompilerLogLevel logLevel) {
+        return localExecutor.build(projectPath, mavenRepo, override, logLevel);
     }
 
     @Override
-    public CompletableFuture<KieCompilationResponse> build(Path projectPath, String mavenRepo, Boolean skipPrjDependenciesCreationList) {
-        return localExecutor.build(projectPath, mavenRepo, skipPrjDependenciesCreationList);
+    public CompletableFuture<KieCompilationResponse> build(Path projectPath, String mavenRepo, Boolean skipPrjDependenciesCreationList, CompilerLogLevel logLevel) {
+        return localExecutor.build(projectPath, mavenRepo, skipPrjDependenciesCreationList, logLevel);
     }
 
     @Override
-    public CompletableFuture<KieCompilationResponse> buildAndInstall(Path projectPath, String mavenRepo) {
-        return localExecutor.buildAndInstall(projectPath, mavenRepo);
+    public CompletableFuture<KieCompilationResponse> buildAndInstall(Path projectPath, String mavenRepo, CompilerLogLevel logLevel) {
+        return localExecutor.buildAndInstall(projectPath, mavenRepo, logLevel);
     }
 
     @Override
-    public CompletableFuture<KieCompilationResponse> buildAndInstall(Path projectPath, String mavenRepo, Boolean skipPrjDependenciesCreationList) {
-        return localExecutor.buildAndInstall(projectPath, mavenRepo, skipPrjDependenciesCreationList);
+    public CompletableFuture<KieCompilationResponse> buildAndInstall(Path projectPath, String mavenRepo, Boolean skipPrjDependenciesCreationList, CompilerLogLevel logLevel) {
+        return localExecutor.buildAndInstall(projectPath, mavenRepo, skipPrjDependenciesCreationList, logLevel);
     }
 
     @Override
@@ -82,24 +86,24 @@ public class DefaultKieCompilerService implements AFCompilerService {
     /************************************ Suitable for the REST Builds ************************************************/
 
     @Override
-    public CompletableFuture<KieCompilationResponse> build(String projectPath, String mavenRepo, Boolean skipPrjDependenciesCreationList) {
-        return remoteExecutor.build(projectPath, mavenRepo, skipPrjDependenciesCreationList);
+    public CompletableFuture<KieCompilationResponse> build(String projectPath, String mavenRepo, Boolean skipPrjDependenciesCreationList,CompilerLogLevel logLevel) {
+        return remoteExecutor.build(projectPath, mavenRepo, skipPrjDependenciesCreationList, logLevel);
     }
 
     @Override
-    public CompletableFuture<KieCompilationResponse> build(String projectPath, String mavenRepo) {
-        return remoteExecutor.build(projectPath, mavenRepo);
+    public CompletableFuture<KieCompilationResponse> build(String projectPath, String mavenRepo, CompilerLogLevel logLevel) {
+        return remoteExecutor.build(projectPath, mavenRepo, logLevel);
     }
 
 
     @Override
-    public CompletableFuture<KieCompilationResponse> buildAndInstall(String projectPath, String mavenRepo) {
-        return remoteExecutor.buildAndInstall(projectPath, mavenRepo);
+    public CompletableFuture<KieCompilationResponse> buildAndInstall(String projectPath, String mavenRepo, CompilerLogLevel logLevel) {
+        return remoteExecutor.buildAndInstall(projectPath, mavenRepo, logLevel);
     }
 
     @Override
-    public CompletableFuture<KieCompilationResponse> buildAndInstall(String projectPath, String mavenRepo, Boolean skipPrjDependenciesCreationList) {
-        return remoteExecutor.buildAndInstall(projectPath, mavenRepo, skipPrjDependenciesCreationList);
+    public CompletableFuture<KieCompilationResponse> buildAndInstall(String projectPath, String mavenRepo, Boolean skipPrjDependenciesCreationList, CompilerLogLevel logLevel) {
+        return remoteExecutor.buildAndInstall(projectPath, mavenRepo, skipPrjDependenciesCreationList, logLevel);
     }
 
     @Override

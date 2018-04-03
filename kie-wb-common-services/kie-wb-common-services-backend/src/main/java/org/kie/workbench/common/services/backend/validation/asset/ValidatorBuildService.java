@@ -32,6 +32,7 @@ import com.google.common.base.Charsets;
 import org.guvnor.common.services.shared.builder.model.BuildMessage;
 import org.guvnor.common.services.shared.message.Level;
 import org.kie.workbench.common.services.backend.builder.cache.ModuleCache;
+import org.kie.workbench.common.services.backend.compiler.service.executors.CompilerLogLevel;
 import org.kie.workbench.common.services.shared.project.KieModule;
 import org.kie.workbench.common.services.shared.project.KieModuleService;
 import org.uberfire.backend.server.util.Paths;
@@ -113,7 +114,7 @@ public class ValidatorBuildService {
             return getExceptionMsgs("[ERROR] no project found");
         }
 
-        return moduleCache.getOrCreateEntry(module.get()).validate(convert(_resourcePath), inputStream);
+        return moduleCache.getOrCreateEntry(module.get()).validate(convert(_resourcePath), inputStream, CompilerLogLevel.STANDARD);
     }
 
     private Optional<KieModule> module(final Path resourcePath) throws NoModuleException {

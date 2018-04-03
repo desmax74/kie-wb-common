@@ -94,27 +94,31 @@ public class DefaultRemoteExecutor implements RemoteExecutor {
         return CompletableFuture.supplyAsync(()->((KieCompilationResponse)compiler.compile(req)), executor);
     }
 
+    private String[] getArgsWithDebug(CompilerLogLevel logLevel, String goal){
+        return (logLevel.name().equals(CompilerLogLevel.DEBUG) ? new String[]{goal, MavenCLIArgs.DEBUG} : new String[]{goal});
+    }
+
     /************************************ Suitable for the REST Builds ************************************************/
 
     @Override
-    public CompletableFuture<KieCompilationResponse> build(String projectPath, String mavenRepo) {
+    public CompletableFuture<KieCompilationResponse> build(String projectPath, String mavenRepo, CompilerLogLevel logLevel) {
         return internalBuild(projectPath, mavenRepo, Boolean.FALSE, MavenCLIArgs.COMPILE);
     }
 
     @Override
-    public CompletableFuture<KieCompilationResponse> build(String projectPath, String mavenRepo, Boolean skipPrjDependenciesCreationList) {
-        return internalBuild(projectPath, mavenRepo, skipPrjDependenciesCreationList, MavenCLIArgs.COMPILE);
+    public CompletableFuture<KieCompilationResponse> build(String projectPath, String mavenRepo, Boolean skipPrjDependenciesCreationList, CompilerLogLevel logLevel) {
+        return internalBuild(projectPath, mavenRepo, skipPrjDependenciesCreationList, getArgsWithDebug(logLevel, MavenCLIArgs.COMPILE));
     }
 
     @Override
-    public CompletableFuture<KieCompilationResponse> buildAndInstall(String projectPath, String mavenRepo) {
-        return internalBuild(projectPath, mavenRepo, Boolean.FALSE, MavenCLIArgs.INSTALL);
+    public CompletableFuture<KieCompilationResponse> buildAndInstall(String projectPath, String mavenRepo, CompilerLogLevel logLevel) {
+        return internalBuild(projectPath, mavenRepo, Boolean.FALSE, getArgsWithDebug(logLevel, MavenCLIArgs.INSTALL));
     }
 
     @Override
     public CompletableFuture<KieCompilationResponse> buildAndInstall(String projectPath, String mavenRepo,
-                                                  Boolean skipPrjDependenciesCreationList) {
-        return internalBuild(projectPath, mavenRepo, skipPrjDependenciesCreationList, MavenCLIArgs.INSTALL);
+                                                  Boolean skipPrjDependenciesCreationList, CompilerLogLevel logLevel) {
+        return internalBuild(projectPath, mavenRepo, skipPrjDependenciesCreationList, getArgsWithDebug(logLevel, MavenCLIArgs.INSTALL));
     }
 
     @Override

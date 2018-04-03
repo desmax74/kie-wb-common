@@ -34,6 +34,7 @@ import org.kie.workbench.common.services.backend.compiler.impl.kie.KieCompilatio
 import org.kie.workbench.common.services.backend.compiler.rest.RestUtils;
 import org.kie.workbench.common.services.backend.compiler.service.AFCompilerService;
 import org.kie.workbench.common.services.backend.compiler.service.DefaultKieCompilerService;
+import org.kie.workbench.common.services.backend.compiler.service.executors.CompilerLogLevel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,7 +72,7 @@ public class MavenRestHandler extends Application{
     @POST
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public void postAsync(@Suspended AsyncResponse ar, @HeaderParam("project") String projectRepo, @HeaderParam("mavenrepo") String mavenRepo) throws Exception {
-        CompletableFuture<KieCompilationResponse> response = compilerService.build(projectRepo, mavenRepo);
+        CompletableFuture<KieCompilationResponse> response = compilerService.build(projectRepo, mavenRepo, CompilerLogLevel.STANDARD);
         response.whenCompleteAsync((kieCompilationResponse, throwable) -> {
                 if(throwable != null){
                     logger.error(throwable.getMessage());
