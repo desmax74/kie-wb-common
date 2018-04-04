@@ -66,16 +66,6 @@ public class DefaultLocalExecutor implements CompilerExecutor {
         return new CompilerAggregateEntryCache(compiler, info);
     }
 
-    private CompletableFuture<KieCompilationResponse> internalBuild(Path projectPath, String mavenRepo,
-                                                                    boolean skipProjectDepCreation, String goal) {
-        WorkspaceCompilationInfo info = new WorkspaceCompilationInfo(projectPath);
-        AFCompiler compiler = getCompiler(projectPath);
-        CompilationRequest req = new DefaultCompilationRequest(mavenRepo,
-                                                               info,
-                                                               new String[]{goal},
-                                                               skipProjectDepCreation);
-        return CompletableFuture.supplyAsync(() -> ((KieCompilationResponse) compiler.compile(req)), executor);
-    }
 
     private CompletableFuture<KieCompilationResponse> internalBuild(Path projectPath, String mavenRepo,
                                                                     boolean skipProjectDepCreation, String[] args) {

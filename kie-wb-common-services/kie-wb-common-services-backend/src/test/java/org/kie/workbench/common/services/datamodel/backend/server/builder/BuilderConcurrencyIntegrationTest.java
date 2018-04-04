@@ -66,8 +66,6 @@ public class BuilderConcurrencyIntegrationTest extends AbstractWeldBuilderIntegr
         assertNotNull(buildResults);
         assertEquals(0,
                      buildResults.getErrorMessages().size());
-        /*assertEquals( 1,
-                      buildResults.getInformationMessages().size() );*/
 
         //Perform incremental build
         final int THREADS = 200;
@@ -76,9 +74,7 @@ public class BuilderConcurrencyIntegrationTest extends AbstractWeldBuilderIntegr
         for (int i = 0; i < THREADS; i++) {
             switch (i % 3) {
                 case 0:
-                    es.execute(new Runnable() {
-                        @Override
-                        public void run() {
+                    es.execute(() ->{
                             try {
                                 logger.debug("Thread " + Thread.currentThread().getName() + " has started: BuildService.build( module )");
                                 buildService.build(module);
@@ -88,29 +84,22 @@ public class BuilderConcurrencyIntegrationTest extends AbstractWeldBuilderIntegr
                                 result.setMessage(e.getMessage());
                                 logger.debug(e.getMessage());
                             }
-                        }
                     });
                     break;
                 case 1:
-                    es.execute(new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                logger.debug("Thread " + Thread.currentThread().getName() + " has started: LRUProjectDataModelOracleCache.invalidateProjectCache(...)");
-                                logger.debug("Thread " + Thread.currentThread().getName() + " has completed.");
-                            } catch (Throwable e) {
-                                result.setFailed(true);
-                                result.setMessage(e.getMessage());
-                                logger.debug(e.getMessage());
-                            }
+                    es.execute(() -> {
+                        try {
+                            logger.debug("Thread " + Thread.currentThread().getName() + " has started: LRUProjectDataModelOracleCache.invalidateProjectCache(...)");
+                            logger.debug("Thread " + Thread.currentThread().getName() + " has completed.");
+                        } catch (Throwable e) {
+                            result.setFailed(true);
+                            result.setMessage(e.getMessage());
+                            logger.debug(e.getMessage());
                         }
                     });
                     break;
                 default:
-                    //@MAXWasHere
-                    es.execute(new Runnable() {
-                        @Override
-                        public void run() {
+                    es.execute(() -> {
                             try {
                                 logger.debug("Thread " + Thread.currentThread().getName() + " has started: LRUBuilderCache.assertBuilder( module ).getKieModuleIgnoringErrors();");
                                 moduleCache.getOrCreateEntry(module).build(CompilerLogLevel.STANDARD);
@@ -120,7 +109,6 @@ public class BuilderConcurrencyIntegrationTest extends AbstractWeldBuilderIntegr
                                 result.setMessage(e.getMessage());
                                 logger.debug(e.getMessage());
                             }
-                        }
                     });
             }
         }
