@@ -42,9 +42,6 @@ public class DefaultKieCompilerService implements AFCompilerService {
         remoteExecutor = new DefaultRemoteExecutor(Executors.newCachedThreadPool());
     }
 
-    private String[] getArgsWithDebug(CompilerLogLevel logLevel, String goal){
-        return (logLevel.name().equals(CompilerLogLevel.DEBUG) ? new String[]{goal, MavenCLIArgs.DEBUG} : new String[]{goal});
-    }
 
     /************************************ Suitable for the Local Builds ***********************************************/
 
