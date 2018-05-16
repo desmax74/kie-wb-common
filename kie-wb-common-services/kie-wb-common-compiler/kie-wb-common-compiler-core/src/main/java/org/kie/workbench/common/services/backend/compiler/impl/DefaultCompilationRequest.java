@@ -59,6 +59,42 @@ public class DefaultCompilationRequest implements CompilationRequest {
     }
 
     /***
+     * @param uuid a unique uuid identifier
+     * @param mavenRepo a string representation of the Path
+     * @param info
+     * @param args param for maven, can be used {@link org.kie.workbench.common.services.backend.compiler.configuration.MavenCLIArgs}
+     */
+    public DefaultCompilationRequest(String mavenRepo,
+                                     WorkspaceCompilationInfo info,
+                                     String[] args, String uuid) {
+        this.mavenRepo = mavenRepo;
+        this.info = info;
+        this.skipPrjDependenciesCreationList = Boolean.TRUE;
+        this.requestUUID = uuid;
+
+        this.originalArgs = args;
+        Map internalMap = new HashMap();
+        internalMap.put(MavenConfig.COMPILATION_ID, this.requestUUID);
+        this.req = new AFCliRequest(this.info.getPrjPath().toAbsolutePath().toString(),
+                                    args,
+                                    internalMap,
+                                    this.requestUUID);
+    }
+
+    /***
+     * @param mavenRepo a string representation of the Path
+     * @param info
+     * @param args param for maven, can be used {@link org.kie.workbench.common.services.backend.compiler.configuration.MavenCLIArgs}
+     * @param skipPrjDependenciesCreationList if false a List with all dependencies of the project will be available in the response
+     */
+    public DefaultCompilationRequest(String mavenRepo,
+                                     WorkspaceCompilationInfo info,
+                                     String[] args,
+                                     Boolean skipPrjDependenciesCreationList, String uuid) {
+        this(mavenRepo, info, args, skipPrjDependenciesCreationList, true, uuid);
+    }
+
+    /***
      * @param mavenRepo a string representation of the Path
      * @param info
      * @param args param for maven, can be used {@link org.kie.workbench.common.services.backend.compiler.configuration.MavenCLIArgs}
@@ -69,6 +105,26 @@ public class DefaultCompilationRequest implements CompilationRequest {
                                      String[] args,
                                      Boolean skipPrjDependenciesCreationList) {
         this(mavenRepo, info, args, skipPrjDependenciesCreationList, true);
+    }
+
+    public DefaultCompilationRequest(String mavenRepo,
+                                     WorkspaceCompilationInfo info,
+                                     String[] args,
+                                     Boolean skipPrjDependenciesCreationList,
+                                     boolean restoreOverride, String uuid) {
+        this.mavenRepo = mavenRepo;
+        this.info = info;
+        this.skipPrjDependenciesCreationList = skipPrjDependenciesCreationList;
+        this.requestUUID = uuid.trim().isEmpty() ? UUID.randomUUID().toString() : uuid;
+        this.restoreOverride = restoreOverride;
+
+        this.originalArgs = args;
+        Map internalMap = new HashMap();
+        internalMap.put(MavenConfig.COMPILATION_ID, this.requestUUID);
+        this.req = new AFCliRequest(this.info.getPrjPath().toAbsolutePath().toString(),
+                                    args,
+                                    internalMap,
+                                    this.requestUUID);
     }
 
     public DefaultCompilationRequest(String mavenRepo,
