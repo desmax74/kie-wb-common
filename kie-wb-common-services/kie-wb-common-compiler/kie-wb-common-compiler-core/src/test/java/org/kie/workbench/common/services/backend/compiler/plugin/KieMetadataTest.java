@@ -108,10 +108,10 @@ public class KieMetadataTest {
         assertThat(kieModuleMetaInfo).isNotNull();
 
         Map<String, Set<String>> rulesBP = kieModuleMetaInfo.getRulesByPackage();
-        assertThat(rulesBP).hasSize(8);
+        assertThat(rulesBP).hasSize(7);
         Map<String, TypeMetaInfo> typesMI = kieModuleMetaInfo.getTypeMetaInfos();
         Assert.assertEquals(typesMI.size(),
-                            46);
+                            21);
 
         Optional<KieModule> kieModuleOptional = res.getKieModule();
         assertThat(kieModuleOptional.isPresent()).isTrue();
@@ -122,7 +122,7 @@ public class KieMetadataTest {
         KieModuleMetaData kieModuleMetaData = new KieModuleMetaDataImpl((InternalKieModule) kModule,
                                                                         res.getDependenciesAsURI());
         assertThat(kieModuleMetaData).isNotNull();
-        //comment if you want read the log file after the test run
+
     }
 
     @Test

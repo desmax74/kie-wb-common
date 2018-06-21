@@ -18,9 +18,9 @@
   <build>
     <plugins>
       <plugin>
-        <groupId>kie.io.takari.maven.plugins</groupId>
-        <artifactId>kie-takari-lifecycle-plugin</artifactId>
-        <version>1.13.3</version>
+        <groupId>io.takari.maven.plugins</groupId>
+        <artifactId>takari-lifecycle-plugin</artifactId>
+        <version>1.13.5</version>
         <executions>
           <execution>
             <id>compile</id>

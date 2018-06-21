@@ -101,6 +101,7 @@ public class KieMavenCompilerFactory {
                                                 new BaseMavenCompiler()))));
                 break;
 
+
             default:
                 compiler = new BaseMavenCompiler();
         }

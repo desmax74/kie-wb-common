@@ -56,9 +56,9 @@ public class ConfigurationStaticStrategy implements ConfigurationStrategy {
         conf.put(ConfigurationKey.MAVEN_COMPILER_PLUGIN_ARTIFACT, "maven-compiler-plugin");
         conf.put(ConfigurationKey.MAVEN_COMPILER_PLUGIN_VERSION, "3.7.0");
         conf.put(ConfigurationKey.FAIL_ON_ERROR, "false");
-        conf.put(ConfigurationKey.TAKARI_COMPILER_PLUGIN_GROUP, "kie.io.takari.maven.plugins");
-        conf.put(ConfigurationKey.TAKARI_COMPILER_PLUGIN_ARTIFACT, "kie-takari-lifecycle-plugin");
-        conf.put(ConfigurationKey.TAKARI_COMPILER_PLUGIN_VERSION, "1.13.3");
+        conf.put(ConfigurationKey.TAKARI_COMPILER_PLUGIN_GROUP, "io.takari.maven.plugins");
+        conf.put(ConfigurationKey.TAKARI_COMPILER_PLUGIN_ARTIFACT, "takari-lifecycle-plugin");
+        conf.put(ConfigurationKey.TAKARI_COMPILER_PLUGIN_VERSION, "1.13.5");
         conf.put(ConfigurationKey.KIE_MAVEN_PLUGINS, "org.kie");
         conf.put(ConfigurationKey.KIE_MAVEN_PLUGIN, "kie-maven-plugin");
         conf.put(ConfigurationKey.KIE_TAKARI_PLUGIN, "kie-takari-plugin");
