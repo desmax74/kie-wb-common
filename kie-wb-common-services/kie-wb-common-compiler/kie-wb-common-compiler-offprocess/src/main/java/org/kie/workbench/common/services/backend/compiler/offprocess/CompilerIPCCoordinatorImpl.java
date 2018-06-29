@@ -1,3 +1,18 @@
+/*
+ * Copyright 2018 Red Hat, Inc. and/or its affiliates.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.kie.workbench.common.services.backend.compiler.offprocess;
 
 import java.io.BufferedReader;
@@ -24,18 +39,17 @@ import org.uberfire.java.nio.file.Paths;
 
 public class CompilerIPCCoordinatorImpl implements CompilerIPCCoordinator {
 
+    private static String prefixInfoChars = "/tmp/info-";
+    private static String prefixInfoObjs = "/tmp/obj-";
     private String javaHome;
     private String javaBin;
     private int bufferSizeChars = 100;
     private Logger logger = LoggerFactory.getLogger(CompilerIPCCoordinatorImpl.class);
     private String classpath;
-    private static String prefixInfoChars = "/tmp/info-";
-    private static String prefixInfoObjs = "/tmp/obj-";
 
-    public CompilerIPCCoordinatorImpl(){
+    public CompilerIPCCoordinatorImpl() {
         javaHome = System.getProperty("java.home");
         javaBin = javaHome + File.separator + "bin" + File.separator + "java";
-
     }
 
     @Override
@@ -47,38 +61,36 @@ public class CompilerIPCCoordinatorImpl implements CompilerIPCCoordinator {
     }
 
     private String getAlternateSettings(String[] args) {
-        for(String arg: args){
-            if(arg.startsWith(MavenCLIArgs.ALTERNATE_USER_SETTINGS)){
+        for (String arg : args) {
+            if (arg.startsWith(MavenCLIArgs.ALTERNATE_USER_SETTINGS)) {
                 return arg.substring(2, arg.length());
             }
         }
         return "";
     }
 
-
-
-    private CompilationResponse internalBuild(String mavenRepo, String projectPath, String compilerPomPath, String alternateSettingsAbsPath, int secondsTimeout){
-        if(classpath == null){
+    private CompilationResponse internalBuild(String mavenRepo, String projectPath, String compilerPomPath, String alternateSettingsAbsPath, int secondsTimeout) {
+        if (classpath == null) {
             classpath = setCompilerClasspath(mavenRepo, compilerPomPath);
         }
         try {
             String uuid = UUID.randomUUID().toString();
             invokeServerBuild(mavenRepo, projectPath, uuid, classpath, alternateSettingsAbsPath, secondsTimeout);
-            int bufferSizeRes =  ClientIPC.staticListenChars(100, prefixInfoChars+uuid);
-            logger.info("bufferSizeRes {}.",bufferSizeRes);
-            KieCompilationResponse res = ClientIPC.staticListenObjs(bufferSizeRes, prefixInfoObjs +uuid);
-            if(res != null){
+            int bufferSizeRes = ClientIPC.staticListenChars(100, prefixInfoChars + uuid);
+            logger.info("bufferSizeRes {}.", bufferSizeRes);
+            KieCompilationResponse res = ClientIPC.staticListenObjs(bufferSizeRes, prefixInfoObjs + uuid);
+            if (res != null) {
                 return res;
-            }else {
+            } else {
                 return new DefaultKieCompilationResponse(true);
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             logger.error(e.getMessage(), e);
             return new DefaultKieCompilationResponse(false);
         }
     }
 
-    private String setCompilerClasspath(String mavenRepo, String compilerPath){
+    private String setCompilerClasspath(String mavenRepo, String compilerPath) {
         String cp = "";
         logger.info("\n********************************\nBuild to generate the classpath\n********************************");
         cp = createClasspathFile(mavenRepo, compilerPath);
@@ -101,32 +113,10 @@ public class CompilerIPCCoordinatorImpl implements CompilerIPCCoordinator {
                 };
         logger.info("************************** \n Invoking server in a separate process with args: \n{} \n{} \n{} \n{} \n{} \n{} \n{} \n**************************", commandArrayServer);
         ProcessBuilder serverPb = new ProcessBuilder(commandArrayServer);
-        File workingDir = new File(projectPath);
-        serverPb.directory(workingDir);
+        serverPb.directory(new File(projectPath));
         serverPb.redirectErrorStream(true);
         serverPb.inheritIO();
         writeStdOut(serverPb, "Waiting for client.", secondsTimeout);
-    }
-
-    private KieCompilationResponse invokeClientReader(String projectPath, String uuid, String classpath, int secondsTimeout) throws Exception{
-        String[] commandArray =
-                {
-                        javaBin,
-                        "-cp",
-                        System.getProperty("user.dir") +"/"+"target/kie-wb-common-compiler-offprocess-7.8.0-SNAPSHOT.jar:" + classpath,
-                        "org.kie.workbench.common.services.backend.compiler.offprocess.ClientIPC",
-                        String.valueOf(bufferSizeChars),
-                        uuid
-                };
-
-        logger.info("************************** \n Invoking client in a separate process with args: \n{} \n{} \n{} \n{} \n{} \n{} \n**************************", commandArray);
-        ProcessBuilder pb = new ProcessBuilder(commandArray);
-        File workingDir = new File(projectPath);
-        pb.directory(workingDir);
-        pb.redirectErrorStream(true);
-        Process p = pb.start();
-        writeStdOut(pb, "Received from server.", secondsTimeout);
-        return new DefaultKieCompilationResponse(false);
     }
 
     private String createClasspathFile(String mavenRepo, String projectPath) {
@@ -147,14 +137,14 @@ public class CompilerIPCCoordinatorImpl implements CompilerIPCCoordinator {
     private void writeStdOut(ProcessBuilder builder, String terminationMsg, int secondsTimeout) throws Exception {
         Process process = builder.start();
         process.waitFor(secondsTimeout, TimeUnit.SECONDS);
-        BufferedReader reader = new BufferedReader(new InputStreamReader( process.getInputStream()));
-            String line;
-            while ((line = reader.readLine()) != null && !line.endsWith(terminationMsg)) {
-                logger.info(line);
-            }
-            if (line != null) {
-                logger.info(line);
-                return;
-            }
+        BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+        String line;
+        while ((line = reader.readLine()) != null && !line.endsWith(terminationMsg)) {
+            logger.info(line);
         }
+        if (line != null) {
+            logger.info(line);
+            return;
+        }
+    }
 }

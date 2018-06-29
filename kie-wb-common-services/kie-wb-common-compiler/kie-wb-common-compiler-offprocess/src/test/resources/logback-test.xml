@@ -28,10 +28,10 @@
   <!--<logger name="org.apache.maven" level="INFO" additivity="false">
     <appender-ref ref="KieSift"/>
   </logger>-->
-
+<!--
   <logger name="org.apache.maven" level="INFO" additivity="false">
     <appender-ref ref="consoleAppender"/>
-  </logger>
+  </logger>-->
 
   <logger name="org.drools" level="INFO"/>
   <logger name="org.kie" level="INFO"/>

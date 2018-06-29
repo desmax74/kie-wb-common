@@ -36,52 +36,62 @@ public class ClientIPC {
     private static String prefixInfoObjs = "/tmp/obj-";
     private static Logger logger = LoggerFactory.getLogger(ClientIPC.class);
 
-
-    public static void main( String[] args ) throws Throwable {
+    public static void main(String[] args) throws Throwable {
         String bufferSize = args[0];
         String uuid = args[1];
-        int bufferSizeRes = staticListenChars(Integer.valueOf(bufferSize), prefixInfoChars+uuid);
-        staticListenObjs(bufferSizeRes, prefixInfoObjs+uuid);
+        int bufferSizeRes = staticListenChars(Integer.valueOf(bufferSize), prefixInfoChars + uuid);
+        staticListenObjs(bufferSizeRes, prefixInfoObjs + uuid);
     }
 
-
     public static int staticListenChars(int bufferSize, String filePath) throws IOException {
-        logger.info( "Reading buffer from client...." );
+        if(logger.isDebugEnabled()) {
+            logger.debug("Reading buffer from client....");
+        }
         File f = new File(filePath);
-        FileChannel channel = FileChannel.open(f.toPath(), StandardOpenOption.READ, StandardOpenOption.WRITE, StandardOpenOption.CREATE );
-        MappedByteBuffer byteBuffer = channel.map(FileChannel.MapMode.READ_WRITE, 0, bufferSize );
+        FileChannel channel = FileChannel.open(f.toPath(), StandardOpenOption.READ, StandardOpenOption.WRITE, StandardOpenOption.CREATE);
+        MappedByteBuffer byteBuffer = channel.map(FileChannel.MapMode.READ_WRITE, 0, bufferSize);
         CharBuffer charBuf = byteBuffer.asCharBuffer();
         StringBuffer sb = new StringBuffer();
         char c;
-        while( (c = charBuf.get()) != 0){
+        while ((c = charBuf.get()) != 0) {
             sb.append(c);
         }
-        logger.info("Received from server:{}.",sb.toString());
-        charBuf.put( 0, '\0' );
+        if(logger.isDebugEnabled()) {
+            logger.debug("Received from server:{}.", sb.toString());
+        }
+        charBuf.put(0, '\0');
         return Integer.valueOf(sb.toString());
     }
 
     public static KieCompilationResponse staticListenObjs(int bufferSize, String filePath) throws Exception {
-        logger.info( "Reading buffer obj from client...." );
-        File f = new File(filePath);
-        if(f.exists()){
-        //FileChannel channel = FileChannel.open(f.toPath(), StandardOpenOption.READ, StandardOpenOption.WRITE, StandardOpenOption.CREATE );
-        FileChannel channel = FileChannel.open(f.toPath(), StandardOpenOption.READ);
-        MappedByteBuffer byteBuffer = channel.map(FileChannel.MapMode.READ_ONLY, 0, bufferSize);
-        byte[] bytez = new byte[bufferSize] ;
-        for(int i=0; i<bufferSize; i++){
-            //bytez[i] = byteBuffer.get(i);
-            bytez[i] = byteBuffer.get();
+        if(logger.isDebugEnabled()) {
+            logger.debug("Reading buffer obj from client....");
         }
-        Object obj = deserialize(bytez);
-        KieCompilationResponse res = (DefaultKieCompilationResponseOffProcess) obj;
-        return  res;
-        }else{
+        File f = new File(filePath);
+        if (f.exists()) {
+            FileChannel channel = FileChannel.open(f.toPath(), StandardOpenOption.READ);
+            MappedByteBuffer byteBuffer = channel.map(FileChannel.MapMode.READ_ONLY, 0, bufferSize);
+            byte[] bytez = new byte[bufferSize];
+            for (int i = 0; i < bufferSize; i++) {
+                bytez[i] = byteBuffer.get();
+            }
+            Object obj = deserialize(bytez);
+            KieCompilationResponse res = (DefaultKieCompilationResponseOffProcess) obj;
+            return res;
+        } else {
             return new DefaultKieCompilationResponse(false);
         }
     }
+
+    private static Object deserialize(byte[] bytes) throws IOException, ClassNotFoundException {
+        try (ByteArrayInputStream b = new ByteArrayInputStream(bytes)) {
+            try (ObjectInputStream o = new ObjectInputStream(b)) {
+                return o.readObject();
+            }
+        }
+    }
 /*
-    public static void staticShutdown(){
+    public static void cleanMappedFile(){
         try {
             Method cleanerMethod = staticBuffer.getClass().getMethod("cleaner");
             cleanerMethod.setAccessible(true);
@@ -95,13 +105,5 @@ public class ClientIPC {
         }
     }*/
 
-
-    private static Object deserialize(byte[] bytes) throws IOException, ClassNotFoundException {
-        try(ByteArrayInputStream b = new ByteArrayInputStream(bytes)){
-            try(ObjectInputStream o = new ObjectInputStream(b)){
-                return o.readObject();
-            }
-        }
-    }
 
 }

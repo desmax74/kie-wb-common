@@ -26,7 +26,6 @@ import java.nio.file.StandardOpenOption;
 
 import org.kie.workbench.common.services.backend.compiler.AFCompiler;
 import org.kie.workbench.common.services.backend.compiler.CompilationRequest;
-import org.kie.workbench.common.services.backend.compiler.CompilationResponse;
 import org.kie.workbench.common.services.backend.compiler.configuration.KieDecorator;
 import org.kie.workbench.common.services.backend.compiler.configuration.MavenCLIArgs;
 import org.kie.workbench.common.services.backend.compiler.impl.DefaultCompilationRequest;
@@ -44,8 +43,7 @@ public class ServerIPC {
     private static String prefixInfoObjs = "/tmp/obj-";
     private static Logger logger = LoggerFactory.getLogger(ServerIPC.class);
 
-
-    public static void main( String[] args ) throws Throwable {
+    public static void main(String[] args) throws Throwable {
         String bufferSize = args[0];
         String uuid = args[1];
         String workingDir = args[2];
@@ -55,71 +53,88 @@ public class ServerIPC {
         staticListenForObject(response, uuid);
     }
 
-
-
-    public static byte[] staticListenForChars(int bufferSize, String workingDir, String mavenRepo, String alternateSettingsAbsPath, String uuid) throws Exception{
-        logger.info( "Main server listen...." );
+    public static byte[] staticListenForChars(int bufferSize, String workingDir, String mavenRepo, String alternateSettingsAbsPath, String uuid) throws Exception {
+        if (logger.isDebugEnabled()) {
+            logger.debug("Server listen for chars....");
+        }
         KieCompilationResponse res = build(workingDir, mavenRepo, alternateSettingsAbsPath, uuid);
         byte[] resBytes = serialize(res);
         int bufferSizeRes = resBytes.length;
-        File f = new File(prefixInfoChars+uuid);
-        FileChannel channel = FileChannel.open(f.toPath(), StandardOpenOption.READ, StandardOpenOption.WRITE, StandardOpenOption.CREATE );
-        MappedByteBuffer byteBuffer  = channel.map(FileChannel.MapMode.READ_WRITE, 0, bufferSize );
+        File f = new File(prefixInfoChars + uuid);
+        FileChannel channel = FileChannel.open(f.toPath(), StandardOpenOption.READ, StandardOpenOption.WRITE, StandardOpenOption.CREATE);
+        MappedByteBuffer byteBuffer = channel.map(FileChannel.MapMode.READ_WRITE, 0, bufferSize);
         CharBuffer charBuf = byteBuffer.asCharBuffer();
         StringBuffer sb = new StringBuffer(String.valueOf(bufferSizeRes)).append("\0");
-        char[] string =  sb.toString().toCharArray();
-        logger.info("Sent msg in the buffer:"+sb.toString());
-        charBuf.put( string );
-        logger.info( "Waiting server for client." );
-        char c ;
-        while( charBuf.get( 0 ) != '\0' ){}
-        logger.info( "Finished waiting." );
+        if (logger.isDebugEnabled()) {
+            logger.debug("Sent msg chars in the buffer:" + sb.toString());
+        }
+        charBuf.put(sb.toString().toCharArray());
+        if (logger.isDebugEnabled()) {
+            logger.debug("Waiting server for client.");
+        }
+        char c;
+        while (charBuf.get(0) != '\0') {
+        }
+        if (logger.isDebugEnabled()) {
+            logger.debug("Finished waiting.");
+        }
         return resBytes;
     }
 
-    public static void staticListenForObject(byte[] response, String uuid) throws Exception{
-        logger.info( "Server write response bytes[]...." );
-        int bufferSizeRes = response.length; // read the response size
-        File f = new File(prefixInfoObjs+uuid);
-        FileChannel channel = FileChannel.open(f.toPath(), StandardOpenOption.READ, StandardOpenOption.WRITE, StandardOpenOption.CREATE );
+    public static void staticListenForObject(byte[] response, String uuid) throws Exception {
+        if (logger.isDebugEnabled()) {
+            logger.debug("Server write response bytes[]....");
+        }
+        int bufferSizeRes = response.length;
+        File f = new File(prefixInfoObjs + uuid);
+        FileChannel channel = FileChannel.open(f.toPath(), StandardOpenOption.READ, StandardOpenOption.WRITE, StandardOpenOption.CREATE);
         MappedByteBuffer byteBuffer = channel.map(FileChannel.MapMode.READ_WRITE, 0, bufferSizeRes);
-        for (int i = 0; i < bufferSizeRes; i++)
-        {
+        for (int i = 0; i < bufferSizeRes; i++) {
             byteBuffer.put((byte) response[i]);
         }
-        logger.info( "Finished writing." );
-        logger.info( "Waiting server for client reading." );
+        if (logger.isDebugEnabled()) {
+            logger.debug("Finished writing obj.");
+        }
     }
 
-    private static KieCompilationResponse build(String prjPath, String mavenRepo, String alternateSettingsAbsPath, String uuid){
+    private static KieCompilationResponse build(String prjPath, String mavenRepo, String alternateSettingsAbsPath, String uuid) {
         AFCompiler compiler = KieMavenCompilerFactory.getCompiler(KieDecorator.KIE_AND_LOG_AFTER);
         WorkspaceCompilationInfo info = new WorkspaceCompilationInfo(Paths.get(prjPath));
         CompilationRequest req;
-        if(alternateSettingsAbsPath != null && alternateSettingsAbsPath.length()>1){
+        if (alternateSettingsAbsPath != null && alternateSettingsAbsPath.length() > 1) {
             req = new DefaultCompilationRequest(mavenRepo,
-                                                               info,
-                                                               new String[]{
-                                                                       MavenCLIArgs.COMPILE,
-                                                                       MavenCLIArgs.ALTERNATE_USER_SETTINGS + alternateSettingsAbsPath
-                                                               },
-                                                               Boolean.FALSE,
-                                                               uuid);
-        }else{
+                                                info,
+                                                new String[]{
+                                                        MavenCLIArgs.COMPILE,
+                                                        MavenCLIArgs.ALTERNATE_USER_SETTINGS + alternateSettingsAbsPath
+                                                },
+                                                Boolean.FALSE,
+                                                uuid);
+        } else {
             req = new DefaultCompilationRequest(mavenRepo,
-                                                                   info,
-                                                                   new String[]{
-                                                                           MavenCLIArgs.COMPILE
-                                                                   },
-                                                                   Boolean.FALSE,
-                                                                   uuid);
+                                                info,
+                                                new String[]{
+                                                        MavenCLIArgs.COMPILE
+                                                },
+                                                Boolean.FALSE,
+                                                uuid);
         }
-        KieCompilationResponse res = (KieCompilationResponse)compiler.compile(req);
+        KieCompilationResponse res = (KieCompilationResponse) compiler.compile(req);
         KieCompilationResponse resConverted = new DefaultKieCompilationResponseOffProcess(res);
-        return  resConverted;
+        return resConverted;
+    }
+
+    private static byte[] serialize(Object obj) throws IOException {
+        try (ByteArrayOutputStream b = new ByteArrayOutputStream()) {
+            try (ObjectOutputStream o = new ObjectOutputStream(b)) {
+                o.writeObject(obj);
+            }
+            return b.toByteArray();
+        }
     }
 
 /*
-    public static void staticShutdown(){
+    public static void cleanMappedFile(){
         try {
             Method cleanerMethod = staticBuffer.getClass().getMethod("cleaner");
             cleanerMethod.setAccessible(true);
@@ -133,12 +148,5 @@ public class ServerIPC {
         }
     }*/
 
-    private static byte[] serialize(Object obj) throws IOException {
-        try(ByteArrayOutputStream b = new ByteArrayOutputStream()){
-            try(ObjectOutputStream o = new ObjectOutputStream(b)){
-                o.writeObject(obj);
-            }
-            return b.toByteArray();
-        }
-    }
+
 }
