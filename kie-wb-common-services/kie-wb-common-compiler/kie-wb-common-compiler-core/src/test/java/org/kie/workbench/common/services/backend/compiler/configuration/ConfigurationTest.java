@@ -140,9 +140,9 @@ public class ConfigurationTest {
         conf.put(ConfigurationKey.MAVEN_COMPILER_PLUGIN_ARTIFACT.name(), "maven-compiler-plugin");
         conf.put(ConfigurationKey.MAVEN_COMPILER_PLUGIN_VERSION.name(), "3.7.0");
         conf.put(ConfigurationKey.FAIL_ON_ERROR.name(), "false");
-        conf.put(ConfigurationKey.TAKARI_COMPILER_PLUGIN_GROUP.name(), "kie.io.takari.maven.plugins");
-        conf.put(ConfigurationKey.TAKARI_COMPILER_PLUGIN_ARTIFACT.name(), "kie-takari-lifecycle-plugin");
-        conf.put(ConfigurationKey.TAKARI_COMPILER_PLUGIN_VERSION.name(), "1.13.3");
+        conf.put(ConfigurationKey.TAKARI_COMPILER_PLUGIN_GROUP.name(), "io.takari.maven.plugins");
+        conf.put(ConfigurationKey.TAKARI_COMPILER_PLUGIN_ARTIFACT.name(), "takari-lifecycle-plugin");
+        conf.put(ConfigurationKey.TAKARI_COMPILER_PLUGIN_VERSION.name(), "1.13.5");
         conf.put(ConfigurationKey.KIE_MAVEN_PLUGINS.name(), "org.kie");
         conf.put(ConfigurationKey.KIE_MAVEN_PLUGIN.name(), "kie-maven-plugin");
         conf.put(ConfigurationKey.KIE_TAKARI_PLUGIN.name(), "kie-takari-plugin");
