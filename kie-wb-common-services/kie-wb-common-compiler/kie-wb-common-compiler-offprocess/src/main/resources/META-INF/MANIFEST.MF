@@ -1,0 +1,2 @@
+Manifest-Version: 1.0
+Main-Class: org.kie.workbench.common.services.backend.compiler.offprocess.CompilerBootstrap
