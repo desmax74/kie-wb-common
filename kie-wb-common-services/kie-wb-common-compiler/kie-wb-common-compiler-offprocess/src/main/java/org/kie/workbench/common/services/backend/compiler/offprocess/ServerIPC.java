@@ -69,7 +69,8 @@ public class ServerIPC {
         charBuf.put(sb.toString().toCharArray());
         logger.info("Waiting server for client.");
         char c;
-        while (charBuf.get(0) != '\0') {}
+        while (charBuf.get(0) != '\0') {
+        }
         logger.info("Finished waiting.");
         return resBytes;
     }
@@ -94,6 +95,7 @@ public class ServerIPC {
             req = new DefaultCompilationRequest(mavenRepo,
                                                 info,
                                                 new String[]{
+                                                        MavenCLIArgs.DEPENDENCY_RESOLVE,
                                                         MavenCLIArgs.COMPILE,
                                                         MavenCLIArgs.ALTERNATE_USER_SETTINGS + alternateSettingsAbsPath
                                                 },
@@ -103,6 +105,7 @@ public class ServerIPC {
             req = new DefaultCompilationRequest(mavenRepo,
                                                 info,
                                                 new String[]{
+                                                        MavenCLIArgs.DEPENDENCY_RESOLVE,
                                                         MavenCLIArgs.COMPILE
                                                 },
                                                 Boolean.FALSE,

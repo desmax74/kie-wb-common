@@ -15,7 +15,9 @@
  */
 package org.kie.workbench.common.services.backend.compiler.offprocess.generator;
 
-import java.io.PrintWriter;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.net.URI;
 
 import org.kie.workbench.common.services.backend.compiler.AFCompiler;
@@ -38,17 +40,21 @@ public class ClasspathFileGenerator {
     private static Logger logger = LoggerFactory.getLogger(ClasspathFileGenerator.class);
     private static String module = "kie-wb-common-compiler-offprocess";
 
-    public static void main(String[] args) throws Exception{
+    public static void main(String[] args) throws Exception {
         String mavenRepo = createMavenRepo().toAbsolutePath().toString();
         String compilerPath = Paths.get(module + "/target/classes/compiler_classpath_prj/").toAbsolutePath().toString();
         String cp = "";
         logger.info("\n********************************\nBuild to generate the classpath template\n********************************");
         cp = createClasspathFile(mavenRepo, compilerPath);
         logger.info("\n************************************\nEnd build to generate the classpath template\n************************************\n\n");
-        PrintWriter out = new PrintWriter(Paths.get(module + "/target/classes").toAbsolutePath().toString()+ "/classpath.template");
-
-        out.println(cp.replace(mavenRepo, "<maven_repo>"));
+        write(Paths.get(module + "/target/classes").toAbsolutePath().toString() + "/classpath.template", cp.replace(mavenRepo, "<maven_repo>"));
         logger.info("\n************************************\nSaving content to /target/classes/classpath.template \n************************************\n\n");
+    }
+
+    private static void write(String filename, String content) throws IOException {
+        BufferedWriter writer = new BufferedWriter(new FileWriter(filename));
+        writer.write(content);
+        writer.close();
     }
 
     public static Path createMavenRepo() throws Exception {
@@ -76,5 +82,4 @@ public class ClasspathFileGenerator {
         }
         return cp.toString();
     }
-
 }
