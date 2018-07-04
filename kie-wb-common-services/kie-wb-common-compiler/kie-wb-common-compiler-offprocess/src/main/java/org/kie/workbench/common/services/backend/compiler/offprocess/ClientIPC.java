@@ -32,21 +32,10 @@ import org.slf4j.LoggerFactory;
 
 public class ClientIPC {
 
-    private static String prefixInfoChars = "/tmp/info-";
-    private static String prefixInfoObjs = "/tmp/obj-";
     private static Logger logger = LoggerFactory.getLogger(ClientIPC.class);
 
-    public static void main(String[] args) throws Throwable {
-        String bufferSize = args[0];
-        String uuid = args[1];
-        int bufferSizeRes = staticListenChars(Integer.valueOf(bufferSize), prefixInfoChars + uuid);
-        staticListenObjs(bufferSizeRes, prefixInfoObjs + uuid);
-    }
-
     public static int staticListenChars(int bufferSize, String filePath) throws IOException {
-        if(logger.isDebugEnabled()) {
-            logger.debug("Reading buffer from client....");
-        }
+        logger.info("Reading buffer from client....");
         File f = new File(filePath);
         FileChannel channel = FileChannel.open(f.toPath(), StandardOpenOption.READ, StandardOpenOption.WRITE, StandardOpenOption.CREATE);
         MappedByteBuffer byteBuffer = channel.map(FileChannel.MapMode.READ_WRITE, 0, bufferSize);
@@ -56,17 +45,13 @@ public class ClientIPC {
         while ((c = charBuf.get()) != 0) {
             sb.append(c);
         }
-        if(logger.isDebugEnabled()) {
-            logger.debug("Received from server:{}.", sb.toString());
-        }
+        logger.info("Received from server:{}.", sb.toString());
         charBuf.put(0, '\0');
         return Integer.valueOf(sb.toString());
     }
 
     public static KieCompilationResponse staticListenObjs(int bufferSize, String filePath) throws Exception {
-        if(logger.isDebugEnabled()) {
-            logger.debug("Reading buffer obj from client....");
-        }
+        logger.info("Reading buffer obj from client....");
         File f = new File(filePath);
         if (f.exists()) {
             FileChannel channel = FileChannel.open(f.toPath(), StandardOpenOption.READ);
@@ -104,6 +89,4 @@ public class ClientIPC {
             logger.error(ex.getMessage(), ex);
         }
     }*/
-
-
 }

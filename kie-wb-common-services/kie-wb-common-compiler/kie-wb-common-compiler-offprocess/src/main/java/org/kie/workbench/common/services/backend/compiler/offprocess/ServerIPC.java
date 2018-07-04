@@ -49,14 +49,14 @@ public class ServerIPC {
         String workingDir = args[2];
         String mavenRepo = args[3];
         String alternateSettingsAbsPath = args[4];
+        String threadName = Thread.currentThread().getName();
         byte[] response = staticListenForChars(Integer.valueOf(bufferSize), workingDir, mavenRepo, alternateSettingsAbsPath, uuid);
+        Thread.currentThread().setName(threadName);// restore the previous name to avoid the override of the maven output
         staticListenForObject(response, uuid);
     }
 
     public static byte[] staticListenForChars(int bufferSize, String workingDir, String mavenRepo, String alternateSettingsAbsPath, String uuid) throws Exception {
-        if (logger.isDebugEnabled()) {
-            logger.debug("Server listen for chars....");
-        }
+        logger.info("Server listen for chars....");
         KieCompilationResponse res = build(workingDir, mavenRepo, alternateSettingsAbsPath, uuid);
         byte[] resBytes = serialize(res);
         int bufferSizeRes = resBytes.length;
@@ -65,26 +65,17 @@ public class ServerIPC {
         MappedByteBuffer byteBuffer = channel.map(FileChannel.MapMode.READ_WRITE, 0, bufferSize);
         CharBuffer charBuf = byteBuffer.asCharBuffer();
         StringBuffer sb = new StringBuffer(String.valueOf(bufferSizeRes)).append("\0");
-        if (logger.isDebugEnabled()) {
-            logger.debug("Sent msg chars in the buffer:" + sb.toString());
-        }
+        logger.info("Sent msg chars in the buffer:" + sb.toString());
         charBuf.put(sb.toString().toCharArray());
-        if (logger.isDebugEnabled()) {
-            logger.debug("Waiting server for client.");
-        }
+        logger.info("Waiting server for client.");
         char c;
-        while (charBuf.get(0) != '\0') {
-        }
-        if (logger.isDebugEnabled()) {
-            logger.debug("Finished waiting.");
-        }
+        while (charBuf.get(0) != '\0') {}
+        logger.info("Finished waiting.");
         return resBytes;
     }
 
     public static void staticListenForObject(byte[] response, String uuid) throws Exception {
-        if (logger.isDebugEnabled()) {
-            logger.debug("Server write response bytes[]....");
-        }
+        logger.info("Server write response bytes[]....");
         int bufferSizeRes = response.length;
         File f = new File(prefixInfoObjs + uuid);
         FileChannel channel = FileChannel.open(f.toPath(), StandardOpenOption.READ, StandardOpenOption.WRITE, StandardOpenOption.CREATE);
@@ -92,9 +83,7 @@ public class ServerIPC {
         for (int i = 0; i < bufferSizeRes; i++) {
             byteBuffer.put((byte) response[i]);
         }
-        if (logger.isDebugEnabled()) {
-            logger.debug("Finished writing obj.");
-        }
+        logger.info("Finished writing obj.");
     }
 
     private static KieCompilationResponse build(String prjPath, String mavenRepo, String alternateSettingsAbsPath, String uuid) {
@@ -120,6 +109,7 @@ public class ServerIPC {
                                                 uuid);
         }
         KieCompilationResponse res = (KieCompilationResponse) compiler.compile(req);
+        logger.info("outputSize:{}", res.getMavenOutput().size());
         KieCompilationResponse resConverted = new DefaultKieCompilationResponseOffProcess(res);
         return resConverted;
     }
@@ -147,6 +137,4 @@ public class ServerIPC {
             logger.error(ex.getMessage(), ex);
         }
     }*/
-
-
 }

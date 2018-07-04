@@ -58,10 +58,9 @@ public class CompilerIPCCoordinatorTest {
                                                                },
                                                                Boolean.FALSE);
         CompilerIPCCoordinator compiler = new CompilerIPCCoordinatorImpl();
-        CompilationResponse res = compiler.compile(req, 15);
+        CompilationResponse res = compiler.compile(req, 10);
         Assert.assertNotNull(res);
         Assert.assertTrue(res.isSuccessful());
-        logger.info("***************** maven output \n{}", res.getMavenOutput());
     }
 
 }

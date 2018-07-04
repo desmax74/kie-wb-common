@@ -70,11 +70,15 @@ public class CompilerIPCCoordinatorImpl implements CompilerIPCCoordinator {
     }
 
     private CompilationResponse internalBuild(String mavenRepo, String projectPath, String compilerPomPath, String alternateSettingsAbsPath, int secondsTimeout) {
+        String uuid;
         if (classpath == null) {
             classpath = setCompilerClasspath(mavenRepo, compilerPomPath);
+            uuid = Thread.currentThread().getName();
+        } else {
+            uuid = UUID.randomUUID().toString();
         }
         try {
-            String uuid = UUID.randomUUID().toString();
+
             invokeServerBuild(mavenRepo, projectPath, uuid, classpath, alternateSettingsAbsPath, secondsTimeout);
             int bufferSizeRes = ClientIPC.staticListenChars(100, prefixInfoChars + uuid);
             logger.info("bufferSizeRes {}.", bufferSizeRes);
@@ -109,7 +113,11 @@ public class CompilerIPCCoordinatorImpl implements CompilerIPCCoordinator {
                         uuid,
                         projectPath,
                         mavenRepo,
-                        alternateSettingsAbsPath
+                        alternateSettingsAbsPath,
+                        "-Xdebug -Xnoagent -Xrunjdwp:transport=dt_socket",
+                        "address=8787",
+                        "server=y",
+                        "suspend=y"
                 };
         logger.info("************************** \n Invoking server in a separate process with args: \n{} \n{} \n{} \n{} \n{} \n{} \n{} \n**************************", commandArrayServer);
         ProcessBuilder serverPb = new ProcessBuilder(commandArrayServer);
@@ -140,10 +148,14 @@ public class CompilerIPCCoordinatorImpl implements CompilerIPCCoordinator {
         BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
         String line;
         while ((line = reader.readLine()) != null && !line.endsWith(terminationMsg)) {
-            logger.info(line);
+            if (logger.isInfoEnabled()) {
+                logger.info(line);
+            }
         }
         if (line != null) {
-            logger.info(line);
+            if (logger.isInfoEnabled()) {
+                logger.info(line);
+            }
             return;
         }
     }
