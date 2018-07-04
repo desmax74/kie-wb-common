@@ -231,6 +231,10 @@
         <filtering>true</filtering>
         <directory>src/test/resources</directory>
       </testResource>
+      <testResource>
+        <filtering>true</filtering>
+        <directory>src/test/resources/compiler_classpath_prj</directory>
+      </testResource>
     </testResources>
     <plugins>
       <plugin>
@@ -263,17 +267,20 @@
         </configuration>
       </plugin>
       <plugin>
-        <artifactId>maven-jar-plugin</artifactId>
-        <version>3.0.2</version>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>1.5.0</version>
+        <executions>
+          <execution>
+            <id>my-execution</id>
+            <phase>compile</phase>
+            <goals>
+              <goal>java</goal>
+            </goals>
+          </execution>
+        </executions>
         <configuration>
-          <archive>
-            <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
-            <index>true</index>
-            <manifest>
-              <mainClass>org.kie.workbench.common.services.backend.compiler.offprocess.CompilerBootstrap</mainClass>
-              <addClasspath>true</addClasspath>
-            </manifest>
-          </archive>
+          <mainClass>org.kie.workbench.common.services.backend.compiler.offprocess.generator.ClasspathFileGenerator</mainClass>
         </configuration>
       </plugin>
     </plugins>

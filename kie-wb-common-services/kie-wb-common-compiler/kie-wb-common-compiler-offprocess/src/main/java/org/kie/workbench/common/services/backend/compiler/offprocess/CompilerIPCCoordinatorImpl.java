@@ -56,7 +56,7 @@ public class CompilerIPCCoordinatorImpl implements CompilerIPCCoordinator {
     public CompilationResponse compile(CompilationRequest req, int secondsTimeout) {
         return internalBuild(req.getMavenRepo(),
                              req.getInfo().getPrjPath().toAbsolutePath().toString(),
-                             Paths.get("src/main/resources/compiler_classpath_prj").toAbsolutePath().toString(),
+                             Paths.get("src/main/filtered-resources/compiler_classpath_prj").toAbsolutePath().toString(),
                              getAlternateSettings(req.getOriginalArgs()), secondsTimeout);
     }
 

@@ -51,4 +51,6 @@ public class MavenCLIArgs {
     public static final String ALTERNATE_USER_SETTINGS = "-s";
 
     public static final String FAIL_NEVER = "-fn";
+
+    public static final String DEPENDENCY_RESOLVE = "dependency:resolve";
 }

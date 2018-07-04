@@ -109,7 +109,6 @@ public class ServerIPC {
                                                 uuid);
         }
         KieCompilationResponse res = (KieCompilationResponse) compiler.compile(req);
-        logger.info("outputSize:{}", res.getMavenOutput().size());
         KieCompilationResponse resConverted = new DefaultKieCompilationResponseOffProcess(res);
         return resConverted;
     }
