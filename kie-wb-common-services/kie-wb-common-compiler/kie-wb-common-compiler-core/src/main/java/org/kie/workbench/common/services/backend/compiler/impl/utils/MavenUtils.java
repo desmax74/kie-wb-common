@@ -32,7 +32,6 @@ import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.appformer.maven.integration.Aether;
-import org.appformer.maven.integration.MavenRepository;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.guvnor.m2repo.backend.server.repositories.ArtifactRepositoryService;
 import org.slf4j.Logger;
