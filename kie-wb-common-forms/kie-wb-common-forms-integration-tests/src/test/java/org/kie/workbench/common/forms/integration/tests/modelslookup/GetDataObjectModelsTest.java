@@ -90,7 +90,7 @@ public class GetDataObjectModelsTest extends AbstractGetModelsTest {
         fieldManager = weldContainer.select(FieldManager.class).get();
 
         finderService = new DataObjectFinderServiceImpl(moduleService, dataModelerService);
-        handler = new DataObjectFormModelHandler(moduleService, classLoaderHelper, finderService, fieldManager);
+        handler = new DataObjectFormModelHandler(moduleService, moduleBuildInfo, finderService, fieldManager);
         creationService = new DataObjectFormModelCreationServiceImpl(finderService, handler);
     }
 

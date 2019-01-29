@@ -47,7 +47,7 @@ public class TaskFormModelHandlerTest extends AbstractJBPMFormModelHandlerTest {
 
         model = new TaskFormModel(PROCESS_ID, TASK_NAME, propertyList);
 
-        handler = new TaskFormModelHandler(moduleService, moduleClassLoaderHelper, new TestFieldManager(), finderService);
+        handler = new TaskFormModelHandler(moduleService, moduleBuildInfo, new TestFieldManager(), finderService);
 
         handler.init(model, path);
     }

@@ -46,9 +46,9 @@ import org.kie.workbench.common.forms.model.impl.ModelPropertyImpl;
 import org.kie.workbench.common.forms.model.impl.TypeInfoImpl;
 import org.kie.workbench.common.forms.model.util.formModel.FormModelPropertiesUtil;
 import org.kie.workbench.common.forms.service.shared.FieldManager;
-import org.kie.workbench.common.services.datamodel.backend.server.builder.projects.ClassFactBuilder;
-import org.kie.workbench.common.services.datamodel.backend.server.builder.projects.FactBuilder;
-import org.kie.workbench.common.services.datamodel.backend.server.builder.projects.ModuleDataModelOracleBuilder;
+import org.kie.workbench.common.services.backend.projects.ClassFactBuilder;
+import org.kie.workbench.common.services.backend.projects.FactBuilder;
+import org.kie.workbench.common.services.backend.projects.ModuleDataModelOracleBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

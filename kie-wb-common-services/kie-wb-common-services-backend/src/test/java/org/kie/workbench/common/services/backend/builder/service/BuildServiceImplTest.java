@@ -16,35 +16,14 @@
 
 package org.kie.workbench.common.services.backend.builder.service;
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.function.Consumer;
-
-import org.guvnor.common.services.project.builder.model.BuildResults;
-import org.guvnor.common.services.project.builder.model.IncrementalBuildResults;
-import org.guvnor.common.services.project.service.DeploymentMode;
-import org.junit.Before;
-import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.kie.workbench.common.services.backend.builder.ala.LocalBinaryConfig;
-import org.kie.workbench.common.services.backend.builder.ala.LocalBuildConfig;
-import org.kie.workbench.common.services.backend.builder.core.Builder;
-import org.kie.workbench.common.services.backend.builder.core.LRUBuilderCache;
-import org.kie.workbench.common.services.shared.project.KieModule;
-import org.kie.workbench.common.services.shared.project.KieModuleService;
-import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.runners.MockitoJUnitRunner;
-import org.mockito.stubbing.Answer;
-import org.uberfire.backend.vfs.Path;
-import org.uberfire.workbench.events.ResourceChange;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import org.mockito.runners.MockitoJUnitRunner;
+
 
 @RunWith(MockitoJUnitRunner.class)
 public class BuildServiceImplTest {
-
+/*
     @Mock
     private LRUBuilderCache cache;
 
@@ -266,5 +245,5 @@ public class BuildServiceImplTest {
         verify(buildServiceHelper,
                times(1)).localBuild(module,
                                     resourceChanges);
-    }
+    }*/
 }

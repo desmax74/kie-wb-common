@@ -71,7 +71,7 @@ import org.kie.workbench.common.forms.services.backend.serialization.impl.FormDe
 import org.kie.workbench.common.forms.services.backend.serialization.impl.FormModelSerializer;
 import org.kie.workbench.common.screens.datamodeller.service.DataModelerService;
 import org.kie.workbench.common.screens.datamodeller.service.ServiceException;
-import org.kie.workbench.common.services.backend.project.ModuleClassLoaderHelper;
+import org.kie.workbench.common.services.datamodel.backend.server.builder.ModuleBuildInfo;
 import org.kie.workbench.common.services.datamodeller.core.DataModel;
 import org.kie.workbench.common.services.datamodeller.driver.FilterHolder;
 import org.kie.workbench.common.services.datamodeller.driver.ModelDriver;
@@ -134,7 +134,7 @@ public class FormGenerationIntegrationTest {
     private static KieModuleService moduleService;
 
     @Mock
-    private static ModuleClassLoaderHelper moduleClassLoaderHelper;
+    private static ModuleBuildInfo moduleBuildInfo;
     private static FormLayoutTemplateGenerator templateGenerator;
     private static BPMNFormModelGeneratorImpl generator;
     private static Path rootPathWithNestedForms;
@@ -194,7 +194,7 @@ public class FormGenerationIntegrationTest {
         finderService = new DataObjectFinderServiceImpl(moduleService, dataModelerService);
 
         formModelHandlerManager = new TestFormModelHandlerManager(moduleService,
-                                                                  moduleClassLoaderHelper,
+                                                                  moduleBuildInfo,
                                                                   fieldManager,
                                                                   finderService);
 
@@ -211,10 +211,10 @@ public class FormGenerationIntegrationTest {
                                                             formModelSynchronizationUtil);
 
         when(moduleService.resolveModule(any())).thenReturn(module);
-        when(moduleClassLoaderHelper.getModuleClassLoader(any())).thenReturn(moduleClassLoader);
+        //when(moduleClassLoaderHelper.getModuleClassLoader(any())).thenReturn(moduleClassLoader);
 
         generator = new BPMNFormModelGeneratorImpl(moduleService,
-                                                   moduleClassLoaderHelper);
+                                                   moduleBuildInfo);
         processFormModel = generator.generateProcessFormModel(formGenerationProcessDefinitions,
                                                               rootPathWithNestedForms);
         taskFormModels = generator.generateTaskFormModels(formGenerationProcessDefinitions, rootPathWithNestedForms);

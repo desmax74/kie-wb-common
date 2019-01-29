@@ -224,6 +224,11 @@
       <artifactId>jbpm-simulation</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.kie.workbench.services</groupId>
+      <artifactId>kie-wb-common-datamodel-backend</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
 

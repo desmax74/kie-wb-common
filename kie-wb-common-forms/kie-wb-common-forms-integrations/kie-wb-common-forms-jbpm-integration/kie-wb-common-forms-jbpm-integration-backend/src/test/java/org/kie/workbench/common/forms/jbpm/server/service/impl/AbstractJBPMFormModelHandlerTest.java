@@ -23,7 +23,7 @@ import org.kie.workbench.common.forms.jbpm.service.shared.BPMFinderService;
 import org.kie.workbench.common.forms.model.ModelProperty;
 import org.kie.workbench.common.forms.model.impl.ModelPropertyImpl;
 import org.kie.workbench.common.forms.model.impl.TypeInfoImpl;
-import org.kie.workbench.common.services.backend.project.ModuleClassLoaderHelper;
+import org.kie.workbench.common.services.datamodel.backend.server.builder.ModuleBuildInfo;
 import org.kie.workbench.common.services.shared.project.KieModule;
 import org.kie.workbench.common.services.shared.project.KieModuleService;
 import org.mockito.Mock;
@@ -46,8 +46,7 @@ public abstract class AbstractJBPMFormModelHandlerTest {
     @Mock
     protected KieModule module;
 
-    @Mock
-    protected ModuleClassLoaderHelper moduleClassLoaderHelper;
+    protected ModuleBuildInfo moduleBuildInfo;
 
     @Mock
     protected ClassLoader classLoader;
@@ -59,7 +58,7 @@ public abstract class AbstractJBPMFormModelHandlerTest {
 
     public void init() throws ClassNotFoundException {
         when(moduleService.resolveModule(any())).thenReturn(module);
-        when(moduleClassLoaderHelper.getModuleClassLoader(module)).thenReturn(classLoader);
+        //when(moduleClassLoaderHelper.getModuleClassLoader(module)).thenReturn(classLoader);
         when(classLoader.loadClass(any())).thenAnswer((Answer<Class>) invocation -> String.class);
 
         propertyList.add(new ModelPropertyImpl("name", new TypeInfoImpl(String.class.getName())));

@@ -21,7 +21,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Event;
 import javax.enterprise.inject.Any;
@@ -61,8 +61,8 @@ import org.kie.workbench.common.screens.datamodeller.model.GenerationResult;
 import org.kie.workbench.common.screens.datamodeller.model.TypeInfoResult;
 import org.kie.workbench.common.screens.datamodeller.service.DataModelerService;
 import org.kie.workbench.common.screens.datamodeller.service.ServiceException;
-import org.kie.workbench.common.services.backend.project.ModuleClassLoaderHelper;
 import org.kie.workbench.common.services.backend.service.KieService;
+import org.kie.workbench.common.services.datamodel.backend.server.builder.ModuleBuildInfo;
 import org.kie.workbench.common.services.datamodel.backend.server.service.DataModelService;
 import org.kie.workbench.common.services.datamodeller.codegen.GenerationContext;
 import org.kie.workbench.common.services.datamodeller.codegen.GenerationEngine;
@@ -122,7 +122,7 @@ public class DataModelerServiceImpl
     @Inject
     private DataModelerServiceHelper serviceHelper;
     @Inject
-    private ModuleClassLoaderHelper classLoaderHelper;
+    private ModuleBuildInfo moduleBuildInfo;
 
     @Inject
     private Event<DataObjectCreatedEvent> dataObjectCreatedEvent;
@@ -321,7 +321,7 @@ public class DataModelerServiceImpl
                 logger.debug("Current module path is: " + modulePath);
             }
 
-            ClassLoader classLoader = classLoaderHelper.getModuleClassLoader(module);
+            ClassLoader classLoader = moduleBuildInfo.getOrCreateEntry(module).getClassLoader();
 
             ModelDriver modelDriver = new JavaRoasterModelDriver(ioService,
                                                                  Paths.convert(defaultPackage.getPackageMainSrcPath()),
@@ -331,8 +331,7 @@ public class DataModelerServiceImpl
             dataModel = result.getDataModel();
 
             if (processErrors && result.hasErrors()) {
-                processErrors(module,
-                              result);
+                processErrors(result);
             }
 
             //by now we still use the DMO to calculate module external dependencies.
@@ -395,7 +394,7 @@ public class DataModelerServiceImpl
                                             new ArrayList<DataModelerError>());
             }
 
-            ClassLoader classLoader = classLoaderHelper.getModuleClassLoader(module);
+            ClassLoader classLoader = moduleBuildInfo.getOrCreateEntry(module).getClassLoader();
             JavaRoasterModelDriver modelDriver = new JavaRoasterModelDriver(ioService,
                                                                             null,
                                                                             classLoader,
@@ -448,7 +447,7 @@ public class DataModelerServiceImpl
                 return result;
             }
 
-            ClassLoader classLoader = classLoaderHelper.getModuleClassLoader(module);
+            ClassLoader classLoader = moduleBuildInfo.getOrCreateEntry(module).getClassLoader();
             Pair<String, List<DataModelerError>> updateResult = updateJavaSource(source,
                                                                                  dataObject,
                                                                                  new HashMap<String, String>(),
@@ -493,7 +492,7 @@ public class DataModelerServiceImpl
                 return result;
             }
 
-            ClassLoader classLoader = classLoaderHelper.getModuleClassLoader(module);
+            ClassLoader classLoader = moduleBuildInfo.getOrCreateEntry(module).getClassLoader();
             JavaRoasterModelDriver modelDriver = new JavaRoasterModelDriver(ioService,
                                                                             Paths.convert(path),
                                                                             classLoader,
@@ -659,7 +658,7 @@ public class DataModelerServiceImpl
             }
 
             if (dataObject == null) {
-                ClassLoader classLoader = classLoaderHelper.getModuleClassLoader(module);
+                ClassLoader classLoader = moduleBuildInfo.getOrCreateEntry(module).getClassLoader();
                 JavaRoasterModelDriver modelDriver = new JavaRoasterModelDriver(ioService,
                                                                                 Paths.convert(path),
                                                                                 classLoader,
@@ -871,8 +870,7 @@ public class DataModelerServiceImpl
         return ioService.readAllString(convertedPath);
     }
 
-    private void processErrors(KieModule module,
-                               ModelDriverResult result) {
+    private void processErrors(ModelDriverResult result) {
         PublishBatchMessagesEvent publishEvent = new PublishBatchMessagesEvent();
         publishEvent.setCleanExisting(true);
         publishEvent.setUserId(identity != null ? identity.getIdentifier() : null);
@@ -1210,7 +1208,7 @@ public class DataModelerServiceImpl
         //check the module class path to see if the class is defined likely in a module dependency or in curren module.
         KieModule module = moduleService.resolveModule(path);
         if (module != null) {
-            ClassLoader classLoader = classLoaderHelper.getModuleClassLoader(module);
+            ClassLoader classLoader = moduleBuildInfo.getOrCreateEntry(module).getClassLoader();
             try {
                 classLoader.loadClass(className);
                 return true;
@@ -1304,7 +1302,7 @@ public class DataModelerServiceImpl
                 parseRequest.getTarget(),
                 parseRequest.getValuePairName(),
                 parseRequest.getValuePairLiteralValue(),
-                classLoaderHelper.getModuleClassLoader(kieModule));
+                moduleBuildInfo.getOrCreateEntry(kieModule).getClassLoader());
 
         AnnotationParseResponse response = new AnnotationParseResponse(driverResult.getK1());
         response.withErrors(driverResult.getK2());
@@ -1316,7 +1314,7 @@ public class DataModelerServiceImpl
                                                                  KieModule kieModule) {
 
         JavaRoasterModelDriver modelDriver = new JavaRoasterModelDriver();
-        ClassLoader classLoader = classLoaderHelper.getModuleClassLoader(kieModule);
+        ClassLoader classLoader = moduleBuildInfo.getOrCreateEntry(kieModule).getClassLoader();
         ClassTypeResolver classTypeResolver = DriverUtils.createClassTypeResolver(classLoader);
         AnnotationDefinitionResponse definitionResponse = new AnnotationDefinitionResponse();
 

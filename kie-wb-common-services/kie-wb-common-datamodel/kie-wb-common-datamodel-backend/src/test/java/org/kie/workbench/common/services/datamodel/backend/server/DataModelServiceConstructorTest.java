@@ -25,9 +25,6 @@ import java.util.function.Predicate;
 import javax.enterprise.event.Event;
 import javax.enterprise.inject.Instance;
 
-import org.guvnor.ala.pipeline.ConfigExecutor;
-import org.guvnor.ala.registry.PipelineRegistry;
-import org.guvnor.ala.registry.inmemory.InMemoryPipelineRegistry;
 import org.guvnor.common.services.backend.file.FileDiscoveryService;
 import org.guvnor.common.services.backend.file.FileDiscoveryServiceImpl;
 import org.guvnor.common.services.backend.metadata.MetadataServerSideService;
@@ -44,7 +41,6 @@ import org.guvnor.common.services.project.backend.server.PomEnhancer;
 import org.guvnor.common.services.project.backend.server.ProjectConfigurationContentHandler;
 import org.guvnor.common.services.project.backend.server.utils.POMContentHandler;
 import org.guvnor.common.services.project.builder.events.InvalidateDMOModuleCacheEvent;
-import org.guvnor.common.services.project.builder.service.BuildService;
 import org.guvnor.common.services.project.builder.service.BuildValidationHelper;
 import org.guvnor.common.services.project.builder.service.PostBuildHandler;
 import org.guvnor.common.services.project.events.NewModuleEvent;
@@ -65,23 +61,10 @@ import org.jboss.errai.security.shared.api.identity.UserImpl;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.kie.soup.project.datamodel.commons.util.RawMVELEvaluator;
 import org.kie.soup.project.datamodel.oracle.ModuleDataModelOracle;
 import org.kie.soup.project.datamodel.oracle.TypeSource;
-import org.kie.workbench.common.services.backend.builder.ala.BuildPipelineInitializer;
-import org.kie.workbench.common.services.backend.builder.ala.BuildPipelineInvoker;
-import org.kie.workbench.common.services.backend.builder.ala.LocalBuildConfigExecutor;
-import org.kie.workbench.common.services.backend.builder.ala.LocalBuildExecConfigExecutor;
-import org.kie.workbench.common.services.backend.builder.ala.LocalModuleConfigExecutor;
-import org.kie.workbench.common.services.backend.builder.ala.LocalSourceConfigExecutor;
-import org.kie.workbench.common.services.backend.builder.core.BuildHelper;
 import org.kie.workbench.common.services.backend.builder.core.DeploymentVerifier;
-import org.kie.workbench.common.services.backend.builder.core.LRUBuilderCache;
-import org.kie.workbench.common.services.backend.builder.core.LRUModuleDependenciesClassLoaderCache;
-import org.kie.workbench.common.services.backend.builder.core.LRUPomModelCache;
-import org.kie.workbench.common.services.backend.builder.service.BuildInfoService;
-import org.kie.workbench.common.services.backend.builder.service.BuildServiceHelper;
-import org.kie.workbench.common.services.backend.builder.service.BuildServiceImpl;
+import org.kie.workbench.common.services.datamodel.backend.server.builder.ModuleBuildInfo;
 import org.kie.workbench.common.services.backend.dependencies.DependencyServiceImpl;
 import org.kie.workbench.common.services.backend.kmodule.KModuleContentHandler;
 import org.kie.workbench.common.services.backend.kmodule.KModuleServiceImpl;
@@ -94,9 +77,6 @@ import org.kie.workbench.common.services.backend.whitelist.PackageNameSearchProv
 import org.kie.workbench.common.services.backend.whitelist.PackageNameWhiteListLoader;
 import org.kie.workbench.common.services.backend.whitelist.PackageNameWhiteListSaver;
 import org.kie.workbench.common.services.backend.whitelist.PackageNameWhiteListServiceImpl;
-import org.kie.workbench.common.services.datamodel.backend.server.cache.LRUDataModelOracleCache;
-import org.kie.workbench.common.services.datamodel.backend.server.cache.LRUModuleDataModelOracleCache;
-import org.kie.workbench.common.services.datamodel.backend.server.cache.ModuleDataModelOracleBuilderProvider;
 import org.kie.workbench.common.services.datamodel.backend.server.service.DataModelService;
 import org.kie.workbench.common.services.datamodel.spi.DataModelExtension;
 import org.kie.workbench.common.services.shared.dependencies.DependencyService;
@@ -140,6 +120,8 @@ public class DataModelServiceConstructorTest {
 
     @Mock
     private Instance<DataModelExtension> dataModelExtensionProvider;
+
+    private ModuleBuildInfo moduleBuildInfo;
 
     @Before
     public void setup() {
@@ -285,8 +267,8 @@ public class DataModelServiceConstructorTest {
                                                                              saveAndRenameService);
         Instance<BuildValidationHelper> buildValidationHelperBeans = null;
         Instance<Predicate<String>> classFilterBeans = null;
-        HackedLRUModuleDependenciesClassLoaderCache dependenciesClassLoaderCache = new HackedLRUModuleDependenciesClassLoaderCache();
-        LRUPomModelCache pomModelCache = new LRUPomModelCache();
+        //HackedLRUModuleDependenciesClassLoaderCache dependenciesClassLoaderCache = new HackedLRUModuleDependenciesClassLoaderCache();
+        /*LRUPomModelCache pomModelCache = new LRUPomModelCache();
         LRUBuilderCache builderCache = new LRUBuilderCache(ioService,
                                                            moduleService,
                                                            importsService,
@@ -295,7 +277,7 @@ public class DataModelServiceConstructorTest {
                                                            pomModelCache,
                                                            packageNameWhiteListService,
                                                            classFilterBeans
-        );
+        );*/
 
         Instance<PostBuildHandler> handlerInstance = mock(Instance.class);
         Iterator<PostBuildHandler> mockIterator = mock(Iterator.class);
@@ -304,7 +286,7 @@ public class DataModelServiceConstructorTest {
 
         DeploymentVerifier deploymentVerifier = new DeploymentVerifier(repositoryResolver,
                                                                        moduleRepositoriesService);
-        BuildHelper buildHelper = new BuildHelper(pomService,
+        /*BuildHelper buildHelper = new BuildHelper(pomService,
                                                   m2RepoService,
                                                   moduleService,
                                                   deploymentVerifier,
@@ -333,16 +315,15 @@ public class DataModelServiceConstructorTest {
                                                                                        moduleService,
                                                                                        buildInfoService);
 
-        dependenciesClassLoaderCache.setBuildInfoService(buildInfoService);
+        //dependenciesClassLoaderCache.setBuildInfoService(buildInfoService);
         LRUDataModelOracleCache cachePackages = new LRUDataModelOracleCache(ioService,
                                                                             fileDiscoveryService,
                                                                             cacheModules,
                                                                             moduleService,
                                                                             buildInfoService,
                                                                             dataModelExtensionProvider,
-                                                                            new RawMVELEvaluator());
-        DataModelService dataModelService = new DataModelServiceImpl(cachePackages,
-                                                                     cacheModules,
+                                                                            new RawMVELEvaluator());*/
+        DataModelService dataModelService = new DataModelServiceImpl(moduleBuildInfo,
                                                                      moduleService);
 
         final org.uberfire.java.nio.file.Path nioPackagePath = fs.getPath(packageUrl.toURI());
@@ -373,16 +354,6 @@ public class DataModelServiceConstructorTest {
                      oracle.getModuleTypeSources().get("java.lang.String"));
     }
 
-    private Collection<ConfigExecutor> getConfigExecutors(KieModuleService moduleService,
-                                                          BuildHelper buildHelper) {
-        Collection<ConfigExecutor> configs = new ArrayList<>();
-        configs.add(new LocalSourceConfigExecutor());
-        configs.add(new LocalModuleConfigExecutor(moduleService));
-        configs.add(new LocalBuildConfigExecutor());
-        configs.add(new LocalBuildExecConfigExecutor(buildHelper));
-        return configs;
-    }
-
     private class HackedKModuleServiceImpl extends KModuleServiceImpl {
 
         public HackedKModuleServiceImpl(IOService ioService,
@@ -401,13 +372,6 @@ public class DataModelServiceConstructorTest {
         }
     }
 
-    private class HackedLRUModuleDependenciesClassLoaderCache extends LRUModuleDependenciesClassLoaderCache {
-
-        @Override
-        public void setBuildInfoService(BuildInfoService buildInfoService) {
-            super.setBuildInfoService(buildInfoService);
-        }
-    }
 
     private class HackedKieModuleServiceImpl extends KieModuleServiceImpl {
 

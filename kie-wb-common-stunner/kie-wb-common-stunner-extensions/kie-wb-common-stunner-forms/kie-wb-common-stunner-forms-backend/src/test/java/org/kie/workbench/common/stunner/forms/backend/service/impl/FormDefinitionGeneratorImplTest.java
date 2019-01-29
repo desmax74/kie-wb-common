@@ -50,7 +50,7 @@ import org.kie.workbench.common.forms.model.MetaDataEntry;
 import org.kie.workbench.common.forms.model.ModelProperty;
 import org.kie.workbench.common.forms.model.impl.meta.entries.FieldReadOnlyEntry;
 import org.kie.workbench.common.forms.services.backend.serialization.FormDefinitionSerializer;
-import org.kie.workbench.common.services.backend.project.ModuleClassLoaderHelper;
+import org.kie.workbench.common.services.datamodel.backend.server.builder.ModuleBuildInfo;
 import org.kie.workbench.common.services.shared.project.KieModule;
 import org.kie.workbench.common.services.shared.project.KieModuleService;
 import org.kie.workbench.common.stunner.core.diagram.Diagram;
@@ -125,7 +125,7 @@ public class FormDefinitionGeneratorImplTest {
     @Mock
     private KieModule module;
     @Mock
-    private ModuleClassLoaderHelper moduleClassLoaderHelper;
+    private ModuleBuildInfo moduleBuildInfo;
     @Mock
     private ClassLoader moduleClassLoader;
 
@@ -168,12 +168,12 @@ public class FormDefinitionGeneratorImplTest {
         // Prepare BPMNFormModelGenerator
         when(kieModuleService.resolveModule(any())).thenReturn(module);
         when(module.getRootPath()).thenReturn(path);
-        when(moduleClassLoaderHelper.getModuleClassLoader(module)).thenReturn(moduleClassLoader);
+        //when(moduleClassLoaderHelper.getModuleClassLoader(module)).thenReturn(moduleClassLoader);
         when(moduleClassLoader.loadClass(anyString())).thenAnswer(invocation -> Object.class);
-        BPMNFormModelGenerator bpmnFormModelGenerator = spy(new BPMNFormModelGeneratorImpl(kieModuleService, moduleClassLoaderHelper));
+        BPMNFormModelGenerator bpmnFormModelGenerator = spy(new BPMNFormModelGeneratorImpl(kieModuleService, moduleBuildInfo));
 
         FormModelHandlerManager formModelHandlerManager = new TestFormModelHandlerManager(kieModuleService,
-                                                                                          moduleClassLoaderHelper,
+                                                                                          moduleBuildInfo,
                                                                                           new TestFieldManager()
         );
 

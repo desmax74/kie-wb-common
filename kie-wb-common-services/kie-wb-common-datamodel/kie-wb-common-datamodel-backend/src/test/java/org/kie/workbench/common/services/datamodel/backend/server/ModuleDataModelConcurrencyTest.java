@@ -25,7 +25,6 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.guvnor.common.services.builder.ResourceChangeIncrementalBuilder;
 import org.guvnor.common.services.project.builder.events.InvalidateDMOModuleCacheEvent;
 import org.guvnor.common.services.project.builder.model.BuildResults;
 import org.guvnor.common.services.project.builder.service.BuildService;
@@ -63,9 +62,6 @@ public class ModuleDataModelConcurrencyTest {
 
     @Inject
     private DataModelService dataModelService;
-
-    @Inject
-    private ResourceChangeIncrementalBuilder buildChangeListener;
 
     @Inject
     private SessionInfo sessionInfo;
@@ -112,7 +108,7 @@ public class ModuleDataModelConcurrencyTest {
                                 logger.debug("[Thread: " + Thread.currentThread().getName() + "] Request to update POM received");
                                 invalidateCaches(module,
                                                  pomPath);
-                                buildChangeListener.updateResource(pomPath);
+                                //buildChangeListener.updateResource(pomPath);
                                 logger.debug("[Thread: " + Thread.currentThread().getName() + "] POM update completed");
                             } catch (Throwable e) {
                                 result.setFailed(true);
@@ -130,7 +126,7 @@ public class ModuleDataModelConcurrencyTest {
                                 logger.debug("[Thread: " + Thread.currentThread().getName() + "] Request to update Resource received");
                                 invalidateCaches(module,
                                                  resourcePath);
-                                buildChangeListener.addResource(resourcePath);
+                                //buildChangeListener.addResource(resourcePath);
                                 logger.debug("[Thread: " + Thread.currentThread().getName() + "] Resource update completed");
                             } catch (Throwable e) {
                                 result.setFailed(true);

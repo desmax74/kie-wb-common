@@ -24,7 +24,7 @@ import java.util.Set;
 
 import org.kie.soup.project.datamodel.oracle.FieldAccessorsAndMutators;
 import org.kie.soup.project.datamodel.oracle.ModelField;
-import org.kie.workbench.common.services.datamodel.backend.server.builder.projects.ClassFieldInspector;
+import org.kie.workbench.common.services.backend.projects.ClassFieldInspector;
 import org.kie.workbench.common.services.datamodeller.codegen.GenerationTools;
 import org.kie.workbench.common.stunner.bpmn.backend.forms.conditions.parser.ConditionGenerator;
 import org.kie.workbench.common.stunner.bpmn.backend.forms.conditions.parser.ConditionParser;

@@ -589,6 +589,7 @@
       <artifactId>uberfire-nio2-fs</artifactId>
       <scope>test</scope>
     </dependency>
+
   </dependencies>
 
 </project>

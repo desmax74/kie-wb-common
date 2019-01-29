@@ -18,46 +18,45 @@ package org.kie.workbench.common.services.datamodel.backend.server;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import javax.inject.Named;
 
 import org.guvnor.common.services.backend.exceptions.ExceptionUtilities;
 import org.guvnor.common.services.project.model.Package;
-import org.kie.soup.commons.validation.PortablePreconditions;
 import org.kie.soup.project.datamodel.commons.oracle.ModuleDataModelOracleImpl;
 import org.kie.soup.project.datamodel.commons.oracle.PackageDataModelOracleImpl;
 import org.kie.soup.project.datamodel.oracle.ModuleDataModelOracle;
 import org.kie.soup.project.datamodel.oracle.PackageDataModelOracle;
-import org.kie.workbench.common.services.datamodel.backend.server.cache.LRUDataModelOracleCache;
-import org.kie.workbench.common.services.datamodel.backend.server.cache.LRUModuleDataModelOracleCache;
+import org.kie.workbench.common.services.datamodel.backend.server.builder.ModuleBuildInfo;
 import org.kie.workbench.common.services.datamodel.backend.server.service.DataModelService;
 import org.kie.workbench.common.services.shared.project.KieModule;
 import org.kie.workbench.common.services.shared.project.KieModuleService;
 import org.uberfire.backend.vfs.Path;
 
+import static org.kie.soup.commons.validation.PortablePreconditions.checkNotNull;
+
 @ApplicationScoped
 public class DataModelServiceImpl
         implements DataModelService {
 
-    private LRUDataModelOracleCache cachePackages;
-
-    private LRUModuleDataModelOracleCache cacheModules;
+    private ModuleBuildInfo moduleBuildInfo;
 
     private KieModuleService moduleService;
 
+    public DataModelServiceImpl() {
+        //CDI Proxy
+    }
+
     @Inject
-    public DataModelServiceImpl(final @Named("PackageDataModelOracleCache") LRUDataModelOracleCache cachePackages,
-                                final @Named("ModuleDataModelOracleCache") LRUModuleDataModelOracleCache cacheModules,
+    public DataModelServiceImpl(final ModuleBuildInfo moduleBuildInfo,
                                 final KieModuleService moduleService) {
-        this.cachePackages = cachePackages;
-        this.cacheModules = cacheModules;
+        this.moduleBuildInfo = moduleBuildInfo;
         this.moduleService = moduleService;
     }
 
     @Override
     public PackageDataModelOracle getDataModel(final Path resourcePath) {
         try {
-            PortablePreconditions.checkNotNull("resourcePath",
-                                               resourcePath);
+            checkNotNull("resourcePath",
+                         resourcePath);
             final KieModule module = resolveModule(resourcePath);
             final Package pkg = resolvePackage(resourcePath);
 
@@ -67,8 +66,7 @@ public class DataModelServiceImpl
             }
 
             //Retrieve (or build) oracle
-            final PackageDataModelOracle oracle = cachePackages.assertPackageDataModelOracle(module,
-                                                                                             pkg);
+            final PackageDataModelOracle oracle = moduleBuildInfo.getOrCreateEntry(module).getPackageDataModelOracle(pkg);
             return oracle;
         } catch (Exception e) {
             throw ExceptionUtilities.handleException(e);
@@ -78,7 +76,7 @@ public class DataModelServiceImpl
     @Override
     public ModuleDataModelOracle getModuleDataModel(final Path resourcePath) {
         try {
-            PortablePreconditions.checkNotNull("resourcePath",
+            checkNotNull("resourcePath",
                                                resourcePath);
             final KieModule module = resolveModule(resourcePath);
 
@@ -88,8 +86,7 @@ public class DataModelServiceImpl
             }
 
             //Retrieve (or build) oracle
-            final ModuleDataModelOracle oracle = cacheModules.assertModuleDataModelOracle(module);
-            return oracle;
+            return moduleBuildInfo.getOrCreateEntry(module).getModuleDataModelOracle();
         } catch (Exception e) {
             e.printStackTrace();
             throw ExceptionUtilities.handleException(e);

@@ -32,7 +32,8 @@ import org.kie.workbench.common.forms.jbpm.model.authoring.process.BusinessProce
 import org.kie.workbench.common.forms.jbpm.model.authoring.task.TaskFormModel;
 import org.kie.workbench.common.forms.jbpm.service.bpmn.util.BPMNVariableUtils;
 import org.kie.workbench.common.forms.model.ModelProperty;
-import org.kie.workbench.common.services.backend.project.ModuleClassLoaderHelper;
+
+import org.kie.workbench.common.services.datamodel.backend.server.builder.ModuleBuildInfo;
 import org.kie.workbench.common.services.shared.project.KieModule;
 import org.kie.workbench.common.services.shared.project.KieModuleService;
 import org.mockito.Mock;
@@ -118,7 +119,7 @@ public class BPMNFormModelGeneratorImplTest {
     @Mock
     private KieModule module;
     @Mock
-    private ModuleClassLoaderHelper projectClassLoaderHelper;
+    private ModuleBuildInfo moduleBuildInfo;
     @Mock
     private ClassLoader projectClassLoader;
 
@@ -135,11 +136,11 @@ public class BPMNFormModelGeneratorImplTest {
     public void init() throws Exception {
         when(projectService.resolveModule(any())).thenReturn(module);
         when(module.getRootPath()).thenReturn(path);
-        when(projectClassLoaderHelper.getModuleClassLoader(module)).thenReturn(projectClassLoader);
+        //when(projectClassLoaderHelper.getModuleClassLoader(module)).thenReturn(projectClassLoader);
         when(projectClassLoader.loadClass(anyString())).thenAnswer(invocation -> Object.class);
 
         generator = new BPMNFormModelGeneratorImpl(projectService,
-                                                   projectClassLoaderHelper);
+                                                   moduleBuildInfo);
     }
 
     @Test

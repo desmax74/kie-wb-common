@@ -35,7 +35,7 @@ import org.kie.workbench.common.forms.services.backend.serialization.FormDefinit
 import org.kie.workbench.common.forms.services.backend.serialization.impl.FieldSerializer;
 import org.kie.workbench.common.forms.services.backend.serialization.impl.FormDefinitionSerializerImpl;
 import org.kie.workbench.common.forms.services.backend.serialization.impl.FormModelSerializer;
-import org.kie.workbench.common.services.backend.project.ModuleClassLoaderHelper;
+import org.kie.workbench.common.services.datamodel.backend.server.builder.ModuleBuildInfo;
 import org.kie.workbench.common.services.shared.project.KieModule;
 import org.kie.workbench.common.services.shared.project.KieModuleService;
 import org.mockito.Mock;
@@ -76,14 +76,14 @@ public abstract class BPMNVFSFormDefinitionGeneratorServiceTest extends Abstract
     @Mock
     private KieModule module;
 
-    @Mock
-    private ModuleClassLoaderHelper projectClassLoaderHelper;
+    @Mock //@TODO is needed the mock anntoation ?
+    private ModuleBuildInfo moduleBuildInfo;
 
     @Before
     public void setup() throws IOException {
 
         when(projectService.resolveModule(any())).thenReturn(module);
-        when(projectClassLoaderHelper.getModuleClassLoader(module)).thenReturn(this.getClass().getClassLoader());
+        //when(projectClassLoaderHelper.getModuleClassLoader(module)).thenReturn(this.getClass().getClassLoader());
 
         source = mock(Path.class);
 
@@ -96,7 +96,7 @@ public abstract class BPMNVFSFormDefinitionGeneratorServiceTest extends Abstract
                 invocationOnMock.getArguments()[0].toString()));
 
         formModelHandlerManager = new TestFormModelHandlerManager(projectService,
-                projectClassLoaderHelper,
+                                                                  moduleBuildInfo,
                 fieldManager,
                 dataObjectFinderService);
 

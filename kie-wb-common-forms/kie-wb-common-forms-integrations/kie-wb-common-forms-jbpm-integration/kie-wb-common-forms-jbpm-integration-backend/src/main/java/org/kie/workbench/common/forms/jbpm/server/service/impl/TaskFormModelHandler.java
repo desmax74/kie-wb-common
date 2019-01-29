@@ -28,7 +28,8 @@ import org.kie.workbench.common.forms.jbpm.model.authoring.task.TaskFormModel;
 import org.kie.workbench.common.forms.jbpm.server.service.util.JBPMFormsIntegrationBackendConstants;
 import org.kie.workbench.common.forms.jbpm.service.shared.BPMFinderService;
 import org.kie.workbench.common.forms.service.shared.FieldManager;
-import org.kie.workbench.common.services.backend.project.ModuleClassLoaderHelper;
+
+import org.kie.workbench.common.services.datamodel.backend.server.builder.ModuleBuildInfo;
 import org.kie.workbench.common.services.shared.project.KieModuleService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,12 +40,12 @@ public class TaskFormModelHandler extends AbstractJBPMFormModelHandler<TaskFormM
     private static final Logger logger = LoggerFactory.getLogger(BusinessProcessFormModelHandler.class);
 
     @Inject
-    public TaskFormModelHandler(KieModuleService projectService,
-                                ModuleClassLoaderHelper classLoaderHelper,
-                                FieldManager fieldManager,
-                                BPMFinderService bpmFinderService) {
+    public TaskFormModelHandler(final KieModuleService projectService,
+                                final ModuleBuildInfo moduleBuildInfo,
+                                final FieldManager fieldManager,
+                                final BPMFinderService bpmFinderService) {
         super(projectService,
-              classLoaderHelper,
+              moduleBuildInfo,
               fieldManager,
               bpmFinderService);
     }
@@ -80,7 +81,7 @@ public class TaskFormModelHandler extends AbstractJBPMFormModelHandler<TaskFormM
     @Override
     public FormModelHandler<TaskFormModel> newInstance() {
         return new TaskFormModelHandler(moduleService,
-                                        classLoaderHelper,
+                                        moduleBuildInfo,
                                         fieldManager,
                                         bpmFinderService);
     }

@@ -44,7 +44,7 @@ import org.kie.workbench.common.forms.jbpm.model.authoring.task.TaskFormModel;
 import org.kie.workbench.common.forms.jbpm.server.service.BPMNFormModelGenerator;
 import org.kie.workbench.common.forms.jbpm.service.bpmn.util.BPMNVariableUtils;
 import org.kie.workbench.common.forms.model.ModelProperty;
-import org.kie.workbench.common.services.backend.project.ModuleClassLoaderHelper;
+import org.kie.workbench.common.services.datamodel.backend.server.builder.ModuleBuildInfo;
 import org.kie.workbench.common.services.shared.project.KieModuleService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,13 +56,13 @@ public class BPMNFormModelGeneratorImpl implements BPMNFormModelGenerator {
     private static final Logger logger = LoggerFactory.getLogger(BPMNFormModelGeneratorImpl.class);
 
     private KieModuleService moduleService;
-    private ModuleClassLoaderHelper projectClassLoaderHelper;
+    private ModuleBuildInfo moduleBuildInfo;
 
     @Inject
     public BPMNFormModelGeneratorImpl(KieModuleService moduleService,
-                                      ModuleClassLoaderHelper projectClassLoaderHelper) {
+                                      ModuleBuildInfo moduleBuildInfo) {
         this.moduleService = moduleService;
-        this.projectClassLoaderHelper = projectClassLoaderHelper;
+        this.moduleBuildInfo = moduleBuildInfo;
     }
 
     @Override
@@ -72,7 +72,7 @@ public class BPMNFormModelGeneratorImpl implements BPMNFormModelGenerator {
 
         if (process != null) {
 
-            final ClassLoader projectClassLoader = projectClassLoaderHelper.getModuleClassLoader(moduleService.resolveModule(path));
+            final ClassLoader projectClassLoader = moduleBuildInfo.getOrCreateEntry(moduleService.resolveModule(path)).getClassLoader();
 
             List<ModelProperty> properties = process.getProperties().stream().map(property -> {
                 String varName = property.getId();
@@ -101,7 +101,7 @@ public class BPMNFormModelGeneratorImpl implements BPMNFormModelGenerator {
 
         Process process = getProcess(source);
 
-        final ClassLoader projectClassLoader = projectClassLoaderHelper.getModuleClassLoader(moduleService.resolveModule(path));
+        final ClassLoader projectClassLoader = moduleBuildInfo.getOrCreateEntry(moduleService.resolveModule(path)).getClassLoader();
 
         if (process != null) {
             ProcessTaskFormsGenerationResult result = readUserTaskFormVariables(process);
@@ -143,7 +143,7 @@ public class BPMNFormModelGeneratorImpl implements BPMNFormModelGenerator {
                     throw new IllegalStateException(generateErrorMessage(formVariables));
                 }
 
-                final ClassLoader projectClassLoader = projectClassLoaderHelper.getModuleClassLoader(moduleService.resolveModule(path));
+                final ClassLoader projectClassLoader = moduleBuildInfo.getOrCreateEntry(moduleService.resolveModule(path)).getClassLoader();
 
                 return formVariables.toFormModel(variable -> createModelProperty(variable, projectClassLoader));
             }

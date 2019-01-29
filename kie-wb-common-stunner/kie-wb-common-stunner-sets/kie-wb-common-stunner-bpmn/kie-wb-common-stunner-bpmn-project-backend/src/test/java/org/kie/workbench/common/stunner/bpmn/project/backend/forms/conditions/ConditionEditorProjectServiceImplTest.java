@@ -16,7 +16,7 @@
 
 package org.kie.workbench.common.stunner.bpmn.project.backend.forms.conditions;
 
-import org.kie.workbench.common.services.backend.project.ModuleClassLoaderHelper;
+import org.kie.workbench.common.services.datamodel.backend.server.builder.ModuleBuildInfo;
 import org.kie.workbench.common.services.shared.project.KieModule;
 import org.kie.workbench.common.services.shared.project.KieModuleService;
 import org.kie.workbench.common.stunner.bpmn.backend.forms.conditions.ConditionEditorServiceBaseTest;
@@ -32,7 +32,7 @@ public class ConditionEditorProjectServiceImplTest
     private KieModuleService moduleService;
 
     @Mock
-    private ModuleClassLoaderHelper moduleClassLoaderHelper;
+    private ModuleBuildInfo moduleBuildInfo;
 
     @Mock
     private KieModule module;
@@ -42,11 +42,11 @@ public class ConditionEditorProjectServiceImplTest
         super.setUp();
         when(moduleService.resolveModule(path)).thenReturn(module);
         ClassLoader classLoader = ClassLoader.getSystemClassLoader();
-        when(moduleClassLoaderHelper.getModuleClassLoader(module)).thenReturn(classLoader);
+        when(moduleBuildInfo.getOrCreateEntry(module).getClassLoader()).thenReturn(classLoader);
     }
 
     @Override
     protected ConditionEditorService createService() {
-        return new ConditionEditorProjectServiceImpl(moduleService, moduleClassLoaderHelper);
+        return new ConditionEditorProjectServiceImpl(moduleService, moduleBuildInfo);
     }
 }

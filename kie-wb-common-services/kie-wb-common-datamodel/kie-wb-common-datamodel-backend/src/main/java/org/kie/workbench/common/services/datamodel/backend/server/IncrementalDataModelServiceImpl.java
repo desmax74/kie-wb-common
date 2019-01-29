@@ -17,7 +17,6 @@ package org.kie.workbench.common.services.datamodel.backend.server;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import javax.inject.Named;
 
 import org.guvnor.common.services.backend.exceptions.ExceptionUtilities;
 import org.guvnor.common.services.project.model.Package;
@@ -26,7 +25,9 @@ import org.kie.soup.commons.validation.PortablePreconditions;
 import org.kie.soup.project.datamodel.imports.Import;
 import org.kie.soup.project.datamodel.imports.Imports;
 import org.kie.soup.project.datamodel.oracle.PackageDataModelOracle;
-import org.kie.workbench.common.services.datamodel.backend.server.cache.LRUDataModelOracleCache;
+
+import org.kie.workbench.common.services.backend.server.DataModelOracleUtilities;
+import org.kie.workbench.common.services.datamodel.backend.server.builder.ModuleBuildInfo;
 import org.kie.workbench.common.services.datamodel.model.PackageDataModelOracleIncrementalPayload;
 import org.kie.workbench.common.services.datamodel.service.IncrementalDataModelService;
 import org.kie.workbench.common.services.shared.project.KieModule;
@@ -40,15 +41,15 @@ import org.uberfire.backend.vfs.Path;
 @ApplicationScoped
 public class IncrementalDataModelServiceImpl implements IncrementalDataModelService {
 
-    private LRUDataModelOracleCache cachePackages;
+    private ModuleBuildInfo moduleBuildInfo;
 
     private KieModuleService moduleService;
 
     @Inject
-    public IncrementalDataModelServiceImpl(@Named("PackageDataModelOracleCache") final LRUDataModelOracleCache cachePackages,
+    public IncrementalDataModelServiceImpl(final ModuleBuildInfo moduleBuildInfo,
                                            final KieModuleService moduleService) {
-        this.cachePackages = PortablePreconditions.checkNotNull("cachePackages",
-                                                                cachePackages);
+        this.moduleBuildInfo = PortablePreconditions.checkNotNull("moduleBuildInfo",
+                                                                  moduleBuildInfo);
         this.moduleService = PortablePreconditions.checkNotNull("moduleService",
                                                                 moduleService);
     }
@@ -85,8 +86,7 @@ public class IncrementalDataModelServiceImpl implements IncrementalDataModelServ
             String fullyQualifiedClassName = factType;
 
             //Retrieve (or build) oracle and populate incremental content
-            final PackageDataModelOracle oracle = cachePackages.assertPackageDataModelOracle(project,
-                                                                                             pkg);
+            final PackageDataModelOracle oracle = moduleBuildInfo.getOrCreateEntry(project).getPackageDataModelOracle(pkg);
 
             // Check if the FactType is already known to the DataModelOracle, otherwise we need to find the FQCN
             if (oracle.getModuleModelFields().get(fullyQualifiedClassName) == null) {

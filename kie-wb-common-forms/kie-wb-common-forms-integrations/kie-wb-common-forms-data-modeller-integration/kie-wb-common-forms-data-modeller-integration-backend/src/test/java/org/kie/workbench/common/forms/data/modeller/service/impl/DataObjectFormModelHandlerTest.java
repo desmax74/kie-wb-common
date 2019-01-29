@@ -54,7 +54,7 @@ import org.kie.workbench.common.forms.model.TypeKind;
 import org.kie.workbench.common.forms.service.shared.FieldManager;
 import org.kie.workbench.common.screens.datamodeller.backend.server.handler.JPADomainHandler;
 import org.kie.workbench.common.screens.datamodeller.service.DataModelerService;
-import org.kie.workbench.common.services.backend.project.ModuleClassLoaderHelper;
+import org.kie.workbench.common.services.datamodel.backend.server.builder.ModuleBuildInfo;
 import org.kie.workbench.common.services.datamodeller.core.Annotation;
 import org.kie.workbench.common.services.datamodeller.core.DataModel;
 import org.kie.workbench.common.services.datamodeller.core.DataObject;
@@ -107,8 +107,8 @@ public class DataObjectFormModelHandlerTest extends AbstractDataObjectTest {
     @Mock
     private KieModule module;
 
-    @Mock
-    private ModuleClassLoaderHelper moduleClassLoaderHelper;
+    //@TODO how is initialized ?
+    private ModuleBuildInfo moduleBuildInfo;;
 
     @Mock
     private ClassLoader classLoader;
@@ -117,7 +117,7 @@ public class DataObjectFormModelHandlerTest extends AbstractDataObjectTest {
     public void setUp() throws Exception {
 
         when(moduleService.resolveModule(any())).thenReturn(module);
-        when(moduleClassLoaderHelper.getModuleClassLoader(module)).thenReturn(classLoader);
+        //when(moduleClassLoaderHelper.getModuleClassLoader(module)).thenReturn(classLoader);
         when(classLoader.loadClass(any())).thenAnswer((Answer<Class>) invocation -> String.class);
 
         createModel();
@@ -126,7 +126,7 @@ public class DataObjectFormModelHandlerTest extends AbstractDataObjectTest {
                                                         dataModelerService);
 
         handler = new DataObjectFormModelHandler(moduleService,
-                                                 moduleClassLoaderHelper,
+                                                 moduleBuildInfo,
                                                  finderService,
                                                  new TestFieldManager());
 

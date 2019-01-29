@@ -25,7 +25,7 @@ import javax.inject.Inject;
 import org.guvnor.common.services.backend.exceptions.ExceptionUtilities;
 import org.jboss.errai.bus.server.annotations.Service;
 import org.kie.soup.project.datamodel.oracle.PackageDataModelOracle;
-import org.kie.workbench.common.services.datamodel.backend.server.DataModelOracleUtilities;
+import org.kie.workbench.common.services.backend.server.DataModelOracleUtilities;
 import org.kie.workbench.common.services.datamodel.backend.server.service.DataModelService;
 import org.kie.workbench.common.stunner.bpmn.service.DataTypesService;
 import org.uberfire.backend.vfs.Path;

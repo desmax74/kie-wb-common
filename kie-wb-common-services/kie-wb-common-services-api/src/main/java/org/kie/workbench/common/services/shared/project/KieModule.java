@@ -71,6 +71,10 @@ public class KieModule
                                                       pom);
     }
 
+    public Path getRootPath() {
+        return this.getRootPath();
+    }
+
     public Path getKModuleXMLPath() {
         return this.kmoduleXMLPath;
     }

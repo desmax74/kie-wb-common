@@ -25,7 +25,7 @@ import org.jboss.weld.environment.se.Weld;
 import org.jboss.weld.environment.se.WeldContainer;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.kie.workbench.common.services.backend.project.ModuleClassLoaderHelper;
+import org.kie.workbench.common.services.datamodel.backend.server.builder.ModuleBuildInfo;
 import org.kie.workbench.common.services.shared.project.KieModuleService;
 import org.uberfire.backend.server.util.Paths;
 import org.uberfire.backend.vfs.Path;
@@ -53,13 +53,13 @@ public abstract class AbstractGetModelsTest {
     protected static WeldContainer weldContainer;
 
     protected static KieModuleService moduleService;
-    protected static ModuleClassLoaderHelper classLoaderHelper;
+    protected static ModuleBuildInfo moduleBuildInfo;
 
     @BeforeClass
     public static void containerSetup() throws Exception {
         weldContainer = new Weld().initialize();
         moduleService = weldContainer.select(KieModuleService.class).get();
-        classLoaderHelper = weldContainer.select(ModuleClassLoaderHelper.class).get();
+        moduleBuildInfo = weldContainer.select(ModuleBuildInfo.class).get();
 
         rootPath = getRootPath(PROJECT_ROOT);
     }

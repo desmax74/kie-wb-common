@@ -30,7 +30,8 @@ import org.kie.workbench.common.screens.datamodeller.model.persistence.Persisten
 import org.kie.workbench.common.screens.datamodeller.model.persistence.Property;
 import org.kie.workbench.common.screens.datamodeller.model.persistence.TransactionType;
 import org.kie.workbench.common.screens.datamodeller.validation.PersistenceDescriptorValidator;
-import org.kie.workbench.common.services.backend.project.ModuleClassLoaderHelper;
+
+import org.kie.workbench.common.services.datamodel.backend.server.builder.ModuleBuildInfo;
 import org.kie.workbench.common.services.shared.project.KieModule;
 import org.kie.workbench.common.services.shared.project.KieModuleService;
 import org.mockito.Mock;
@@ -58,7 +59,7 @@ public class PersistenceDescriptorValidatorTest {
     private KieModuleService moduleService;
 
     @Mock
-    private ModuleClassLoaderHelper classLoaderHelper;
+    private ModuleBuildInfo moduleBuildInfo;
 
     @Mock
     private Path path;
@@ -73,12 +74,12 @@ public class PersistenceDescriptorValidatorTest {
     @Before
     public void setUp() {
         validator = new PersistenceDescriptorValidatorImpl(moduleService,
-                                                           classLoaderHelper);
+                                                           moduleBuildInfo);
         descriptor = createValidDescriptor();
 
         classLoader = this.getClass().getClassLoader();
         when(moduleService.resolveModule(path)).thenReturn(module);
-        when(classLoaderHelper.getModuleClassLoader(module)).thenReturn(classLoader);
+        //when(classLoaderHelper.getModuleClassLoader(module)).thenReturn(classLoader);
     }
 
     @Test

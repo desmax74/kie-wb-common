@@ -26,7 +26,8 @@ import org.junit.Test;
 import org.kie.soup.project.datamodel.commons.util.RawMVELEvaluator;
 import org.kie.soup.project.datamodel.oracle.ModuleDataModelOracle;
 import org.kie.soup.project.datamodel.oracle.TypeSource;
-import org.kie.workbench.common.services.datamodel.backend.server.builder.projects.ModuleDataModelOracleBuilder;
+
+import org.kie.workbench.common.services.backend.projects.ModuleDataModelOracleBuilder;
 import org.kie.workbench.common.services.datamodeller.core.DataModel;
 import org.kie.workbench.common.services.datamodeller.core.DataObject;
 import org.kie.workbench.common.services.datamodeller.core.JavaEnum;

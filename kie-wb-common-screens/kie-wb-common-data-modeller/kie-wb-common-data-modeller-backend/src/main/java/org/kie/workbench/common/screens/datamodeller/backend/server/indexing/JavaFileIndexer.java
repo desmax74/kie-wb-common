@@ -24,7 +24,7 @@ import org.guvnor.common.services.project.model.Package;
 import org.jboss.forge.roaster.Roaster;
 import org.jboss.forge.roaster.model.source.JavaSource;
 import org.kie.workbench.common.screens.javaeditor.type.JavaResourceTypeDefinition;
-import org.kie.workbench.common.services.backend.project.ModuleClassLoaderHelper;
+import org.kie.workbench.common.services.datamodel.backend.server.builder.ModuleBuildInfo;
 import org.kie.workbench.common.services.refactoring.Resource;
 import org.kie.workbench.common.services.refactoring.backend.server.indexing.AbstractFileIndexer;
 import org.kie.workbench.common.services.refactoring.backend.server.indexing.DefaultIndexBuilder;
@@ -74,12 +74,20 @@ public class JavaFileIndexer extends AbstractFileIndexer {
     @Inject
     protected JavaResourceTypeDefinition javaResourceTypeDefinition;
 
-    @Inject
-    @Any
     protected Instance<JavaFileIndexerExtension> javaFileIndexerExtensions;
 
+    ModuleBuildInfo moduleBuildInfo;
+
+    public JavaFileIndexer() {}
+
     @Inject
-    ModuleClassLoaderHelper classLoaderHelper;
+    public JavaFileIndexer(final JavaResourceTypeDefinition javaResourceTypeDefinition,
+                           @Any final Instance<JavaFileIndexerExtension> javaFileIndexerExtensions,
+                           final ModuleBuildInfo moduleBuildInfo) {
+        this.javaResourceTypeDefinition = javaResourceTypeDefinition;
+        this.javaFileIndexerExtensions = javaFileIndexerExtensions;
+        this.moduleBuildInfo = moduleBuildInfo;
+    }
 
     @Override
     public boolean supportsPath(final Path path) {
@@ -151,7 +159,7 @@ public class JavaFileIndexer extends AbstractFileIndexer {
      * Present in order to be overridden in tests
      */
     protected ClassLoader getModuleClassLoader(final KieModule module) {
-        return classLoaderHelper.getModuleClassLoader(module);
+        return moduleBuildInfo.getOrCreateEntry(module).getClassLoader();
     }
 
     /*

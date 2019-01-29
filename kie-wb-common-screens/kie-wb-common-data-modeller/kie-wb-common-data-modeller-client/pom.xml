@@ -161,12 +161,12 @@
     <dependency>
       <groupId>org.kie.workbench.services</groupId>
       <artifactId>kie-wb-common-data-modeller-core</artifactId>
-      <exclusions>
+      <!--<exclusions>
         <exclusion>
           <groupId>org.kie.workbench.services</groupId>
           <artifactId>kie-wb-common-datamodel-backend</artifactId>
         </exclusion>
-      </exclusions>
+      </exclusions>-->
     </dependency>
 
     <dependency>
@@ -228,12 +228,12 @@
       <artifactId>kie-wb-common-data-modeller-core</artifactId>
       <classifier>tests</classifier>
       <scope>test</scope>
-      <exclusions>
+      <!--<exclusions>
         <exclusion>
           <groupId>org.kie.workbench.services</groupId>
           <artifactId>kie-wb-common-datamodel-backend</artifactId>
         </exclusion>
-      </exclusions>
+      </exclusions>-->
     </dependency>
   </dependencies>
 

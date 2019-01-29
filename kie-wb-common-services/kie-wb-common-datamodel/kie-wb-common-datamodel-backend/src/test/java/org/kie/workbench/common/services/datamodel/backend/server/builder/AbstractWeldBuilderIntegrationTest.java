@@ -27,8 +27,6 @@ import org.guvnor.structure.server.config.ConfigurationService;
 import org.guvnor.test.WeldJUnitRunner;
 import org.junit.Before;
 import org.junit.runner.RunWith;
-import org.kie.workbench.common.services.backend.builder.core.LRUBuilderCache;
-import org.kie.workbench.common.services.datamodel.backend.server.cache.LRUModuleDataModelOracleCache;
 import org.kie.workbench.common.services.shared.project.KieModuleService;
 import org.uberfire.backend.server.util.Paths;
 import org.uberfire.java.nio.fs.file.SimpleFileSystemProvider;
@@ -53,9 +51,7 @@ public abstract class AbstractWeldBuilderIntegrationTest {
     @Inject
     protected KieModuleService moduleService;
     @Inject
-    protected LRUBuilderCache builderCache;
-    @Inject
-    protected LRUModuleDataModelOracleCache moduleDMOCache;
+    protected ModuleBuildInfo moduleBuildInfo;
 
     @Before
     public void setUp() throws Exception {

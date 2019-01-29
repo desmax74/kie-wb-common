@@ -36,7 +36,6 @@ import org.guvnor.common.services.project.service.GAVAlreadyExistsException;
 import org.guvnor.common.services.project.service.ModuleRepositoriesService;
 import org.guvnor.common.services.project.service.ModuleRepositoryResolver;
 import org.guvnor.common.services.project.service.POMService;
-import org.guvnor.common.services.project.service.WorkspaceProjectService;
 import org.guvnor.common.services.shared.metadata.MetadataService;
 import org.guvnor.common.services.shared.metadata.model.Metadata;
 import org.guvnor.structure.organizationalunit.OrganizationalUnit;
@@ -52,7 +51,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.kie.workbench.common.screens.projecteditor.model.ProjectScreenModel;
 import org.kie.workbench.common.screens.projecteditor.service.ProjectScreenService;
-import org.kie.workbench.common.services.backend.builder.core.LRUPomModelCache;
 import org.kie.workbench.common.services.shared.kmodule.KModuleModel;
 import org.kie.workbench.common.services.shared.kmodule.KModuleService;
 import org.kie.workbench.common.services.shared.project.KieModule;
@@ -77,7 +75,6 @@ import static org.junit.Assert.fail;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyBoolean;
 import static org.mockito.Mockito.anyString;
-import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
@@ -151,9 +148,6 @@ public class ProjectScreenServiceImplTest {
     private CommentedOptionFactory commentedOptionFactory;
 
     @Mock
-    private LRUPomModelCache pomModelCache;
-
-    @Mock
     private RepositoryService repositoryService;
 
     @Mock
@@ -218,8 +212,7 @@ public class ProjectScreenServiceImplTest {
                                             ioService,
                                             moduleService,
                                             repositoryResolver,
-                                            commentedOptionFactory,
-                                            pomModelCache);
+                                            commentedOptionFactory);
         service = new ProjectScreenServiceImpl(projectService,
                                                repositoryService,
                                                moduleService,

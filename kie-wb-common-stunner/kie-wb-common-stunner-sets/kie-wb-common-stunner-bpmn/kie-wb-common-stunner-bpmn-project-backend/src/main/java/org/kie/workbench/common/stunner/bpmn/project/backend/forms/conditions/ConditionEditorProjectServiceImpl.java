@@ -21,7 +21,7 @@ import javax.enterprise.inject.Specializes;
 import javax.inject.Inject;
 
 import org.jboss.errai.bus.server.annotations.Service;
-import org.kie.workbench.common.services.backend.project.ModuleClassLoaderHelper;
+import org.kie.workbench.common.services.datamodel.backend.server.builder.ModuleBuildInfo;
 import org.kie.workbench.common.services.shared.project.KieModule;
 import org.kie.workbench.common.services.shared.project.KieModuleService;
 import org.kie.workbench.common.stunner.bpmn.backend.forms.conditions.ConditionEditorServiceImpl;
@@ -37,7 +37,7 @@ public class ConditionEditorProjectServiceImpl
 
     private final KieModuleService moduleService;
 
-    private final ModuleClassLoaderHelper moduleClassLoaderHelper;
+    private final ModuleBuildInfo moduleBuildInfo;
 
     private ConditionEditorProjectServiceImpl() {
         //Empty constructor for proxying
@@ -46,13 +46,13 @@ public class ConditionEditorProjectServiceImpl
 
     @Inject
     public ConditionEditorProjectServiceImpl(final KieModuleService moduleService,
-                                             final ModuleClassLoaderHelper moduleClassLoaderHelper) {
+                                             final ModuleBuildInfo moduleBuildInfo) {
         this.moduleService = moduleService;
-        this.moduleClassLoaderHelper = moduleClassLoaderHelper;
+        this.moduleBuildInfo = moduleBuildInfo;
     }
 
     protected ClassLoader resolveClassLoader(Path path) {
         KieModule module = moduleService.resolveModule(path);
-        return moduleClassLoaderHelper.getModuleClassLoader(module);
+        return moduleBuildInfo.getOrCreateEntry(module).getClassLoader();
     }
 }

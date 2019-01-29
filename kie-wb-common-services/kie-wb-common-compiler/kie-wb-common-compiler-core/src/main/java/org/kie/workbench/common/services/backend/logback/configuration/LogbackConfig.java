@@ -41,6 +41,7 @@ import org.kie.workbench.common.services.backend.logback.appender.UUIDThreadName
 public class LogbackConfig extends ContextAwareBase implements Configurator {
 
     public LogbackConfig() {
+        System.out.println("initialized!");
     }
 
     @Override

@@ -29,11 +29,7 @@ public class OutputSharedMap {
     private static Map<String, List<String>> map = new ConcurrentHashMap();
 
     public static List<String> getLog(String key) {
-        if (map.containsKey(key)) {
-            return map.get(key);
-        } else {
-            return Collections.emptyList();
-        }
+        return map.getOrDefault(key, Collections.emptyList());
     }
 
     public static void removeLog(String key) {

@@ -108,7 +108,7 @@ public class GetProcessModelsTest extends AbstractGetModelsTest {
         when(ioService.newInputStream(any())).thenAnswer(invocationOnMock -> new FileInputStream(((Path) invocationOnMock.getArguments()[0]).toFile()));
 
         bpmnFormModelGenerator = new BPMNFormModelGeneratorImpl(moduleService,
-                                                                classLoaderHelper);
+                                                                moduleBuildInfo);
 
         finderService = new BPMFinderServiceImpl(ioService, moduleService, bpmnFormModelGenerator);
         finderService.init();

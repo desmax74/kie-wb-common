@@ -30,7 +30,7 @@ import org.guvnor.common.services.project.service.ModuleRepositoriesService;
 import org.guvnor.common.services.project.service.ModuleRepositoryResolver;
 import org.guvnor.common.services.project.service.POMService;
 import org.kie.workbench.common.screens.projecteditor.model.ProjectScreenModel;
-import org.kie.workbench.common.services.backend.builder.core.LRUPomModelCache;
+
 import org.kie.workbench.common.services.shared.kmodule.KModuleService;
 import org.kie.workbench.common.services.shared.project.KieModule;
 import org.kie.workbench.common.services.shared.project.KieModuleService;
@@ -53,7 +53,6 @@ public class ProjectScreenModelSaver {
     private ModuleRepositoryResolver repositoryResolver;
     private CommentedOptionFactory commentedOptionFactory;
 
-    private LRUPomModelCache pomModelCache;
 
     public ProjectScreenModelSaver() {
     }
@@ -67,8 +66,7 @@ public class ProjectScreenModelSaver {
                                    final @Named("ioStrategy") IOService ioService,
                                    final KieModuleService moduleService,
                                    final ModuleRepositoryResolver repositoryResolver,
-                                   final CommentedOptionFactory commentedOptionFactory,
-                                   final LRUPomModelCache pomModelCache) {
+                                   final CommentedOptionFactory commentedOptionFactory) {
         this.pomService = pomService;
         this.kModuleService = kModuleService;
         this.importsService = importsService;
@@ -79,8 +77,6 @@ public class ProjectScreenModelSaver {
         this.moduleService = moduleService;
         this.repositoryResolver = repositoryResolver;
         this.commentedOptionFactory = commentedOptionFactory;
-
-        this.pomModelCache = pomModelCache;
     }
 
     public void save(final Path pathToPomXML,
@@ -93,9 +89,6 @@ public class ProjectScreenModelSaver {
         }
 
         try {
-            final KieModule module = moduleService.resolveModule(pathToPomXML);
-            pomModelCache.invalidateCache(module);
-
             ioService.startBatch(Paths.convert(pathToPomXML).getFileSystem(),
                                  commentedOptionFactory.makeCommentedOption(comment));
             pomService.save(pathToPomXML,

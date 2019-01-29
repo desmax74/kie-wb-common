@@ -103,7 +103,36 @@
   </build>
 
   <dependencies>
+    <dependency>
+      <groupId>org.kie.workbench.services</groupId>
+      <artifactId>kie-wb-common-compiler-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.kie.workbench.services</groupId>
+      <artifactId>kie-wb-common-compiler-service</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.kie.workbench.services</groupId>
+      <artifactId>kie-wb-common-datamodel-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.drools</groupId>
+      <artifactId>drools-workbench-models-datamodel-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.errai</groupId>
+      <artifactId>errai-config</artifactId>
+    </dependency>
 
+    <dependency>
+      <groupId>org.jboss.errai</groupId>
+      <artifactId>errai-security-picketlink</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <!--<dependency>
+      <groupId>org.kie.workbench.services</groupId>
+      <artifactId>kie-wb-common-datamodel-backend</artifactId>
+    </dependency>-->
     <!-- dependencies added because of new illegal transitive dependency check -->
     <dependency>
       <groupId>com.thoughtworks.xstream</groupId>
@@ -510,6 +539,19 @@
       <artifactId>powermock-module-junit4</artifactId>
       <scope>test</scope>
     </dependency>
+    <!--<dependency>
+      <groupId>org.kie.workbench.services</groupId>
+      <artifactId>kie-wb-common-compiler-core</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.kie.workbench.services</groupId>
+      <artifactId>kie-wb-common-compiler-service</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.kie.workbench.services</groupId>
+      <artifactId>kie-wb-common-datamodel-backend</artifactId>
+    </dependency>-->
 
   </dependencies>
 

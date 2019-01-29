@@ -28,7 +28,8 @@ import org.kie.soup.project.datamodel.oracle.Annotation;
 import org.kie.soup.project.datamodel.oracle.ModelField;
 import org.kie.soup.project.datamodel.oracle.ModuleDataModelOracle;
 import org.kie.soup.project.datamodel.oracle.TypeSource;
-import org.kie.workbench.common.services.datamodel.backend.server.DataModelOracleUtilities;
+
+import org.kie.workbench.common.services.backend.server.DataModelOracleUtilities;
 import org.kie.workbench.common.services.datamodeller.codegen.GenerationContext;
 import org.kie.workbench.common.services.datamodeller.codegen.GenerationEngine;
 import org.kie.workbench.common.services.datamodeller.codegen.GenerationListener;

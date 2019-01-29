@@ -42,7 +42,7 @@ import org.kie.api.io.ResourceType;
 import org.kie.internal.builder.KnowledgeBuilder;
 import org.kie.internal.builder.KnowledgeBuilderError;
 import org.kie.internal.builder.KnowledgeBuilderFactory;
-import org.kie.workbench.common.services.backend.project.ModuleClassLoaderHelper;
+import org.kie.workbench.common.services.datamodel.backend.server.builder.ModuleBuildInfo;
 import org.kie.workbench.common.services.refactoring.backend.server.indexing.AbstractFileIndexer;
 import org.kie.workbench.common.services.refactoring.backend.server.indexing.DefaultIndexBuilder;
 import org.kie.workbench.common.services.refactoring.backend.server.indexing.IndexBuilder;
@@ -65,7 +65,7 @@ public abstract class AbstractBpmnFileIndexer extends AbstractFileIndexer {
     }
 
     @Inject
-    protected ModuleClassLoaderHelper classLoaderHelper;
+    protected ModuleBuildInfo moduleBuildInfo;
 
     /* (non-Javadoc)
      * @see org.kie.workbench.common.services.refactoring.backend.server.indexing.AbstractFileIndexer#fillIndexBuilder(org.uberfire.java.nio.file.Path)
@@ -159,7 +159,7 @@ public abstract class AbstractBpmnFileIndexer extends AbstractFileIndexer {
 
     // Protected method for testing
     protected ClassLoader getModuleClassLoader(final KieModule module) {
-        return classLoaderHelper.getModuleClassLoader(module);
+        return moduleBuildInfo.getOrCreateEntry(module).getClassLoader();
     }
 
     private List<AbstractBpmnProcessDataEventListener> buildProcessDefinition(String bpmn2Content,

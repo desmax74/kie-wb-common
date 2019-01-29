@@ -23,7 +23,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.kie.workbench.common.forms.jbpm.model.authoring.JBPMProcessModel;
-import org.kie.workbench.common.services.backend.project.ModuleClassLoaderHelper;
+import org.kie.workbench.common.services.datamodel.backend.server.builder.ModuleBuildInfo;
 import org.kie.workbench.common.services.shared.project.KieModule;
 import org.kie.workbench.common.services.shared.project.KieModuleService;
 import org.mockito.Mock;
@@ -78,7 +78,7 @@ public class BPMFinderServiceImplTest {
     private KieModuleService moduleService;
 
     @Mock
-    private ModuleClassLoaderHelper moduleClassLoaderHelper;
+    private ModuleBuildInfo moduleBuildInfo;
 
     @Mock
     private ClassLoader classLoader;
@@ -108,10 +108,10 @@ public class BPMFinderServiceImplTest {
 
         when(classLoader.loadClass(any())).thenAnswer((Answer<Class>) invocation -> String.class);
 
-        when(moduleClassLoaderHelper.getModuleClassLoader(any())).thenReturn(classLoader);
+        //when(moduleClassLoaderHelper.getModuleClassLoader(any())).thenReturn(classLoader);
 
         bpmnFormModelGenerator = new BPMNFormModelGeneratorImpl(moduleService,
-                                                                moduleClassLoaderHelper);
+                                                                moduleBuildInfo);
 
         finderService = new BPMFinderServiceImpl(ioService,
                                                  moduleService,

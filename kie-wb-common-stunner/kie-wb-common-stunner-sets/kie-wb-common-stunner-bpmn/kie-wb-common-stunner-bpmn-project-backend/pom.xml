@@ -151,6 +151,10 @@
       <artifactId>kie-wb-common-stunner-bpmn-backend</artifactId>
       <type>test-jar</type>
     </dependency>
+    <dependency>
+      <groupId>org.kie.workbench.services</groupId>
+      <artifactId>kie-wb-common-datamodel-backend</artifactId>
+    </dependency>
 
   </dependencies>
 

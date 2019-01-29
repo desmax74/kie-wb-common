@@ -24,22 +24,22 @@ import org.kie.workbench.common.forms.jbpm.server.service.impl.BusinessProcessFo
 import org.kie.workbench.common.forms.jbpm.server.service.impl.TaskFormModelHandler;
 import org.kie.workbench.common.forms.model.FormModel;
 import org.kie.workbench.common.forms.service.shared.FieldManager;
-import org.kie.workbench.common.services.backend.project.ModuleClassLoaderHelper;
+import org.kie.workbench.common.services.datamodel.backend.server.builder.ModuleBuildInfo;
 import org.kie.workbench.common.services.shared.project.KieModuleService;
 
 public class TestFormModelHandlerManager implements FormModelHandlerManager {
 
     private KieModuleService projectService;
 
-    private ModuleClassLoaderHelper projectClassLoaderHelper;
+    private ModuleBuildInfo moduleBuildInfo;
 
     private FieldManager fieldManager;
 
     public TestFormModelHandlerManager(KieModuleService projectService,
-                                       ModuleClassLoaderHelper projectClassLoaderHelper,
+                                       ModuleBuildInfo moduleBuildInfo,
                                        FieldManager fieldManager) {
         this.projectService = projectService;
-        this.projectClassLoaderHelper = projectClassLoaderHelper;
+        this.moduleBuildInfo = moduleBuildInfo;
         this.fieldManager = fieldManager;
     }
 
@@ -47,13 +47,13 @@ public class TestFormModelHandlerManager implements FormModelHandlerManager {
     public FormModelHandler getFormModelHandler(Class<? extends FormModel> clazz) {
         if (BusinessProcessFormModel.class.equals(clazz)) {
             return new BusinessProcessFormModelHandler(projectService,
-                                                       projectClassLoaderHelper,
+                                                       moduleBuildInfo,
                                                        fieldManager,
                                                        null);
         }
         if (TaskFormModel.class.equals(clazz)) {
             return new TaskFormModelHandler(projectService,
-                                            projectClassLoaderHelper,
+                                            moduleBuildInfo,
                                             fieldManager,
                                             null);
         }

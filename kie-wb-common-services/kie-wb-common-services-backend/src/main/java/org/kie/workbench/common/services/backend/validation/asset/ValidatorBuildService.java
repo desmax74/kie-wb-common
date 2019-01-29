@@ -28,15 +28,9 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 import com.google.common.base.Charsets;
-import org.guvnor.common.services.project.builder.model.IncrementalBuildResults;
 import org.guvnor.common.services.project.model.Module;
 import org.guvnor.common.services.shared.message.Level;
 import org.guvnor.common.services.shared.validation.model.ValidationMessage;
-import org.kie.workbench.common.services.backend.builder.core.Builder;
-import org.kie.workbench.common.services.backend.builder.core.LRUBuilderCache;
-import org.kie.workbench.common.services.backend.builder.service.BuildInfo;
-import org.kie.workbench.common.services.backend.builder.service.BuildInfoImpl;
-import org.kie.workbench.common.services.backend.builder.service.BuildInfoService;
 import org.kie.workbench.common.services.shared.project.KieModuleService;
 import org.uberfire.backend.server.util.Paths;
 import org.uberfire.backend.vfs.Path;
@@ -48,9 +42,7 @@ public class ValidatorBuildService {
     private final static String ERROR_CLASS_NOT_FOUND = "Definition of class \"{0}\" was not found. Consequentially validation cannot be performed.\nPlease check the necessary external dependencies for this module are configured correctly.";
 
     private IOService ioService;
-    private LRUBuilderCache builderCache;
     private KieModuleService moduleService;
-    private BuildInfoService buildInfoService;
 
     public ValidatorBuildService() {
         //CDI proxies
@@ -58,13 +50,9 @@ public class ValidatorBuildService {
 
     @Inject
     public ValidatorBuildService(final @Named("ioStrategy") IOService ioService,
-                                 final LRUBuilderCache builderCache,
-                                 final KieModuleService moduleService,
-                                 final BuildInfoService buildInfoService) {
+                                 final KieModuleService moduleService) {
         this.ioService = ioService;
-        this.builderCache = builderCache;
         this.moduleService = moduleService;
-        this.buildInfoService = buildInfoService;
     }
 
     public synchronized List<ValidationMessage> validate(final Path resourcePath,
@@ -122,25 +110,10 @@ public class ValidatorBuildService {
         final Module module = module(resourcePath);
         final org.uberfire.java.nio.file.Path nioResourcePath = Paths.convert(resourcePath);
 
-        //Incremental Build does not support Java classes
-        if (isIncrementalBuildPossible(resourcePath)) {
-            //Build the Builder from the cache so it's "built" state can be preserved for re-use
-            BuildInfo buildInfo = buildInfoService.getBuildInfo(module);
-            final Builder clone = ((BuildInfoImpl) buildInfo).getBuilder().clone();
-            //First delete resource otherwise if the resource already had errors following builder.build()
-            //the incremental compilation will not report any additional errors and the resource will be
-            //considered valid.
-            clone.deleteResource(nioResourcePath);
-
-            final IncrementalBuildResults incrementalBuildResults = clone.updateResource(nioResourcePath,
-                                                                                         inputStream);
-            resultBuilder.add(incrementalBuildResults.getAddedMessages());
-        } else {
-            Builder builder = builderCache.assertBuilder(module(resourcePath));
-            final Builder clone = builder.clone();
-            resultBuilder.add(clone.build(nioResourcePath,
-                                          inputStream).getMessages());
-        }
+//        Builder builder = builderCache.assertBuilder(module(resourcePath));
+//        final Builder clone = builder.clone();
+//        resultBuilder.add(clone.build(nioResourcePath,
+//                                      inputStream).getMessages());
 
         return resultBuilder.results();
     }
@@ -169,3 +142,4 @@ public class ValidatorBuildService {
         }};
     }
 }
+
